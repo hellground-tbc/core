@@ -2742,7 +2742,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_CHARGE;
                     break;
                 case SPELL_EFFECT_TRIGGER_SPELL:
-                    if (spellInfo->Id == 32375 && spellInfo->Id == 32375)   // Mass Dispel should not have effect_trigger_missile
+                    if (spellInfo->Id == 39897)   // Mass Dispel should not have effect_trigger_missile? to be verified now
                         break;
                     if (IsPositionTarget(spellInfo->EffectImplicitTargetA[j]) ||
                         spellInfo->Targets & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
@@ -2847,16 +2847,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 // surge of light
                 else if (spellInfo->Id == 33151)
                     spellInfo->EffectApplyAuraName[2] = SPELLMOD_FLAT;
-
-                else if (spellInfo->Id == 32375) //mass dispell ally dispeling, makes main spell trigger both secondary, in dbc one triggers another, causes impossible to cast "bubble removing" spell in some cases
+                // mass dispel simplification - combine 3 spells limiting triggering
+                else if (spellInfo->Id == 32375)
                 {
+                    spellInfo->Effect[1] = SPELL_EFFECT_DISPEL;
+                    spellInfo->EffectRadiusIndex[1] = 18;
+                    spellInfo->EffectMiscValue[1] = 1;
                     spellInfo->Effect[2] = SPELL_EFFECT_TRIGGER_SPELL;
                     spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_AREA_ENEMY_DST;
                     spellInfo->EffectRadiusIndex[2] = 13;
                     spellInfo->EffectTriggerSpell[2] = 39897;
-                }   
-                else if (spellInfo->Id == 32592) //mass dispell enemy dispeling, same as above + prevent all enemy targets from becoming source of aoe dispel (causing multiple dispells on every target)
-                    spellInfo->Effect[1] = 0;
+                }
                 break;
             }
             case SPELLFAMILY_MAGE:
