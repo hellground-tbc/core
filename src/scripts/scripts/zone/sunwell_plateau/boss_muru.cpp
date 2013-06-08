@@ -631,7 +631,7 @@ struct npc_void_sentinelAI : public ScriptedAI
         me->GetHomePosition(x,y,z,o);
         DoTeleportTo(x,y,71);
         DoCast(me, SPELL_SHADOW_PULSE_PERIODIC);
-        VoidBlastTimer = urand(30000, 40000); //is this a correct timer?
+        VoidBlastTimer = urand(8000, 12000);
         DoZoneInCombat(100);
         if(pInstance->GetData(DATA_MURU_EVENT) == NOT_STARTED)
             me->DisappearAndDie();
@@ -663,7 +663,7 @@ struct npc_void_sentinelAI : public ScriptedAI
         if (VoidBlastTimer < diff)
         {
             DoCast(me->getVictim(), SPELL_VOID_BLAST, false);
-            VoidBlastTimer = urand(30000, 40000);
+            VoidBlastTimer = 30000;
         }
         else
             VoidBlastTimer -= diff;
@@ -900,7 +900,7 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
     {
         DoZoneInCombat(400.0f);
         SpellFury = urand(20000, 30000);
-        ActivationTimer = 6000;
+        ActivationTimer = 7000;
     }
 
     void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)

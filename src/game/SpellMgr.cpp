@@ -3437,6 +3437,7 @@ void SpellMgr::LoadCustomSpellCooldowns(SpellEntry* spellInfo)
             break;
         // 6 sec cooldown
         case 44639:     // Frost Arrow
+        case 46082:     // Shadow Bolt Volley
             spellInfo->RecoveryTime = 6000;
             break;
         // 8 sec cooldown

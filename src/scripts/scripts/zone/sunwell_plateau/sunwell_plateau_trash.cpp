@@ -1609,8 +1609,8 @@ struct mob_apocalypse_guardAI : public ScriptedAI
     void Reset()
     {
         Cleave = urand(3500, 5500);
-        CorruptingStrike = urand(7000, 12000);
-        DeathCoil = urand(5000, 10000);
+        CorruptingStrike = urand(4000, 10000);
+        DeathCoil = urand(3000, 7000);
         InfernalDefense = false;
     }
 
@@ -1650,7 +1650,7 @@ struct mob_apocalypse_guardAI : public ScriptedAI
         if(CorruptingStrike < diff)
         {
             AddSpellToCast(SPELL_CORRUPTING_STRIKE, CAST_TANK);
-            CorruptingStrike = urand(10000, 14000);
+            CorruptingStrike = urand(6000, 12000);
         }
         else
             CorruptingStrike -= diff;
@@ -1658,7 +1658,7 @@ struct mob_apocalypse_guardAI : public ScriptedAI
         if(DeathCoil < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, me->getVictimGUID(), 5.0))
-                AddSpellToCast(target, SPELL_CORRUPTING_STRIKE, false, true);
+                AddSpellToCast(target, SPELL_DEATH_COIL, false, true);
             DeathCoil = urand(4000, 7000);
         }
         else
