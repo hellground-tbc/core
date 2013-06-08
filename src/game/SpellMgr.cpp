@@ -706,7 +706,6 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 40616:                                         // Fel Rage 2
         case 41625:                                         // Fel Rage 3
         case 46787:                                         // Fel Rage scale
-        case 32375:                                         // Mass Dispel on friendly targets
         case 38318:                                         // Orb of Blackwhelp
             return true;
         case 46392:                                         // Focused Assault
@@ -732,6 +731,11 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 41350:                                         // Aura of Desire
         case 43501:                                         // Siphon Soul (Hexlord Spell)
             return false;
+        case 32375:
+            if(effIndex == 0)                               // Mass Dispel on friendly targets
+                return true;
+            else                                            // Mass Dispel on enemy targets
+                return false;
     }
 
     switch (spellproto->SpellFamilyName)
