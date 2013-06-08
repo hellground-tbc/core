@@ -3266,10 +3266,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectBasePoints[1] = 1;
             case 46038:
             case 46039:
-                spellInfo->EffectImplicitTargetA[1] = TARGET_DST_DB;
-                break;
-            case 46041: // Summon Blood Elves Periodic
-                spellInfo->Attributes |= SPELL_ATTR_PASSIVE;
+                spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_IGNORE_LOS;
                 break;
             case 47977: // Broom Broom
             case 42679:
