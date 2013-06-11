@@ -2508,7 +2508,9 @@ void Spell::cast(bool skipCheck)
         }
     }
 
-    FillTargetMap();
+    // do NOT fill again spell target map if there are already some targets defined
+    if (m_UniqueTargetInfo.empty())
+        FillTargetMap();
 
     if (m_spellState == SPELL_STATE_FINISHED)                // stop cast if spell marked as finish somewhere in Take*/FillTargetMap
     {

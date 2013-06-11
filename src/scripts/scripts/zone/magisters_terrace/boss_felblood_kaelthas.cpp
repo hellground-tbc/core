@@ -554,7 +554,7 @@ struct mob_arcane_sphereAI : public ScriptedAI
     {
         DoZoneInCombat();
         m_creature->SetLevitate(true);
-        m_creature->SetSpeed(MOVE_FLIGHT, 0.5);
+        m_creature->SetSpeed(MOVE_FLIGHT, 0.6);
         DoCast(m_creature, SPELL_ARCANE_SPHERE_PASSIVE, true);
         DespawnTimer = 29000;
         ChangeTargetTimer = 1000;
@@ -572,7 +572,7 @@ struct mob_arcane_sphereAI : public ScriptedAI
     {
         if(CheckTimer < diff)
         {
-            m_creature->SetSpeed(MOVE_FLIGHT, 0.5);    // to be tested
+            m_creature->SetSpeed(MOVE_FLIGHT, 0.6);    // to be tested
             if(pInstance && pInstance->GetData(DATA_KAELTHAS_EVENT) != IN_PROGRESS)
                 DespawnTimer = 0;
             CheckTimer = 1000;

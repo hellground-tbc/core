@@ -1269,6 +1269,10 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
 
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster);
 
+    // for max targets spell mod, custom values should be here, before filling target map
+    for (CustomSpellValues::const_iterator itr = value.begin(); itr != value.end(); ++itr)
+        spell->SetSpellValue(itr->first, itr->second);
+
     // if victim is defined use it, if not, search for targets
     if (Victim)
         targets.setUnitTarget(Victim);
@@ -1283,9 +1287,6 @@ void Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit*
         DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
         spell->m_CastItem = castItem;
     }
-
-    for (CustomSpellValues::const_iterator itr = value.begin(); itr != value.end(); ++itr)
-        spell->SetSpellValue(itr->first, itr->second);
 
     spell->prepare(&targets, triggeredByAura);
 }
