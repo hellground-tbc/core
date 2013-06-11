@@ -294,6 +294,7 @@ struct boss_entropiusAI : public ScriptedAI
         DarknessTimer = urand(6000, 8000);
         BlackHole = urand(4000, 10000);
         TransitionTimer = 3000;
+        me->SetRooted(true);
     }
 
     void EnterEvadeMode()
@@ -336,6 +337,7 @@ struct boss_entropiusAI : public ScriptedAI
                     Muru->SetVisibility(VISIBILITY_OFF);
                     Muru->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
+                me->SetRooted(false);
                 AttackStart(me->getVictim());
                 DoCast(me, SPELL_NEGATIVE_ENERGY_PERIODIC_E);
                 TransitionTimer = 0;
@@ -374,7 +376,7 @@ struct boss_entropiusAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 DoCast(target, SPELL_BLACK_HOLE);
-            BlackHole = 15000;
+            BlackHole = urand(15000, 18000);
         }
         else
             BlackHole -= diff;
@@ -745,8 +747,8 @@ struct npc_blackholeAI : public ScriptedAI
         float x,y,z,o;
         me->GetHomePosition(x,y,z,o);
         DoTeleportTo(x,y,72);
-        VisualTimer = 1000;
-        ActivationTimer = 2500;
+        VisualTimer = 2000;
+        ActivationTimer = 2000;
         ChasingTimer = 0;
         victimGUID = 0;
         me->SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
@@ -781,6 +783,7 @@ struct npc_blackholeAI : public ScriptedAI
             }
             else
                 VisualTimer -= diff;
+            return;
         }
 
         if(ActivationTimer)
