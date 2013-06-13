@@ -594,8 +594,12 @@ float skyguardWPStart[3][2] = {
     { -3807, 3496 }
 };
 
-float skyguardWPMiddle[3] = {
-    -3785, 3507, 315
+#define SKYGUARD_WP_MIDDLE_MAX 4
+float skyguardWPMiddle[4][3] = {
+    {-3785, 3507, 315},
+    {-3798, 3500, 316},
+    {-3798, 3515, 308},
+    {-3786, 3515, 314}
 };
 
 float skyguardWPs[6][2] = {
@@ -766,8 +770,10 @@ struct mob_terokkAI : public ScriptedAI
 
             if(SkyguardFlare_Timer < diff)
             {
-                if(Creature *skyguard = Creature::GetCreature(*me, SkyguardGUIDs[skyguardTurn++]))
-                    skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_MIDDLE, skyguardWPMiddle[0], skyguardWPMiddle[1], skyguardWPMiddle[2]);
+                if(Creature *skyguard = Creature::GetCreature(*me, SkyguardGUIDs[skyguardTurn++])){
+                    uint32 i = rand() % SKYGUARD_WP_MIDDLE_MAX;
+                    skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_MIDDLE, skyguardWPMiddle[i][0], skyguardWPMiddle[i][1], skyguardWPMiddle[i][2]);
+                }
                 skyguardTurn %= 3;
                 SkyguardFlare_Timer = 20000;
             }
@@ -796,8 +802,8 @@ struct npc_skyguard_aceAI : public ScriptedAI
 
     uint64 TargetGUID;
     uint32 TargetLifetime;
-    uint32 AncientFlame_Timer;
-    uint32 Move_Timer;
+    int32 AncientFlame_Timer;
+    int32 Move_Timer;
     int NextWP;
 
     void Reset()
@@ -847,7 +853,7 @@ struct npc_skyguard_aceAI : public ScriptedAI
             creature->GetPosition(x, y, z);
             z = groundAltitiude;
             creature->Relocate(x, y, z);
-            creature->CastSpell(creature, SPELL_SKYGUARD_FLARE_TARGET, true);
+            creature->CastSpell(creature, SPELL_SKYGUARD_FLARE_TARGET, false);
             TargetGUID = creature->GetGUID();
             TargetLifetime = 20500;
             AncientFlame_Timer = 5500;
@@ -876,11 +882,14 @@ struct npc_skyguard_aceAI : public ScriptedAI
         {
             if(Move_Timer < diff)
             {
-                me->GetMotionMaster()->MovePoint(NextWP, skyguardWPs[NextWP][0], skyguardWPs[NextWP][1], skyguardAltitude);
+                if (me->GetMotionMaster()->empty())
+                    me->GetMotionMaster()->MovePoint(NextWP, skyguardWPs[NextWP][0], skyguardWPs[NextWP][1], skyguardAltitude);
                 Move_Timer = -1;
             }
-            else
+            else{
                 Move_Timer -= diff;
+                Move_Timer = Move_Timer < 0 ? 0 : Move_Timer;
+            }
         }
 
         if(AncientFlame_Timer >= 0)
