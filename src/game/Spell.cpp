@@ -5366,8 +5366,8 @@ bool Spell::CheckTargetCreatureType(Unit* target) const
         spellCreatureTargetMask = 0x7FF;
     }
 
-    // Dismiss Pet and Taming Lesson skipped
-    if (GetSpellInfo()->Id == 2641 || GetSpellInfo()->Id == 23356)
+    // Dismiss Pet and Taming Lesson skipped and Control Roskipped
+    if (GetSpellInfo()->Id == 2641 || GetSpellInfo()->Id == 23356 || GetSpellInfo()->Id == 30009)
         spellCreatureTargetMask =  0;
 
     if (spellCreatureTargetMask)
