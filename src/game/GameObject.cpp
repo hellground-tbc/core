@@ -844,6 +844,9 @@ void GameObject::Reset()
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
     SetGoState(GetGOData() ? GetGOData()->go_state : GO_STATE_READY);
     SetLootState(GO_READY);
+    if (!GetDespawnPossibility())
+        SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);// this flag is set in LoadFromDB() for some objects
+
 }
 
 void GameObject::Despawn()

@@ -558,6 +558,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "grid",           SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleGameObjectGridCommand,      "", NULL },
         { "move",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleGameObjectMoveCommand,      "", NULL },
         { "near",           SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleGameObjectNearCommand,      "", NULL },
+        { "reset",          SEC_GAMEMASTER,     false,  &ChatHandler::HandleGameObjectResetCommand,      "", NULL },
         { "target",         SEC_GAMEMASTER,     false,  &ChatHandler::HandleGameObjectTargetCommand,    "", NULL },
         { "turn",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleGameObjectTurnCommand,      "", NULL },
         { NULL,             0,                  false,  NULL,                                           "", NULL }

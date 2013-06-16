@@ -3920,6 +3920,40 @@ bool ChatHandler::HandleGameObjectActivateCommand(const char *args)
     return true;
 }
 
+bool ChatHandler::HandleGameObjectResetCommand(const char *args)
+{
+    if (!*args)
+        return false;
+
+    char* cId = extractKeyFromLink((char*)args,"Hgameobject");
+    if (!cId)
+        return false;
+
+    uint32 lowguid = atoi(cId);
+    if (!lowguid)
+        return false;
+
+    GameObject* obj = NULL;
+
+    // by DB guid
+    if (GameObjectData const* go_data = sObjectMgr.GetGOData(lowguid))
+        obj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid,go_data->id);
+
+    if (!obj)
+    {
+        PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, lowguid);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // Activate
+    obj->Reset();
+
+    PSendSysMessage("Object reset!");
+
+    return true;
+}
+
 // add creature, temp only
 bool ChatHandler::HandleNpcAddTempCommand(const char* args)
 {
