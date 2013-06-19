@@ -435,7 +435,7 @@ struct npc_muru_portalAI : public Scripted_NoMovementAI
                 break;
             case SPELL_OPEN_PORTAL_2:
                 DoCast(me, SPELL_OPEN_PORTAL);
-                SummonTimer = 3000;
+                SummonTimer = 5000;
                 break;
         }
     }
@@ -631,6 +631,7 @@ struct npc_void_sentinelAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
     uint32 VoidBlastTimer;
+    uint32 ActivationTimer;
 
     void Reset()
     {
@@ -639,7 +640,8 @@ struct npc_void_sentinelAI : public ScriptedAI
         DoTeleportTo(x,y,71);
         DoCast(me, SPELL_SHADOW_PULSE_PERIODIC);
         VoidBlastTimer = urand(8000, 12000);
-        DoZoneInCombat(100);
+        ActivationTimer = 1500;
+        me->SetRooted(true);
         if(pInstance->GetData(DATA_MURU_EVENT) == NOT_STARTED)
             me->DisappearAndDie();
     };
@@ -664,6 +666,18 @@ struct npc_void_sentinelAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(ActivationTimer)
+        {
+            if(ActivationTimer <= diff)
+            {
+                DoZoneInCombat(100);
+                me->SetRooted(false);
+                ActivationTimer = 0;
+            }
+            else
+                ActivationTimer -= diff;
+        }
+
         if (!UpdateVictim())
             return;
 
