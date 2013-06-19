@@ -706,7 +706,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         void SetIngoreVictimSelection(bool ignoreSelection)
         {
             if (ignoreSelection)
-                SetSelection(NULL);
+                SetSelection(0);
             else if (getVictim())
                 SetSelection(getVictimGUID());
             m_ignoreSelection = ignoreSelection;
