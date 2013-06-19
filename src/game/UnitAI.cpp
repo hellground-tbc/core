@@ -49,7 +49,7 @@ void UnitAI::DoMeleeAttackIfReady()
     // set selection back to attacked victim if not selected (after spell casting)
     if(me->GetTypeId() == TYPEID_UNIT)
     {
-        if(((Creature*)me)->GetSelection() != me->getVictimGUID())
+        if(((Creature*)me)->GetSelection() != me->getVictimGUID() && !((Creature*)me)->hasIgnoreVictimSelection())
             ((Creature*)me)->SetSelection(me->getVictimGUID());
     }
 

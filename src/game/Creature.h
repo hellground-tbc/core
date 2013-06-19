@@ -703,6 +703,16 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 
         Unit *SelectVictim();
 
+        void SetIngoreVictimSelection(bool ignoreSelection)
+        {
+            if (ignoreSelection)
+                SetSelection(NULL);
+            else if (getVictim())
+                SetSelection(getVictimGUID());
+            m_ignoreSelection = ignoreSelection;
+        }
+        bool hasIgnoreVictimSelection() { return m_ignoreSelection; }
+
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
         bool IsReputationGainDisabled() { return DisableReputationGain; }
         bool IsDamageEnoughForLootingAndReward() { return m_PlayerDamageReq == 0; }
@@ -789,6 +799,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         uint32 m_aiReinitializeCheckTimer;
 
         float m_aggroRange;
+        bool m_ignoreSelection;
     public:
         float m_xpMod;
     private:

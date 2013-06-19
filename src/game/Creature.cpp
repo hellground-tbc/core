@@ -148,7 +148,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 }
 
 Creature::Creature() :
-Unit(), m_aggroRange(0.0),
+Unit(), m_aggroRange(0.0), m_ignoreSelection (false),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),

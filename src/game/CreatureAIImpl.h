@@ -552,7 +552,7 @@ inline bool CreatureAI::UpdateVictim()
             return true;
         else
         {
-            if (!me->hasUnitState(UNIT_STAT_CANNOT_TURN) && !me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
+            if (!me->hasUnitState(UNIT_STAT_CANNOT_TURN) && !me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID() && !me->hasIgnoreVictimSelection())
                 me->SetSelection(me->getVictimGUID());
         }
     }
