@@ -153,6 +153,7 @@ struct boss_muruAI : public Scripted_NoMovementAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         Summons.DespawnAll();
+        HumanoidStart = 10000;
         if(pInstance->GetData(DATA_MURU_TESTING) != DONE)
             ResetTimer = 30000;
     }
@@ -174,6 +175,7 @@ struct boss_muruAI : public Scripted_NoMovementAI
             EnterEvadeMode();
             return;
         }
+        me->SetIngoreVictimSelection(true);
         uint32 counter = pInstance->GetData(DATA_MURU_TESTING_COUNTER);
         SendMessageAtStart("Welcome testers! You have still: %u boss tries left. Good luck!!", counter);
         DoCast(me, SPELL_NEGATIVE_ENERGY_PERIODIC);
@@ -245,7 +247,10 @@ struct boss_muruAI : public Scripted_NoMovementAI
                 pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
                 // if anyone trapped outside front door, evade
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, 0, 41))
+                {
                     EnterEvadeMode();
+                    return;
+                }
                 DoCast(me, SPELL_SUMMON_BLOOD_ELVES_PERIODIC, true);
                 HumanoidStart = 0;
             }
@@ -856,6 +861,12 @@ struct npc_darknessAI : public Scripted_NoMovementAI
             ((boss_muruAI*)Muru)->JustSummoned(me);
     }
 
+    void IsSummonedBy(Unit* summoner)
+    {
+        if(Creature* Muru = me->GetCreature(pInstance->GetData64(DATA_MURU)))
+            Muru->AI()->JustSummoned(me);
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if(VoidZoneTimer)
@@ -901,9 +912,17 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
 
     void Reset()
     {
-        DoZoneInCombat(400.0f);
-        SpellFury = urand(20000, 30000);
-        ActivationTimer = 7000;
+        me->setActive(true);
+        if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
+        {
+            Position pos;
+            Muru->GetPosition(pos);
+            me->GetMotionMaster()->MovePoint(0, pos.x+frand(-2, 2), pos.y+frand(-2, 2), pos.z, false);
+        }
+        else
+            DoZoneInCombat(400.0f);
+        SpellFury = urand(25000, 35000);
+        ActivationTimer = 6500;
     }
 
     void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
@@ -926,6 +945,19 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(ActivationTimer)
+        {
+            if(ActivationTimer <= diff)
+            {
+                DoZoneInCombat(400.0);
+                me->GetMotionMaster()->Clear();
+                SetAutocast(SPELL_FEL_FIREBALL, 2000, true);
+                ActivationTimer = 0;
+            }
+            else
+                ActivationTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
@@ -937,17 +969,6 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
         }
         else
             SpellFury -= diff;
-
-        if(ActivationTimer)
-        {
-            if(ActivationTimer <= diff)
-            {
-                SetAutocast(SPELL_FEL_FIREBALL, 2000, true);
-                ActivationTimer = 0;
-            }
-            else
-                ActivationTimer -= diff;
-        }
 
         CastNextSpellIfAnyAndReady(diff);
         DoMeleeAttackIfReady();
@@ -977,24 +998,48 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
+    uint32 ActivationTimer;
     uint32 Flurry;
 
     void Reset()
     {
-        DoZoneInCombat(400.0f);
+        me->setActive(true);
+        if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
+        {
+            Position pos;
+            Muru->GetPosition(pos);
+            me->GetMotionMaster()->MovePoint(0, pos.x+frand(-2, 2), pos.y+frand(-2, 2), pos.z, false);
+        }
+        else
+            DoZoneInCombat(400.0f);
+        ActivationTimer = 6000;
         DoCast(me, SPELL_DUAL_WIELD, true);
-        Flurry = urand(18000, 25000);
+        Flurry = urand(16000, 20000);
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(ActivationTimer)
+        {
+            if(ActivationTimer <= diff)
+            {
+                DoZoneInCombat(400.0);
+                me->GetMotionMaster()->Clear();
+                if(me->getVictim())
+                    DoStartMovement(me->getVictim());
+                ActivationTimer = 0;
+            }
+            else
+                ActivationTimer -= diff;
+        }
+
         if(!UpdateVictim())
             return;
 
         if(Flurry < diff)
         {
             DoCast(me, SPELL_FLURRY);
-            Flurry = urand(20000, 25000);
+            Flurry = urand(15000, 20000);
         }
         else
             Flurry -= diff;

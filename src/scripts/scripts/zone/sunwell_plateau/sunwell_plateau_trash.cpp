@@ -7,7 +7,7 @@
 
 /* ScriptData
 SDName: Sunwell_Plateau_Trash
-SD%Complete: 92% (25/27)
+SD%Complete: 100% (26/26)
 SDComment: Trash NPCs divided by to boss links
 SDCategory: Sunwell Plateau
 EndScriptData */
@@ -1617,9 +1617,6 @@ struct mob_apocalypse_guardAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        // return here until Rohendor, the second gate will be opened
-        //return;
-
         if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             return;
 
@@ -1659,7 +1656,7 @@ struct mob_apocalypse_guardAI : public ScriptedAI
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, me->getVictimGUID(), 5.0))
                 AddSpellToCast(target, SPELL_DEATH_COIL, false, true);
-            DeathCoil = urand(4000, 7000);
+            DeathCoil = urand(7000, 12000);
         }
         else
             DeathCoil -= diff;
@@ -1701,16 +1698,13 @@ struct mob_cataclysm_houndAI : public ScriptedAI
 
     void Reset()
     {
-        Enrage = urand(10000, 25000);
+        Enrage = urand(10000, 20000);
         CataclysmBreath = urand(4000, 10000);
     }
 
 
     void MoveInLineOfSight(Unit* who)
     {
-        // return here until Rohendor, the second gate will be opened
-        //return;
-
         if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             return;
 
@@ -1727,14 +1721,15 @@ struct mob_cataclysm_houndAI : public ScriptedAI
         if(Enrage < diff)
         {
             AddSpellToCast(SPELL_ENRAGE, CAST_SELF);
-            Enrage = urand(20000, 30000);
+            Enrage = 10000;
         }
         else
             Enrage -= diff;
 
         if(CataclysmBreath < diff)
         {
-            AddSpellToCast(SPELL_CATACLYSM_BREATH, CAST_TANK);
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
+                AddSpellToCast(target, SPELL_CATACLYSM_BREATH, false, true);
             CataclysmBreath = 8000;
         }
         else
@@ -1780,7 +1775,7 @@ struct mob_chaos_gazerAI : public ScriptedAI
 
     void Reset()
     {
-        DrainLifeCD = urand(20000, 25000);
+        DrainLifeCD = urand(10000, 12000);
         Petrify = urand(3000, 7000);
         TentacleSweep = Petrify + urand(1000, 1500);
         canDrainLife = true;
@@ -1789,9 +1784,6 @@ struct mob_chaos_gazerAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        // return here until Rohendor, the second gate will be opened
-        //return;
-
         if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             return;
 
@@ -1807,21 +1799,21 @@ struct mob_chaos_gazerAI : public ScriptedAI
 
         if(HealthBelowPct(75.0f) && canDrainLife)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 29.5, true, 0, 20.0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 22.0, true, 0, 16.0))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
-                DrainLifeCD = urand(10000, 15000);
+                DrainLifeCD = urand(10000, 12000);
             }
             else
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true, 0, 10.0))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 16.0, true, 0, 8.0))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
-                DrainLifeCD = urand(10000, 15000);
+                DrainLifeCD = urand(10000, 12000);
             }
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 10.0, true, me->getVictimGUID()))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 8.0, true, me->getVictimGUID()))
             {
                 ForceSpellCast(target, SPELL_DRAIN_LIFE_1, DONT_INTERRUPT, false, true);
-                DrainLifeCD = urand(10000, 15000);
+                DrainLifeCD = urand(10000, 12000);
             }
             else
                 DrainLifeCD = 1000;
@@ -2124,9 +2116,6 @@ struct mob_painbringerAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        // return here until Rohendor, the second gate will be opened
-        //return;
-
         if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             return;
 
@@ -2184,9 +2173,6 @@ struct mob_priestess_of_tormentAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit* who)
     {
-        // return here until Rohendor, the second gate will be opened
-        //return;
-
         if (pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
             return;
 
@@ -2253,12 +2239,75 @@ CreatureAI* GetAI_mob_priestess_of_torment(Creature *_Creature)
 
 /* Content Data
     * Shadowsword Guardian
-    * Hand of the Deceiver
+    * Hand of the Deceiver - at KJ script
 */
 
 /****************
-* Shadowsword Guardian - id
+* Shadowsword Guardian - id 25508
+
+  Immunities: TBD
+
 *****************/
+
+enum ShadowswordGuardian
+{
+    SPELL_BEAR_DOWN                 = 46239,
+    SPELL_EARTHQUAKE                = 46240
+};
+
+struct mob_shadowsword_guardianAI : public ScriptedAI
+{
+    mob_shadowsword_guardianAI(Creature *c) : ScriptedAI(c)
+    {
+        me->SetAggroRange(AGGRO_RANGE);
+        pInstance = c->GetInstanceData();
+    }
+
+    ScriptedInstance* pInstance;
+    uint32 BearDown;
+
+    void Reset()
+    {
+        BearDown = urand(7000, 10000);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (pInstance->GetData(DATA_MURU_EVENT) != DONE)
+            return;
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void EnterCombat(Unit*)
+    {
+        DoCast(me, SPELL_EARTHQUAKE);
+        DoZoneInCombat(80.0f);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if(BearDown < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 50.0f, true, me->getVictimGUID(), 7.0f))
+                AddSpellToCast(target, SPELL_BEAR_DOWN, false, true);
+            BearDown = urand(7000, 14000);
+        }
+        else
+            BearDown -= diff;
+
+        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_mob_shadowsword_guardian(Creature *_Creature)
+{
+    return new mob_shadowsword_guardianAI(_Creature);
+}
 
 /****************
 * Gauntlet Imp Trigger - id 25848
@@ -2473,10 +2522,15 @@ void AddSC_sunwell_plateau_trash()
     newscript->GetAI = &GetAI_mob_priestess_of_torment;
     newscript->RegisterSelf();
 
+    // Kil'jaeden
+    newscript = new Script;
+    newscript->Name = "mob_shadowsword_guardian";
+    newscript->GetAI = &GetAI_mob_shadowsword_guardian;
+    newscript->RegisterSelf();
+
     // others
     newscript = new Script;
     newscript->Name = "npc_gauntlet_imp_trigger";
     newscript->GetAI = &GetAI_npc_gauntlet_imp_trigger;
     newscript->RegisterSelf();
-
 }
