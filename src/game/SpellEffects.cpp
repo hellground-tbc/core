@@ -1649,7 +1649,10 @@ void Spell::EffectDummy(uint32 i)
                 case 44997:                                 // Converting Sentry remove corpse
                 {
                     if(unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
+                    {
                         ((Creature*)unitTarget)->RemoveCorpse();
+                        unitTarget->DestroyForNearbyPlayers();
+                    }
                     return;
                 }
                 case 45030:                                 // Impale Emissary
