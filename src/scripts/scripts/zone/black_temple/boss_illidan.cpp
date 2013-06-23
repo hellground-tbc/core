@@ -930,10 +930,10 @@ struct boss_illidan_stormrageAI : public BossAI
         if (!UpdateVictim())
             return;
 
+        DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.5f);
+
         if (m_combatTimer < diff)
         {
-            DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.5f);
-
             if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                 DoModifyThreatPercent(pAkama, -101);
 
