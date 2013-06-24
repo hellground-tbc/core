@@ -917,6 +917,11 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
         // Rage from any damage taken
         if (pVictim->GetTypeId() == TYPEID_PLAYER && (pVictim->getPowerType() == POWER_RAGE))
             ((Player*)pVictim)->RewardRage(damageInfo->rageDamage, 0, false);
+
+        if (Spell* spell = pVictim->m_currentSpells[CURRENT_GENERIC_SPELL])
+            if (damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
+                if(spell->GetSpellInfo()->Id == 21651 || spell->GetSpellInfo()->Id == 26868)
+                    pVictim->InterruptSpell(CURRENT_GENERIC_SPELL,true,true);
     }
 
     if (damageInfo->damage)
