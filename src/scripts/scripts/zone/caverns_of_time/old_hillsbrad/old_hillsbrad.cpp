@@ -271,7 +271,6 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
     uint32 StepsTimer;
     uint32 StrikeTimer;
     uint32 ShieldBlockTimer;
-    uint32 CheckTimer;
     uint32 EmoteTimer;
 
     bool LowHp;
@@ -291,7 +290,6 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
 
         Steps = 0;
         StepsTimer = 0;
-        CheckTimer = 0;
         EmoteTimer = 0;
         Part = 0;
         StrikeTimer = urand(3000, 7000);
@@ -504,6 +502,8 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
                 switch (i)
                 {
                     case 0:
+                       if (Creature* Epoch = me->SummonCreature(NPC_EPOCH,2639.13,698.55,65.43,4.59,TEMPSUMMON_DEAD_DESPAWN,120000))
+                           DoScriptText(SAY_EPOCH_ENTER1, Epoch);
                         me->SetFacingTo(2.63f);
                         DoScriptText(SAY_TH_EPOCH_WONDER, me);
                         break;
@@ -524,7 +524,6 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
                             DoScriptText(SAY_EPOCH_ENTER3, Epoch);
                             me->SetFacingToObject(Epoch);
                         }
-                        CheckTimer = 2000;
                         SetEscortPaused(true);
                         break;
                     case 11:
@@ -556,6 +555,11 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
     {
         me->Unmount();
         me->SetSpeed(MOVE_RUN,SPEED_RUN);
+    }
+
+    void DoAction(const int32 action)
+    {
+        SetEscortPaused(false);
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
@@ -884,20 +888,6 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
         if (HadMount && !me->isInCombat())
             DoMount();
 
-        if (CheckTimer)
-        {
-            if (CheckTimer <= diff)
-            {
-                if (pInstance->GetData(DATA_EPOCH_DEATH) == DONE)
-                {
-                    SetEscortPaused(false);
-                    CheckTimer = 0;
-                }
-                else CheckTimer = 2000;
-            }
-            else CheckTimer -= diff;
-        }
-
         if (EmoteTimer)
         {
             if (EmoteTimer <= diff)
@@ -1133,12 +1123,7 @@ bool GossipSelect_npc_taretha(Player *player, Creature *creature, uint32 sender,
         if (Creature* Thrall = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_THRALL)))
         {
             if(Thrall)
-            {
-                if (Creature* Epoch = Thrall->SummonCreature(NPC_EPOCH,2639.13,698.55,65.43,4.59,TEMPSUMMON_DEAD_DESPAWN,120000))
-                    DoScriptText(SAY_EPOCH_ENTER1, Epoch);
-
                 CAST_AI(npc_thrall_old_hillsbradAI, Thrall->AI())->StartEscort(player, Parts);
-            }
         }
     }
 

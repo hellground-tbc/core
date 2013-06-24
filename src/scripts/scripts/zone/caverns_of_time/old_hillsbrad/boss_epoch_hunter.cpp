@@ -122,7 +122,12 @@ struct boss_epoch_hunterAI : public ScriptedAI
         DoScriptText(SAY_DEATH, me);
 
         if (pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
+        {
+            if (Creature* Thrall = me->GetMap()->GetCreature(ThrallGUID))
+                Thrall->AI()->DoAction();
+
             pInstance->SetData(TYPE_THRALL_PART4, DONE);
+        }
 
         if (pInstance->GetData(DATA_EPOCH_DEATH) == DONE)
             me->SetLootRecipient(NULL);

@@ -243,6 +243,8 @@ struct instance_old_hillsbrad : public ScriptedInstance
                         ThrallEventCount++;
                         debug_log("TSCR: Instance Old Hillsbrad: Thrall event failed %u times.", ThrallEventCount);
 
+                        Encounter[1] = NOT_STARTED;
+
                         if (Encounter[2] == IN_PROGRESS)
                             Encounter[2] = NOT_STARTED;
 
