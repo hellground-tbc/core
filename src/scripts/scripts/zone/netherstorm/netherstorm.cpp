@@ -1214,8 +1214,16 @@ CreatureAI* GetAI_mob_epextraction(Creature* creature)
     return new mob_epextractionAI (creature);
 }
 
-#define BOOM_BOT_TARGET 20392
-#define BOOM_BOT 19692
+/*######
+## npc_dr_boom
+######*/
+
+enum
+{
+    THROW_DYNAMITE    = 35276,
+    BOOM_BOT          = 19692,
+    BOOM_BOT_TARGET   = 20392
+};
 
 struct mob_dr_boomAI : public ScriptedAI
 {
@@ -1252,7 +1260,7 @@ struct mob_dr_boomAI : public ScriptedAI
             else
                 Reset();
 
-            SummonTimer = 3000;
+            SummonTimer = 2000;
         }
         else
             SummonTimer -= diff;
@@ -1260,15 +1268,15 @@ struct mob_dr_boomAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (!me->IsWithinDistInMap(me->getVictim(), 30.0f))
+        if (!me->IsWithinDistInMap(me->getVictim(), 23.0f))
         {
             EnterEvadeMode();
             return;
         }
 
-        if (me->isAttackReady())
+        if (me->isAttackReady() && me->IsWithinDistInMap(me->getVictim(), 12.2f))
         {
-            DoCast(me->getVictim(), 35276, true);
+            DoCast(me->getVictim(), THROW_DYNAMITE, true);
             me->resetAttackTimer();
         }
     }
@@ -1279,22 +1287,33 @@ CreatureAI* GetAI_mob_dr_boom(Creature* creature)
     return new mob_dr_boomAI (creature);
 }
 
+/*######
+## mob_boom_bot
+######*/
+
+#define    SPELL_BOOM    35132 
+
 struct mob_boom_botAI : public ScriptedAI
 {
     mob_boom_botAI(Creature* creature) : ScriptedAI(creature) {}
 
-    void Reset() {}
+    void Reset()
+    {
+        me->SetWalk(true);
+    }
 
     void EnterCombat(Unit* who) { return; }
+    void AttackedBy(Unit* who) { return; }
+    void AttackStart(Unit* who) { return; }
 
     void MovementInform(uint32 type, uint32 id)
     {
         if (type != POINT_MOTION_TYPE)
             return;
 
-        DoCast(me, 35132, true);    //proper Boom spell
-        me->Kill(me, false);
-        me->RemoveCorpse();
+        DoCast(me, SPELL_BOOM, true);
+        me->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+        me->ForcedDespawn(2000);
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -1302,20 +1321,12 @@ struct mob_boom_botAI : public ScriptedAI
         if (!who->isCharmedOwnedByPlayerOrPlayer())
             return;
 
-        if (me->IsWithinDistInMap(who, 6.0f, false))
+        if (me->IsWithinDistInMap(who, 1.0f, false))
         {
-            DoCast(me, 35132, true);    //proper Boom spell
-            me->Kill(me, false);
-            me->RemoveCorpse();
+            DoCast(me, SPELL_BOOM, true);
+            me->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+            me->ForcedDespawn(2000);
         }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
     }
 };
 
