@@ -379,7 +379,7 @@ struct boss_entropiusAI : public ScriptedAI
 
         if (BlackHole < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, me->getVictimGUID(), 10.0))
                 DoCast(target, SPELL_BLACK_HOLE);
             BlackHole = urand(15000, 18000);
         }
@@ -817,7 +817,7 @@ struct npc_blackholeAI : public ScriptedAI
                     victimGUID = victim->GetGUID();
                     me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
                 }
-                ChasingTimer = 2000;
+                ChasingTimer = 1000;
             }
             else
                 ActivationTimer -= diff;
@@ -830,7 +830,7 @@ struct npc_blackholeAI : public ScriptedAI
                 Unit* victim = me->GetUnit(victimGUID);
                 if(me->IsWithinDistInMap(victim, 6.0))
                 {
-                    if(Unit* victim = SelectUnit(SELECT_TARGET_NEAREST, 0, 100, true, me->getVictimGUID(), 5.0))
+                    if(Unit* victim = SelectUnit(SELECT_TARGET_NEAREST, 0, 200, true, me->getVictimGUID(), 10.0))
                         me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
                 }
                 else
@@ -928,11 +928,7 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
     {
         me->setActive(true);
         if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
-        {
-            Position pos;
-            Muru->GetPosition(pos);
-            me->GetMotionMaster()->MovePoint(0, pos.x+frand(-2, 2), pos.y+frand(-2, 2), pos.z, false);
-        }
+            me->GetMotionMaster()->MoveChase(Muru);
         else
             DoZoneInCombat(400.0f);
         SpellFury = urand(25000, 35000);
@@ -1019,11 +1015,7 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
     {
         me->setActive(true);
         if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
-        {
-            Position pos;
-            Muru->GetPosition(pos);
-            me->GetMotionMaster()->MovePoint(0, pos.x+frand(-2, 2), pos.y+frand(-2, 2), pos.z, false);
-        }
+            me->GetMotionMaster()->MoveChase(Muru);
         else
             DoZoneInCombat(400.0f);
         ActivationTimer = 6000;

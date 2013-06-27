@@ -1721,7 +1721,7 @@ struct mob_cataclysm_houndAI : public ScriptedAI
         if(Enrage < diff)
         {
             AddSpellToCast(SPELL_ENRAGE, CAST_SELF);
-            Enrage = 10000;
+            Enrage = urand(10000, 12000);
         }
         else
             Enrage -= diff;
@@ -1729,7 +1729,11 @@ struct mob_cataclysm_houndAI : public ScriptedAI
         if(CataclysmBreath < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20, true))
+            {
+                ClearCastQueue();
+                me->SetInFront(target);
                 AddSpellToCast(target, SPELL_CATACLYSM_BREATH, false, true);
+            }
             CataclysmBreath = 8000;
         }
         else
