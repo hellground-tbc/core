@@ -293,14 +293,14 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 
     MailDraft draft(subject, body);
 
+    uint32 rc_account = 0;
+    if (receive)
+        rc_account = receive->GetSession()->GetAccountId();
+    else
+        rc_account = sObjectMgr.GetPlayerAccountIdByGUID(rc);
+
     if (items_count > 0 || money > 0)
     {
-        uint32 rc_account = 0;
-        if (receive)
-            rc_account = receive->GetSession()->GetAccountId();
-        else
-            rc_account = sObjectMgr.GetPlayerAccountIdByGUID(rc);
-
         if (items_count > 0)
         {
             for(uint8 i = 0; i < items_count; ++i)
@@ -315,7 +315,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                         GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
 
-                sLog.outLog(LOG_MAIL, "Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                sLog.outLog(LOG_TRADE, "Player %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
                     GetPlayerName(), GetAccountId(), item->GetProto()->Name1, item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
 
                 pl->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
@@ -347,10 +347,13 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
                     GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
             }
 
-            sLog.outLog(LOG_MAIL, "Player %s (Account: %u) mail money: %u  with subject: %s and body: %s to player: %s (Account: %u)",
+            sLog.outLog(LOG_TRADE, "Player %s (Account: %u) mail money: %u  with subject: %s and body: %s to player: %s (Account: %u)",
                 GetPlayerName(), GetAccountId(), money, subject.c_str(), body.c_str(), receiver.c_str(), rc_account);
         }
     }
+
+    sLog.outLog(LOG_MAIL, "Player %s (Account: %u) sent mail to player: %s (Account: %u) with subject: %s and body: %s",
+        GetPlayerName(), GetAccountId(), receiver.c_str(), rc_account, subject.c_str(), body.c_str());
 
     // If theres is an item, there is a one hour delivery delay if sent to another account's character.
     uint32 deliver_delay = needItemDelay ? sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
@@ -565,37 +568,29 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
             Player *sender = sObjectMgr.GetPlayer(sender_guid);
 
             uint32 sender_accId = 0;
-
-            if (IsAccountFlagged(ACC_SPECIAL_LOG) || (GetSecurity() > SEC_PLAYER && sWorld.getConfig(CONFIG_GM_LOG_TRADE)))
+            std::string sender_name;
+            if (sender)
             {
-                std::string sender_name;
-                if (sender)
-                {
-                    sender_accId = sender->GetSession()->GetAccountId();
-                    sender_name = sender->GetName();
-                }
-                else if (sender_guid)
-                {
-                    // can be calculated early
-                    sender_accId = sObjectMgr.GetPlayerAccountIdByGUID(sender_guid);
-
-                    if(!sObjectMgr.GetPlayerNameByGUID(sender_guid, sender_name))
-                        sender_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
-                }
-
-                if (GetSecurity() == SEC_PLAYER)
-                {
-                    sLog.outLog(LOG_MAIL, "Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
-                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
-                }
-                else
-                {
-                    sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
-                        GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
-                }
+                sender_accId = sender->GetSession()->GetAccountId();
+                sender_name = sender->GetName();
             }
-            else if (!sender)
+            else if (sender_guid)
+            {
+                // can be calculated early
                 sender_accId = sObjectMgr.GetPlayerAccountIdByGUID(sender_guid);
+
+                if(!sObjectMgr.GetPlayerNameByGUID(sender_guid, sender_name))
+                    sender_name = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+            }
+
+            if (GetSecurity() != SEC_PLAYER)
+            {
+                sLog.outCommand(GetAccountId(),"GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                    GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
+            }
+
+            sLog.outLog(LOG_TRADE, "Player %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                    GetPlayerName(),GetAccountId(),it->GetProto()->Name1,it->GetEntry(),it->GetCount(),m->COD,sender_name.c_str(),sender_accId);
 
             // check player existence
             if (sender || sender_accId)

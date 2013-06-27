@@ -414,7 +414,7 @@ DBDiffLog.LogTime = 10
 #                 "" - Empty name for disable
 #
 #    MailLogFile
-#        Log file of sending in game mails
+#        Log file of sending in game mails (don't store informations about items/money - for this use TradeLogFile !)
 #        Default: "sendmail.log"
 #                 "" - Empty name for disable
 #
@@ -454,7 +454,12 @@ DBDiffLog.LogTime = 10
 #                 "" - Empty name for disable
 #
 #    ExpLogFile
-#        Log file for third party parsers
+#        Log file for exp gain
+#        Default: "exp.log"
+#                 "" - Empty name for disable
+#
+#    TradeLogFile
+#        Log file for trading items/money via trade/mail option
 #        Default: "exp.log"
 #                 "" - Empty name for disable
 #
@@ -735,7 +740,7 @@ ExpLogFile = "exp.log"
 #        Default: 1
 #
 #    DailyQuest.MaxPerDay
-#        The maximum number of daily quests, that can be completed in one day. 
+#        The maximum number of daily quests, that can be completed in one day.
 #        However, client will be show error messages, as if standart 25 daily quest would be available.
 #        Default: 25
 #
@@ -934,7 +939,7 @@ RealmBans = 0
 #
 #    FFA.DisallowGroup
 #        Disallow players to create groups while in FFA area
-#        Default: 0 
+#        Default: 0
 #
 ###################################################################################################################
 

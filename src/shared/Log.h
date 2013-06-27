@@ -75,6 +75,7 @@ enum LogNames
     LOG_CRASH           = 15,
     LOG_DB_DIFF         = 16,
     LOG_EXP             = 17,
+    LOG_TRADE           = 18,
 
     LOG_MAX_FILES
 };
