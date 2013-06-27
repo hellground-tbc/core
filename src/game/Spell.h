@@ -330,6 +330,7 @@ class Spell
         void EffectSummonCritter(uint32 i);
         void EffectKnockBack(uint32 i);
         void EffectPlayerPull(uint32 i);
+        void EffectSuspendGravity(uint32 i);
         void EffectDispelMechanic(uint32 i);
         void EffectSummonDeadPet(uint32 i);
         void EffectDestroyAllTotems(uint32 i);

@@ -208,7 +208,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectTriggerSpellWithValue,                    //142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
     &Spell::EffectApplyAreaAura,                            //143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
     &Spell::EffectKnockBack,                                //144 SPELL_EFFECT_KNOCK_BACK_2             Spectral Blast
-    &Spell::EffectPlayerPull,                               //145 SPELL_EFFECT_145                      Black Hole Effect
+    &Spell::EffectSuspendGravity,                           //145 SPELL_EFFECT_SUSPEND_GRAVITY          Black Hole Effect
     &Spell::EffectUnused,                                   //146 SPELL_EFFECT_146                      unused
     &Spell::EffectQuestFail,                                //147 SPELL_EFFECT_QUEST_FAIL               quest fail
     &Spell::EffectUnused,                                   //148 SPELL_EFFECT_148                      unused
@@ -1649,10 +1649,7 @@ void Spell::EffectDummy(uint32 i)
                 case 44997:                                 // Converting Sentry remove corpse
                 {
                     if(unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
-                    {
-                        ((Creature*)unitTarget)->RemoveCorpse();
-                        unitTarget->DestroyForNearbyPlayers();
-                    }
+                        unitTarget->ToCreature()->DisappearAndDie();
                     return;
                 }
                 case 45030:                                 // Impale Emissary
@@ -7428,6 +7425,15 @@ void Spell::EffectPlayerPull(uint32 i)
         dist = damage;
 
     unitTarget->KnockBackFrom(m_caster, -dist, GetSpellInfo()->EffectMiscValue[i]/10.0);
+}
+
+void Spell::EffectSuspendGravity(uint32 i)
+{
+    if (!unitTarget)
+        return;
+
+    float dist = unitTarget->GetDistance2d(m_caster);
+    unitTarget->KnockBackFrom(m_caster, dist-GetSpellInfo()->EffectMiscValue[i]/10.0, dist+GetSpellInfo()->EffectMiscValue[i]/50.0);
 }
 
 void Spell::EffectDispelMechanic(uint32 i)

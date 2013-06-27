@@ -2205,14 +2205,6 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 case 45248:     // Shadow Blades
                     unitList.remove_if([=](Unit* unit)->bool {return abs(m_caster->GetPositionZ()-unit->GetPositionZ()) > 5.0;});
                     break;
-                case 46230:     // Black Hole Effect
-                    unitList.remove_if([](Unit* unit)->bool
-                    {
-                        if(Aura* aur = unit->GetAura(46230, 2))
-                            return aur->GetAuraDuration() > 2500;
-                        else return false;
-                    });
-                    break;
                 default:
                     break;
             }
