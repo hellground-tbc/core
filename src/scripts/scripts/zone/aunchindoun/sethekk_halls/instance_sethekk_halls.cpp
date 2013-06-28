@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Instance - Sethekk Halls
-SD%Complete: 50
+SD%Complete: 98
 SDComment: Instance Data for Sethekk Halls instance
 SDCategory: Auchindoun, Sethekk Halls
 EndScriptData */
@@ -25,7 +25,7 @@ EndScriptData */
 #include "def_sethekk_halls.h"
 #include "escort_ai.h"
 
-#define ENCOUNTERS          3
+#define ENCOUNTERS          4
 
 #define IKISS_DOOR          177203
 #define NPC_LAKKA           18956
@@ -67,6 +67,9 @@ struct instance_sethekk_halls : public ScriptedInstance
 
     void OnPlayerEnter(Player* player)
     {
+        if (player->isGameMaster())
+            return;
+
         if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE && Lakka == LAKKA_NOT_SUMMONED && !player->GetMap()->IsHeroic())
            Lakka = LAKKA_WAIT_FOR_SUMMON;
     }
@@ -97,6 +100,25 @@ struct instance_sethekk_halls : public ScriptedInstance
         }
     }
 
+    void QuestCredit()
+    {
+        Map::PlayerList const& players = instance->GetPlayers();
+
+        if (!players.isEmpty())
+        {
+            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            {
+                if (Player* player = itr->getSource())
+                {
+                    if (player->GetQuestStatus(QUEST_BROTHER) == QUEST_STATUS_INCOMPLETE)
+                        player->KilledMonster(NPC_LAKKA, NULL);
+                }
+            }
+        }
+        else
+            debug_log("TSCR: Instance Sethek Halls: PlayerList is empty!");
+    }
+
     void SetData(uint32 type, uint32 data)
     {
         switch(type)
@@ -115,6 +137,12 @@ struct instance_sethekk_halls : public ScriptedInstance
                 if(Encounter[2] != DONE)
                     Encounter[2] = data;
                 break;
+            case DATA_LAKKA:
+                if (data == DONE)
+                    QuestCredit();
+                else
+                    Encounter[3] = data;
+                break;
         }
 
         if (data == DONE)
@@ -128,7 +156,7 @@ struct instance_sethekk_halls : public ScriptedInstance
             case DATA_IKISSEVENT:           return Encounter[0];
             case DATA_ANZUEVENT:            return Encounter[1];
             case DATA_DARKWEAVEREVENT:      return Encounter[2];
-                        
+            case DATA_LAKKA:                return Encounter[3];               
         }
         return false;
     }
@@ -140,7 +168,8 @@ struct instance_sethekk_halls : public ScriptedInstance
         std::ostringstream stream;
         stream << Encounter[0] << " "
                 << Encounter[1] << " "
-                << Encounter[2];
+                << Encounter[2] << " "
+                << Encounter[3];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -158,7 +187,7 @@ struct instance_sethekk_halls : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         std::istringstream loadStream(in);
-        loadStream >> Encounter[0] >> Encounter[1] >> Encounter[2];
+        loadStream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3];
 
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if (Encounter[i] == IN_PROGRESS)
@@ -225,7 +254,11 @@ bool GossipSelect_npc_lakka(Player* player, Creature* creature, uint32 sender, u
         player->CLOSE_GOSSIP_MENU();
         if (GameObject* cage = FindGameObject(GO_SETHEKK_CAGE, INTERACTION_DISTANCE, creature))
             cage->UseDoorOrButton(5);
-        player->KilledMonster(NPC_LAKKA, creature->GetGUID());
+
+        ScriptedInstance* Instance = (creature->GetInstanceData());
+        if (Instance)
+            Instance->SetData(DATA_LAKKA, DONE);
+        
         DoScriptText(SAY_FREE, creature, player);
         ((npc_lakkaAI*)creature->AI())->Start(false, false, player->GetGUID());
     }
