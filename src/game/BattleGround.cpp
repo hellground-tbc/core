@@ -261,7 +261,10 @@ void BattleGround::Update(uint32 diff)
         {
             m_PrematureCountDown = true;
             m_PrematureCountDownTimer = sBattleGroundMgr.GetPrematureFinishTime();
-            SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
+            if( sBattleGroundMgr.IsPrematureFinishTimerEnabled())
+                PrepareMessageToAll("Not enough players. This battleground will close in %u min.",m_PrematureCountDownTimer / 60000);
+            else
+                SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
         }
         else if (m_PrematureCountDownTimer < diff)
         {
@@ -274,7 +277,10 @@ void BattleGround::Update(uint32 diff)
             uint32 newtime = m_PrematureCountDownTimer - diff;
             // announce every minute
             if (m_PrematureCountDownTimer != sBattleGroundMgr.GetPrematureFinishTime() && newtime / 60000 != m_PrematureCountDownTimer / 60000)
-                SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
+                if( sBattleGroundMgr.IsPrematureFinishTimerEnabled())
+                    PrepareMessageToAll("Not enough players. This battleground will close in %u min.",m_PrematureCountDownTimer / 60000);
+                else
+                    SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
             m_PrematureCountDownTimer = newtime;
         }
     }
@@ -1573,6 +1579,16 @@ void BattleGround::SendMessageToAll(char const* text)
     WorldPacket data;
     ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
     SendPacketToAll(&data);
+}
+
+void BattleGround::PrepareMessageToAll(char const *format, ...)
+{
+    va_list ap;
+    char str [1024];
+    va_start(ap, format);
+    vsnprintf(str,1024,format, ap);
+    va_end(ap);
+    SendMessageToAll(str);
 }
 
 void BattleGround::SendMessageToAll(int32 entry)

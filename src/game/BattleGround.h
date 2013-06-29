@@ -411,6 +411,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
         void EndBattleGround(uint32 winner);
         void BlockMovement(Player *plr);
 
+        void PrepareMessageToAll(char const *format,...);
         void SendMessageToAll(char const* text);
         void SendMessageToAll(int32 entry);
         void SendObjectiveComplete(uint32 id, uint32 TeamID, float x, float y);
