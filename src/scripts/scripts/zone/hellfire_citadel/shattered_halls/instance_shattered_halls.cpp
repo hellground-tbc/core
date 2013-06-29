@@ -238,7 +238,8 @@ struct instance_shattered_halls : public ScriptedInstance
                     HandleGameObject(nethekurseDoor1GUID, true);
                     HandleGameObject(nethekurseDoor2GUID, true);
                 }
-                else
+
+                if (Encounter[0] != DONE)
                     Encounter[0] = data;
                 break;
             case TYPE_WARBRINGER:
