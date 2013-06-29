@@ -2798,6 +2798,8 @@ void SpellMgr::LoadSpellCustomAttr()
                      spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                  else if (spellInfo->Id == 15852)
                      spellInfo->Dispel = DISPEL_NONE;
+                 else if (spellInfo->Id == 46337) // Crab disguise
+                     spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CAST;
                  break;
             }
             case SPELLFAMILY_SHAMAN:

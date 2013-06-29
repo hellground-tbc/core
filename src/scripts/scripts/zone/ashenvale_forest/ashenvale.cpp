@@ -578,47 +578,50 @@ struct npc_Heretic_EmisaryAI : public ScriptedAI
     {
         if (!me->getVictim())
         {
-            if (TalkTimer < diff && EventStarted)
+            if (EventStarted)
             {
-                Player * Player_;
-                Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
-
-                if (Briatha && Briatha->isAlive()) 
+                if (TalkTimer < diff)
                 {
-                    switch(Phase)
+                    Player * Player_;
+                    Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
+
+                    if (Briatha && Briatha->isAlive()) 
                     {
-                    case 0:
-                        Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 1:
-                        me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 2:
-                        Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 3:
-                        me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 4:
-                        Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
-                        Phase = 0;
-                        if(Player_ = (Player*)(me->GetUnit(player)))
-                            if(Player_->HasAura(46337, 0))
-                                Player_->AreaExploredOrEventHappens(11891);
-                        EventStarted = false;
-                        break;
+                        switch(Phase)
+                        {
+                        case 0:
+                            Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 1:
+                            me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 2:
+                            Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 3:
+                            me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 4:
+                            Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
+                            Phase = 0;
+                            if(Player_ = (Player*)(me->GetUnit(player)))
+                                if(Player_->HasAura(46337, 0))
+                                    Player_->AreaExploredOrEventHappens(11891);
+                            EventStarted = false;
+                            break;
+                        }
+                        TalkTimer = 5000;
                     }
-                    TalkTimer = 5000;
+                    else
+                        EventStarted = false;
                 }
-                else
-                    EventStarted = false;
-            }
             else
                 TalkTimer -= diff;
+            }
 
             return;
         }
