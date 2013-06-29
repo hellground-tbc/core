@@ -1193,12 +1193,15 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recv_data)
                 uint32 curtalent_maxrank = 0;
                 for (uint32 k = 5; k > 0; --k)
                 {
-                    if (talentInfo->RankID[k-1] && SpellMgr::GetHighestSpellRankForPlayer(talentInfo->RankID[k-1], plr))
+                    if (talentInfo->RankID[k-1] && plr->HasSpell(talentInfo->RankID[k-1]))
                     {
                         curtalent_maxrank = k;
                         break;
                     }
                 }
+                // now check for 1 rank talents but multiple spell ranks (like faerie fire feral)
+                if (!curtalent_maxrank && SpellMgr::GetHighestSpellRankForPlayer(talentInfo->RankID[0], plr))
+                    curtalent_maxrank = 1;
 
                 // not learned talent
                 if (!curtalent_maxrank)
