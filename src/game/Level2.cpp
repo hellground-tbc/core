@@ -1147,7 +1147,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     {
         lowguid = pCreature->GetDBTableGUIDLow();
     }
-    
+
     float x = m_session->GetPlayer()->GetPositionX();
     float y = m_session->GetPlayer()->GetPositionY();
     float z = m_session->GetPlayer()->GetPositionZ();
@@ -1729,7 +1729,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
         if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD) == 1)
         {
 
-            sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
+            sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, 0, player->GetName(), kicker.c_str(), reason.c_str());
         }
         else
         {
@@ -1776,7 +1776,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD) == 1)
             {
 
-                sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, name.c_str(), kicker.c_str(), reason.c_str());
+                sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, 0, name.c_str(), kicker.c_str(), reason.c_str());
             }
             else
             {

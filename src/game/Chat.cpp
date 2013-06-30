@@ -47,7 +47,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false,  NULL,                                           "", NULL }
     };
 
-    static CharCommand accountAnnounceCommandTable[] =
+    static ChatCommand accountAnnounceCommandTable[] =
     {
         { "battleground",   SEC_PLAYER,         false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
         { "bg",             SEC_PLAYER,         false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },

@@ -4773,16 +4773,16 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     if (casename=="spells")
     {
         atLogin = AT_LOGIN_RESET_SPELLS;
-        sWorld.SendWorldText(LANG_RESETALL_SPELLS);
+        sWorld.SendWorldText(LANG_RESETALL_SPELLS, 0);
     }
     else if (casename=="talents")
     {
         atLogin = AT_LOGIN_RESET_TALENTS;
-        sWorld.SendWorldText(LANG_RESETALL_TALENTS);
+        sWorld.SendWorldText(LANG_RESETALL_TALENTS, 0);
     }
     else
     {
-        PSendSysMessage(LANG_RESETALL_UNKNOWN_CASE,args);
+        PSendSysMessage(LANG_RESETALL_UNKNOWN_CASE, 0, args);
         SetSentErrorMessage(true);
         return false;
     }
@@ -4869,7 +4869,7 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
 
     time = urand(1, roll);
 
-    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time, exitmsg);
+    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, 0, roll, time, exitmsg);
 
     sWorld.ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE, exitmsg);
     return true;
