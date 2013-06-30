@@ -52,7 +52,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "battleground",   SEC_PLAYER,         false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
         { "bg",             SEC_PLAYER,         false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
         { "broadcast",      SEC_PLAYER,         false, &ChatHandler::HandleAccountAnnounceBroadcastCommand, "", NULL },
-        { "guild",          SEC_PLAYER,         false, &ChatHandler::HandleAccountGuildAnnToggleCommand,    "", NULL }
+        { "guild",          SEC_PLAYER,         false, &ChatHandler::HandleAccountGuildAnnToggleCommand,    "", NULL },
+        { NULL,             0,                  false,  NULL,                                               "", NULL }
     };
 
     static ChatCommand accountCommandTable[] =
