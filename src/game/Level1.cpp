@@ -203,7 +203,7 @@ bool ChatHandler::HandleNameAnnounceCommand(const char* args)
         return false;
     //char str[1024];
     //sprintf(str, GetTrinityString(LANG_ANNOUNCE_COLOR), m_session->GetPlayer()->GetName(), args);
-    sWorld.SendWorldText(LANG_ANNOUNCE_COLOR, m_session->GetPlayer()->GetName(), args);
+    sWorld.SendWorldText(LANG_ANNOUNCE_COLOR, 0, m_session->GetPlayer()->GetName(), args);
     return true;
 }
 
@@ -223,7 +223,7 @@ bool ChatHandler::HandleAnnounceCommand(const char* args)
     if (!*args)
         return false;
 
-    sWorld.SendWorldText(LANG_SYSTEMMESSAGE,args);
+    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, 0, args);
     return true;
 }
 
@@ -666,7 +666,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     uint64 tarGUID = sObjectMgr.GetPlayerGUIDByName(targm.c_str());
     uint64 accid = sObjectMgr.GetPlayerAccountIdByGUID(tarGUID);
     uint32 targetGmLevel = AccountMgr::GetSecurity(accid, realmID);
-    
+
     if (!tarGUID || targetGmLevel < SEC_MODERATOR)
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);

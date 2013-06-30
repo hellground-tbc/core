@@ -1801,7 +1801,7 @@ void World::Update(uint32 diff)
             std::advance(itr, rand() % m_Autobroadcasts.size());
             msg = *itr;
 
-            sWorld.SendWorldText(LANG_AUTO_ANN, msg.c_str());
+            sWorld.SendWorldText(LANG_AUTO_ANN, ACC_DISABLED_BROADCAST, msg.c_str());
         }
 
         diffRecorder.RecordTimeFor("Send Autobroadcast");
@@ -2044,13 +2044,13 @@ void World::SendGlobalGMMessage(WorldPacket *packet, WorldSession *self, uint32 
 }
 
 /// Send a System Message to all players (except self if mentioned)
-void World::SendWorldText(int32 string_id, ...)
+void World::SendWorldText(int32 string_id, uint32 preventFlags, ...)
 {
     std::vector<std::vector<WorldPacket*> > data_cache;     // 0 = default, i => i-1 locale index
 
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
-        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
+        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() || itr->second->IsAccountFlagged(AccountFlags(preventFlags)))
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();

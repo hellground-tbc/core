@@ -684,7 +684,7 @@ class HELLGROUND_EXPORT World
         void QueueGuildAnnounce(uint32 guildid, uint32 team, std::string &msg);
         void SendGuildAnnounce(uint32 team, ...);
 
-        void SendWorldText(int32 string_id, ...);
+        void SendWorldText(int32 string_id, uint32 preventFlags, ...);
         void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 preventFlags, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);

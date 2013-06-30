@@ -1111,7 +1111,7 @@ void BattleGroundMgr::Update(uint32 diff)
             {
                 if (!m_ApAnnounce)
                 {
-                    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, "Distributing arena points to players will be performed in 2 minutes.");
+                    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, 0, "Distributing arena points to players will be performed in 2 minutes.");
                     m_AutoDistributionTimeChecker = 120000;
                     m_ApAnnounce = true;
                     return;
