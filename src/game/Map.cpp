@@ -1513,6 +1513,10 @@ void Map::ScriptsProcess()
                 }
 
                 source->SetFlag(step.script->datalong, step.script->datalong2);
+
+                if (source->GetTypeId() == TYPEID_UNIT && step.script->datalong == UNIT_NPC_FLAGS)
+                    ((Creature *)source)->ResetGossipOptions();
+
                 break;
             case SCRIPT_COMMAND_FLAG_REMOVE:
                 if (!source)
@@ -1528,6 +1532,10 @@ void Map::ScriptsProcess()
                 }
 
                 source->RemoveFlag(step.script->datalong, step.script->datalong2);
+
+                if (source->GetTypeId() == TYPEID_UNIT && step.script->datalong == UNIT_NPC_FLAGS)
+                    ((Creature *)source)->ResetGossipOptions();
+
                 break;
 
             case SCRIPT_COMMAND_TELEPORT_TO:
