@@ -70,6 +70,7 @@ enum AccountFlags
     ACC_BLIZZLIKE_RATES     = 0x0008,   // enables fully blizzlike rates for account. ex: XP, QXP etc
     ACC_HIDE_BONES          = 0x0010,   // client won't show bones created from corpses
     ACC_DISABLED_BGANN      = 0x0020,   // BG start announce will be disabled for this account
+    ACC_DISABLED_BROADCAST  = 0x0040,   // Broadcast accounces will be disabled for this account
 };
 
 enum PartyOperation

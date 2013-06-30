@@ -148,6 +148,22 @@ bool ChatHandler::HandleAccountBattleGroundAnnCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleAccountAnnounceBroadcastCommand(const char* args)
+{
+    if (m_session->IsAccountFlagged(ACC_DISABLED_BROADCAST))
+    {
+        m_session->RemoveAccountFlag(ACC_DISABLED_BROADCAST);
+        PSendSysMessage("AutoBroadcast announces have been enabled for this account.");
+    }
+    else
+    {
+        m_session->AddAccountFlag(ACC_DISABLED_BROADCAST);
+        PSendSysMessage("AutoBroadcast announces have been disabled for this account.");
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
     char* cmd = strtok((char*)args, " ");
@@ -387,7 +403,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 bool ChatHandler::HandleServerPVPCommand(const char* /*args*/)
 {
     Player *player=m_session->GetPlayer();
-    
+
     if (!sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
     {
         PSendSysMessage("Battleground queue info is disabled");
