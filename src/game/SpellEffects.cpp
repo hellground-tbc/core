@@ -1806,6 +1806,22 @@ void Spell::EffectDummy(uint32 i)
         case SPELLFAMILY_MAGE:
             switch (GetSpellInfo()->Id)
             {
+                case 30610: // Wrath of the Titans
+                {
+                    
+                    if (!m_caster->getVictim())
+                        return;
+
+                    switch (rand()%5)
+                    {
+                        case 0: m_caster->CastSpell(m_caster->getVictim(), 30605, true); break;  // Blast of Aman'Thul: Arcane
+                        case 1: m_caster->CastSpell(m_caster->getVictim(), 30606, true); break;  // Bolt of Eonar: Nature
+                        case 2: m_caster->CastSpell(m_caster->getVictim(), 30607, true); break;  // Flame of Khaz'goroth: Fire
+                        case 3: m_caster->CastSpell(m_caster->getVictim(), 30608, true); break;  // Spite of Sargeras: Shadow
+                        case 4: m_caster->CastSpell(m_caster->getVictim(), 30609, true); break;  // Chill of Norgannon: Frost
+                    }
+                    return;
+                }
                 case 11958:                                 // Cold Snap
                 {
                     if (m_caster->GetTypeId()!=TYPEID_PLAYER)
