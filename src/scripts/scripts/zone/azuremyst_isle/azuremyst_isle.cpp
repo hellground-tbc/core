@@ -77,18 +77,18 @@ struct npc_draenei_survivorAI : public ScriptedAI
 
         CanSayHelp = true;
 
-        m_creature->CastSpell(m_creature, SPELL_IRRIDATION, true);
-        m_creature->SetHealth(int(m_creature->GetMaxHealth()*.1));
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SLEEP);
+        me->CastSpell(me, SPELL_IRRIDATION, true);
+        me->SetHealth(int(me->GetMaxHealth()*.1));
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_SLEEP);
     }
 
     void EnterCombat(Unit *who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (CanSayHelp && who->GetTypeId() == TYPEID_PLAYER && m_creature->IsFriendlyTo(who) && m_creature->IsWithinDistInMap(who, 25.0f))
+        if (CanSayHelp && who->GetTypeId() == TYPEID_PLAYER && me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 25.0f))
         {
-            DoScriptText(RAND(HELP1, HELP2, HELP3, HELP4), m_creature);
+            DoScriptText(RAND(HELP1, HELP2, HELP3, HELP4), me);
 
             SayHelpTimer = 20000;
             CanSayHelp = false;
@@ -99,9 +99,9 @@ struct npc_draenei_survivorAI : public ScriptedAI
     {
         if(Spell->Id == 28880)
         {
-            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-            m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
-            m_creature->CastSpell(m_creature, SPELL_STUNNED, true);
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+            me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+            me->CastSpell(me, SPELL_STUNNED, true);
 
             pCaster = Caster->GetGUID();
 
@@ -115,20 +115,20 @@ struct npc_draenei_survivorAI : public ScriptedAI
         {
             if(SayThanksTimer <= diff)
             {
-                m_creature->RemoveAurasDueToSpell(SPELL_IRRIDATION);
+                me->RemoveAurasDueToSpell(SPELL_IRRIDATION);
 
-                if (Player *pPlayer = (Player*)Unit::GetUnit(*m_creature,pCaster))
+                if (Player *pPlayer = (Player*)Unit::GetUnit(*me,pCaster))
                 {
                     if (pPlayer->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    DoScriptText(RAND(SAY_HEAL1, SAY_HEAL2, SAY_HEAL3, SAY_HEAL4), m_creature, pPlayer);
+                    DoScriptText(RAND(SAY_HEAL1, SAY_HEAL2, SAY_HEAL3, SAY_HEAL4), me, pPlayer);
 
-                    pPlayer->TalkedToCreature(m_creature->GetEntry(),m_creature->GetGUID());
+                    pPlayer->TalkedToCreature(me->GetEntry(),me->GetGUID());
                 }
 
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MovePoint(0, -4115.053711f, -13754.831055f, 73.508949f);
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MovePoint(0, -4115.053711f, -13754.831055f, 73.508949f);
                 RunAwayTimer = 10000;
                 SayThanksTimer = 0;
 
@@ -143,14 +143,14 @@ struct npc_draenei_survivorAI : public ScriptedAI
         {
             if(RunAwayTimer <= diff)
             {
-                m_creature->RemoveAllAuras();
-                m_creature->GetMotionMaster()->Clear();
-                m_creature->GetMotionMaster()->MoveIdle();
-                m_creature->setDeathState(JUST_DIED);
-                m_creature->SetHealth(0);
-                m_creature->CombatStop();
-                m_creature->DeleteThreatList();
-                m_creature->RemoveCorpse();
+                me->RemoveAllAuras();
+                me->GetMotionMaster()->Clear();
+                me->GetMotionMaster()->MoveIdle();
+                me->setDeathState(JUST_DIED);
+                me->SetHealth(0);
+                me->CombatStop();
+                me->DeleteThreatList();
+                me->RemoveCorpse();
             }
             else
                 RunAwayTimer -= diff;
@@ -195,7 +195,7 @@ struct npc_sethir_the_ancientAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(EMOTE_SOUND_DIE, m_creature);
+        DoScriptText(EMOTE_SOUND_DIE, me);
     }
 
     void SummonedCreatureDespawn(Creature*)
@@ -205,13 +205,13 @@ struct npc_sethir_the_ancientAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (!m_creature->isInCombat() && !pause_say && m_creature->IsWithinDistInMap(who, 30) && m_creature->IsHostileTo(who) && who->HasAuraType(SPELL_AURA_MOD_STEALTH))
+        if (!me->isInCombat() && !pause_say && me->IsWithinDistInMap(who, 30) && me->IsHostileTo(who) && who->HasAuraType(SPELL_AURA_MOD_STEALTH))
         {
             me->Say("I know you are there, rogue. Leave my home or join the others at the bottom of the World Tree!", LANG_UNIVERSAL, 0);
             pause_say = true;
             temp = 60000;
         }
-        //if (!m_creature->isInCombat() && m_creature->IsWithinDistInMap(who, 30) && m_creature->IsHostileTo(who)) AttackStart(who);
+        //if (!me->isInCombat() && me->IsWithinDistInMap(who, 30) && me->IsHostileTo(who)) AttackStart(who);
         ScriptedAI::MoveInLineOfSight(who);
     }
 
@@ -237,8 +237,8 @@ struct npc_sethir_the_ancientAI : public ScriptedAI
 
                 for (int i=1; i<=6; i++)
                 {
-                    Creature * tmpC = m_creature->SummonCreature(6911, pos.x, pos.y, pos.z, pos.o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 3000);
-                    tmpC->AI()->AttackStart(m_creature->getVictim());
+                    Creature * tmpC = me->SummonCreature(6911, pos.x, pos.y, pos.z, pos.o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 3000);
+                    tmpC->AI()->AttackStart(me->getVictim());
                 }
 
                 Timer = 0;
@@ -279,19 +279,19 @@ struct npc_engineer_spark_overgrindAI : public ScriptedAI
     {
         Dynamite_Timer = 8000;
         Emote_Timer = 120000 + rand()%30000;
-        m_creature->setFaction(875);
+        me->setFaction(875);
     }
 
     void EnterCombat(Unit *who) { }
 
     void UpdateAI(const uint32 diff)
     {
-        if( !m_creature->isInCombat() )
+        if( !me->isInCombat() )
         {
             if (Emote_Timer < diff)
             {
-                DoScriptText(SAY_TEXT, m_creature);
-                DoScriptText(SAY_EMOTE, m_creature);
+                DoScriptText(SAY_TEXT, me);
+                DoScriptText(SAY_EMOTE, me);
                 Emote_Timer = 120000 + rand()%30000;
             }
             else
@@ -303,7 +303,7 @@ struct npc_engineer_spark_overgrindAI : public ScriptedAI
 
         if (Dynamite_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_DYNAMITE);
+            DoCast(me->getVictim(), SPELL_DYNAMITE);
             Dynamite_Timer = 8000;
         }
         else
@@ -349,10 +349,10 @@ struct npc_injured_draeneiAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
-        m_creature->SetHealth(int(m_creature->GetMaxHealth()*.15));
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+        me->SetHealth(int(me->GetMaxHealth()*.15));
 
-        m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, RAND(PLAYER_STATE_SIT, PLAYER_STATE_SLEEP));
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, RAND(PLAYER_STATE_SIT, PLAYER_STATE_SLEEP));
     }
 
     void EnterCombat(Unit *who) {}
@@ -403,25 +403,25 @@ struct npc_magwinAI : public npc_escortAI
         switch(i)
         {
         case 0:
-            DoScriptText(SAY_START, m_creature, pPlayer);
+            DoScriptText(SAY_START, me, pPlayer);
             break;
         case 17:
-            DoScriptText(SAY_PROGRESS, m_creature, pPlayer);
+            DoScriptText(SAY_PROGRESS, me, pPlayer);
             break;
         case 28:
-            DoScriptText(SAY_END1, m_creature, pPlayer);
+            DoScriptText(SAY_END1, me, pPlayer);
             break;
         case 29:
-            DoScriptText(EMOTE_HUG, m_creature, pPlayer);
-            DoScriptText(SAY_END2, m_creature, pPlayer);
-            pPlayer->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP,m_creature);
+            DoScriptText(EMOTE_HUG, me, pPlayer);
+            DoScriptText(SAY_END2, me, pPlayer);
+            pPlayer->GroupEventHappens(QUEST_A_CRY_FOR_SAY_HELP,me);
             break;
         }
     }
 
     void EnterCombat(Unit* who)
     {
-        DoScriptText(SAY_AGGRO, m_creature, who);
+        DoScriptText(SAY_AGGRO, me, who);
     }
 
     void Reset() { }
@@ -554,7 +554,7 @@ struct npc_geezleAI : public ScriptedAI
     {
         Step = 1;
         EventStarted = true;
-        Creature* Spark = m_creature->SummonCreature(MOB_SPARK, SparkPos[0], SparkPos[1], SparkPos[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
+        Creature* Spark = me->SummonCreature(MOB_SPARK, SparkPos[0], SparkPos[1], SparkPos[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1000);
         if(Spark)
         {
             SparkGUID = Spark->GetGUID();
@@ -562,13 +562,13 @@ struct npc_geezleAI : public ScriptedAI
             Spark->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             Spark->GetMotionMaster()->MovePoint(0, -5080.70, -11253.61, 0.56);
         }
-        m_creature->GetMotionMaster()->MovePoint(0, -5092.26, -11252, 0.71);
+        me->GetMotionMaster()->MovePoint(0, -5092.26, -11252, 0.71);
         SayTimer = 23000;
     }
 
     uint32 NextStep(uint32 Step)
     {
-        Unit* Spark = Unit::GetUnit((*m_creature), SparkGUID);
+        Unit* Spark = Unit::GetUnit((*me), SparkGUID);
 
         switch(Step)
         {
@@ -578,21 +578,21 @@ struct npc_geezleAI : public ScriptedAI
             DoScriptText(EMOTE_SPARK, Spark);
             return 1000;
         case 2:
-            DoScriptText(GEEZLE_SAY_1, m_creature, Spark);
+            DoScriptText(GEEZLE_SAY_1, me, Spark);
             if(Spark)
             {
-                Spark->SetInFront(m_creature);
-                m_creature->SetInFront(Spark);
+                Spark->SetInFront(me);
+                me->SetInFront(Spark);
             }
             return 5000;
         case 3: DoScriptText(SPARK_SAY_2, Spark); return 7000;
         case 4: DoScriptText(SPARK_SAY_3, Spark); return 8000;
-        case 5: DoScriptText(GEEZLE_SAY_4, m_creature, Spark); return 8000;
+        case 5: DoScriptText(GEEZLE_SAY_4, me, Spark); return 8000;
         case 6: DoScriptText(SPARK_SAY_5, Spark); return 9000;
         case 7: DoScriptText(SPARK_SAY_6, Spark); return 8000;
-        case 8: DoScriptText(GEEZLE_SAY_7, m_creature, Spark); return 2000;
+        case 8: DoScriptText(GEEZLE_SAY_7, me, Spark); return 2000;
         case 9:
-            m_creature->GetMotionMaster()->MoveTargetedHome();
+            me->GetMotionMaster()->MoveTargetedHome();
             if(Spark)
                 Spark->GetMotionMaster()->MovePoint(0, -5030.95, -11291.99, 7.97);
             return 20000;
@@ -600,7 +600,7 @@ struct npc_geezleAI : public ScriptedAI
             if(Spark)
                 Spark->DealDamage(Spark,Spark->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             //DespawnNagaFlag(false);
-            m_creature->SetVisibility(VISIBILITY_OFF);
+            me->SetVisibility(VISIBILITY_OFF);
         default: return 99999999;
         }
     }
@@ -686,9 +686,9 @@ struct mob_nestlewood_owlkinAI : public ScriptedAI
     {
         if(ChannelTimer < diff && !Channeled && Hitted)
         {
-            m_creature->DealDamage(m_creature, m_creature->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-            m_creature->RemoveCorpse();
-            m_creature->SummonCreature(INOCULATED_OWLKIN, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
+            me->DealDamage(me, me->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            me->RemoveCorpse();
+            me->SummonCreature(INOCULATED_OWLKIN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN, 180000);
             Channeled = true;
         }
         else
@@ -721,7 +721,7 @@ struct mob_siltfin_murlocAI : public ScriptedAI
         {
             if(((Player*)player)->GetQuestStatus(9595) == QUEST_STATUS_INCOMPLETE)
             {
-                 Unit* summon = m_creature->SummonCreature(17612, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                 Unit* summon = me->SummonCreature(17612, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
                  player->CastSpell(summon, 30790, false);
             }
         }
@@ -865,6 +865,92 @@ bool go_bristlelimb_cage(Player* pPlayer, GameObject* pGo)
     return true;
 }
 
+/*######
+## Quest: Matis the Cruel
+######*/
+
+#define NPC_MATIS    17664
+#define SAY_1        -1900255
+#define SAY_2        -1900256
+
+struct npc_trackerAI : public ScriptedAI
+{
+    npc_trackerAI(Creature* creature) : ScriptedAI(creature) {}
+
+    TimeTrackerSmall CheckTimer;
+
+    void Reset()
+    {
+        CheckTimer.Reset(2000);
+        DoScriptText(SAY_1, me);
+        me->setFaction(1700);
+        if (Creature* Matis = GetClosestCreatureWithEntry(me, NPC_MATIS, 35.0f))
+            me->AI()->AttackStart(Matis);
+    }
+
+    void Credit()
+    { 
+        Map* map = me->GetMap();
+        Map::PlayerList const &PlayerList = map->GetPlayers();
+
+        for (Map::PlayerList::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+        {
+            if (Player* player = itr->getSource())
+            {
+                if (me->IsWithinDistInMap(player, 35.0f) && (player->GetQuestStatus(9711) == QUEST_STATUS_INCOMPLETE))
+                    player->GroupEventHappens(9711, me);
+            }
+        }
+    }
+
+    void EnterEvadeMode()
+    {
+        me->DeleteThreatList();
+        me->CombatStop(true);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        CheckTimer.Update(diff);
+
+        if (CheckTimer.Passed())
+        {
+            if (Creature* Matis = GetClosestCreatureWithEntry(me, NPC_MATIS, 35.0f))
+            {
+                if ((Matis->GetHealth())*100 / Matis->GetMaxHealth() < 10)
+                {
+                    me->AI()->EnterEvadeMode();
+                    Matis->setFaction(35);
+                    Matis->CombatStop();
+                    Matis->DeleteThreatList();
+                    Matis->SetHealth(Matis->GetMaxHealth());
+                    DoScriptText(SAY_2, me);
+                    Credit();
+                    Matis->ForcedDespawn(30000);
+                    me->ForcedDespawn(35000);
+                }
+            }
+            else
+               {
+                   if (Creature* Matis = GetClosestCreatureWithEntry(me, NPC_MATIS, 55.0f, false))
+                       Matis->setFaction(1701);
+               }
+
+            CheckTimer.Reset(1000);
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_tracker(Creature* creature)
+{
+    return new npc_trackerAI (creature);
+}
+
 void AddSC_azuremyst_isle()
 {
     Script *newscript;
@@ -936,5 +1022,10 @@ void AddSC_azuremyst_isle()
     newscript = new Script;
     newscript->Name="go_bristlelimb_cage";
     newscript->pGOUse = &go_bristlelimb_cage;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_tracker";
+    newscript->GetAI = &GetAI_npc_tracker;
     newscript->RegisterSelf();
 }

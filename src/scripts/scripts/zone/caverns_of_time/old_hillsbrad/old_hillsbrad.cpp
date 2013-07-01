@@ -512,8 +512,9 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
                         DoScriptText(SAY_TH_EPOCH_KILL_TARETHA, me);
                         if (Creature* Epoch = me->GetMap()->GetCreature(EpochGUID))
                             DoScriptText(SAY_EPOCH_ENTER2, Epoch);
-                        if (Creature* Taretha = me->GetMap()->GetCreature(TarethaGUID))
+                        if (uint64 TarethaGUID = pInstance->GetData64(DATA_TARETHA))
                         {
+                            Creature* Taretha = (Unit::GetCreature(*me, TarethaGUID));
                             Taretha->CastSpell(Taretha, SPELL_SHADOW_SPIKE, true);
                             Taretha->SetStandState(UNIT_STAND_STATE_DEAD);
                         }
@@ -527,8 +528,9 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
                         SetEscortPaused(true);
                         break;
                     case 11:
-                        if (Creature* Taretha = me->GetMap()->GetCreature(TarethaGUID))
+                        if (uint64 TarethaGUID = pInstance->GetData64(DATA_TARETHA))
                         {
+                            Creature* Taretha = (Unit::GetCreature(*me, TarethaGUID));
                             if (Player* pPlayer = GetPlayerForEscort())
                                 CAST_AI(npc_escortAI, (Taretha->AI()))->Start(false, true, pPlayer->GetGUID());
                         }
@@ -603,15 +605,7 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 break;
             case NPC_WARDEN:
-                switch (urand(0,1))
-                {
-                    case 0:
-                        DoScriptText(SAY_AMBUSH_P1, summoned);
-                        break;
-                    case 1:
-                        DoScriptText(SAY_AMBUSH2_P1, summoned);
-                        break;
-                }
+                DoScriptText(RAND(SAY_AMBUSH_P1, SAY_AMBUSH2_P1), summoned);
                 summoned->AI()->AttackStart(me);
                 break;
             case NPC_SKARLOC_MOUNT:
