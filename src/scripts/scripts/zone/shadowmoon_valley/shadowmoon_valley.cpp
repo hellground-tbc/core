@@ -2481,7 +2481,6 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
     uint64 HeartGUID;
 
     bool landed;
-    bool flying;
     bool felfire;
 
     void Reset()
@@ -2498,44 +2497,22 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
         Fear_Timer = 20000;
         Deathcoil_Timer = 8000;
 
+        m_creature->GetMotionMaster()->Initialize();
+        m_creature->SetLevitate(true);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        //m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
+        //this waypoints are to far away from home and npc resets during travel
+        m_creature->GetMotionMaster()->MovePoint( -3247, 284, 187, 0);
+        landed = false;
+
         Unit* trigger = FindCreature(22096, 100, m_creature);
-        if(trigger)
-        {
-            if(trigger->isAlive())
-            {
-                m_creature->GetMotionMaster()->Initialize();
-                m_creature->SetLevitate(true);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
-                landed = false;
-                flying = false;
-            }
-            else
-            {
-                me->SetWalk(true);
-                m_creature->SetSpeed(MOVE_RUN, 1.4);
-                m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
-            }
-        }
-    }
-
-    void EnterCombat(Unit *who)
-    {
-        if(!flying)
-            return;
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if(!flying)
-            return;
+        if (trigger && !trigger->isAlive())
+            ((Creature*)trigger)->Respawn();
     }
 
     void AttackStart(Unit* who)
     {
-        if(!flying)
-            return;
-        else if (m_creature->Attack(who, true))
+        if (m_creature->Attack(who, true))
         {
             m_creature->AddThreat(who, 0.0f);
             m_creature->SetInCombatWith(who);
@@ -2557,9 +2534,10 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
                 m_creature->GetMotionMaster()->Initialize();
                 m_creature->SetLevitate(true);
                 m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
+                m_creature->SetHomePosition( -3247, 284, 138.1, 0);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoZoneInCombat(50);
                 landed = true;
-                flying = true;
                 felfire = false;
             }
             if(!m_creature->isInCombat() && landed && trigger && trigger->isAlive())
@@ -2580,47 +2558,48 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
         else
             Check_Timer -= diff;
 
-        if(flying && UpdateVictim())
+        if(!landed || !UpdateVictim())
+            return;
+
+        if(Shadowbolt_Timer < diff)
         {
-            if(Shadowbolt_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
-                Shadowbolt_Timer = 12000+rand()%6000;
-            }
-            else
-                Shadowbolt_Timer -= diff;
-
-            if(ShadowboltVoley_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
-                ShadowboltVoley_Timer = 25000+rand()%15000;
-            }
-            else
-                ShadowboltVoley_Timer -= diff;
-
-            if(Fear_Timer < diff)
-            {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true))
-                    AddSpellToCast(target, SPELL_FEAR);
-                Fear_Timer = 10000+rand()%20000;
-            }
-            else
-                Fear_Timer -= diff;
-
-            if(Deathcoil_Timer < diff)
-            {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictimGUID()))
-                    AddSpellToCast(target, SPELL_DEATHCOIL);
-                else
-                    AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);
-                Deathcoil_Timer = 15000+rand()%30000;
-            }
-            else
-                Deathcoil_Timer -= diff;
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
+            Shadowbolt_Timer = 12000+rand()%6000;
         }
+        else
+            Shadowbolt_Timer -= diff;
 
+        if(ShadowboltVoley_Timer < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
+            ShadowboltVoley_Timer = 25000+rand()%15000;
+        }
+        else
+            ShadowboltVoley_Timer -= diff;
+
+        if(Fear_Timer < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true))
+                AddSpellToCast(target, SPELL_FEAR);
+            Fear_Timer = 10000+rand()%20000;
+        }
+        else
+            Fear_Timer -= diff;
+
+        if(Deathcoil_Timer < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictimGUID()))
+                AddSpellToCast(target, SPELL_DEATHCOIL);
+            else
+                AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);
+            Deathcoil_Timer = 15000+rand()%30000;
+        }
+        else
+            Deathcoil_Timer -= diff;
+       
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
+
     }
 };
 
