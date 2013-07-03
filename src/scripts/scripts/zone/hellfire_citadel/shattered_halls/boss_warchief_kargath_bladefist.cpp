@@ -84,13 +84,13 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
         me->SetSpeed(MOVE_RUN,2);
         me->SetWalk(false);
 
-        summoned = 2;
+        summoned = 1;
         InBlade = false;
         Wait_Timer = 0;
 
         Charge_timer = 0;
         Blade_Dance_Timer = 30000;
-        Summon_Assistant_Timer = 15000;
+        Summon_Assistant_Timer = (HeroicMode ? 20000 : 30000);
         Assassins_Timer = 5000;
         resetcheck_timer = 5000;
 
@@ -284,8 +284,8 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
                 for (int i = 0; i < summoned; i++)
                     Summoned = me->SummonCreature(RAND(MOB_HEARTHEN_GUARD, MOB_SHARPSHOOTER_GUARD, MOB_REAVER_GUARD), AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
 
-                if (rand()%100 < 20) summoned++;
-                    Summon_Assistant_Timer = 15000 + (rand()%5000) ;
+                if (rand()%100 < 2.48) summoned++;
+                    Summon_Assistant_Timer = (HeroicMode ? 15000 : 20000);
             }
             else
                 Summon_Assistant_Timer -= diff;
