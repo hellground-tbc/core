@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -704,6 +704,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\magtheridons_lair\boss_magtheridon.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\magtheridons_lair\instance_magtheridons_lair.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\boss_omor_the_unscarred.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\instance_hellfire_ramparts.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\boss_vazruden_the_herald.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\boss_watchkeeper_gargolmar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\shattered_halls\boss_blood_guard_porung.cpp" />

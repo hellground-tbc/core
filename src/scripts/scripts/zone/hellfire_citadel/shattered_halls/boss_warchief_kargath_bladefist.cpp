@@ -284,7 +284,7 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
                 for (int i = 0; i < summoned; i++)
                     Summoned = me->SummonCreature(RAND(MOB_HEARTHEN_GUARD, MOB_SHARPSHOOTER_GUARD, MOB_REAVER_GUARD), AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
 
-                if (rand()%100 < 2.48)
+                if (rand()%100 < 2)
                     summoned++;
 
                 Summon_Assistant_Timer = (HeroicMode ? 15000 : 20000);

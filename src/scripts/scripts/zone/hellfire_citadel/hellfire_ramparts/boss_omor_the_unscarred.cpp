@@ -22,6 +22,7 @@ SDCategory: Hellfire Citadel, Hellfire Ramparts
 EndScriptData */
 
 #include "precompiled.h"
+#include "hellfire_ramparts.h"
 
 #define SAY_AGGRO_1                 -1543009
 #define SAY_AGGRO_2                 -1543010
@@ -45,7 +46,10 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
 {
     boss_omor_the_unscarredAI(Creature *c) : ScriptedAI(c)
     {
+        pInstance = (c->GetInstanceData());
     }
+
+    ScriptedInstance* pInstance;
 
     uint32 OrbitalStrike_Timer;
     uint32 ShadowWhip_Timer;
@@ -59,7 +63,7 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
 
     void Reset()
     {
-        DoScriptText(SAY_WIPE, m_creature);
+        DoScriptText(SAY_WIPE, me);
 
         OrbitalStrike_Timer = 25000;
         ShadowWhip_Timer = 2000;
@@ -70,11 +74,17 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
         SummonedCount = 0;
         playerGUID = 0;
         CanPullBack = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_OMOR, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
+
+        if (pInstance)
+            pInstance->SetData(DATA_OMOR, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* victim)
@@ -82,12 +92,12 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
         if (rand()%2)
             return;
 
-        DoScriptText(SAY_KILL_1, m_creature);
+        DoScriptText(SAY_KILL_1, me);
     }
 
     void JustSummoned(Creature* summoned)
     {
-        DoScriptText(SAY_SUMMON, m_creature);
+        DoScriptText(SAY_SUMMON, me);
 
         if (Unit* random = SelectUnit(SELECT_TARGET_RANDOM,0))
             summoned->AI()->AttackStart(random);
@@ -97,7 +107,10 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DIE, m_creature);
+        DoScriptText(SAY_DIE, me);
+
+        if (pInstance)
+            pInstance->SetData(DATA_OMOR, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -110,8 +123,8 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
         {
             if (Summon_Timer < diff)
             {
-                m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_creature, SPELL_SUMMON_FIENDISH_HOUND);
+                me->InterruptNonMeleeSpells(false);
+                DoCast(me, SPELL_SUMMON_FIENDISH_HOUND);
                 Summon_Timer = 15000+rand()%15000;
             }
             else
@@ -122,12 +135,12 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
         {
             if (ShadowWhip_Timer < diff)
             {
-                if (Unit* temp = Unit::GetUnit(*m_creature,playerGUID))
+                if (Unit* temp = Unit::GetUnit(*me,playerGUID))
                 {
                     //if unit dosen't have this flag, then no pulling back (script will attempt cast, even if orbital strike was resisted)
                     if (temp->HasUnitMovementFlag(MOVEFLAG_FALLINGFAR))
                     {
-                        m_creature->InterruptNonMeleeSpells(false);
+                        me->InterruptNonMeleeSpells(false);
                         DoCast(temp,SPELL_SHADOW_WHIP);
                     }
                 }
@@ -141,8 +154,8 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
         else if (OrbitalStrike_Timer < diff)
         {
             Unit* temp = NULL;
-            if (m_creature->IsWithinMeleeRange(m_creature->getVictim()))
-                temp = m_creature->getVictim();
+            if (me->IsWithinMeleeRange(me->getVictim()))
+                temp = me->getVictim();
             else
                 temp = SelectUnit(SELECT_TARGET_RANDOM,0);
 
@@ -159,11 +172,11 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
         else
             OrbitalStrike_Timer -= diff;
 
-        if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 20)
+        if ((me->GetHealth()*100) / me->GetMaxHealth() < 20)
         {
             if (DemonicShield_Timer < diff)
             {
-                DoCast(m_creature,SPELL_DEMONIC_SHIELD);
+                DoCast(me,SPELL_DEMONIC_SHIELD);
                 DemonicShield_Timer = 15000;
             }
             else
@@ -172,7 +185,7 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
 
         if (Aura_Timer < diff)
         {
-            DoScriptText(SAY_CURSE, m_creature);
+            DoScriptText(SAY_CURSE, me);
 
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
             {
@@ -188,7 +201,7 @@ struct boss_omor_the_unscarredAI : public ScriptedAI
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
             {
                 if (target)
-                    target = m_creature->getVictim();
+                    target = me->getVictim();
 
                 DoCast(target, HeroicMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
                 Shadowbolt_Timer = 4000+rand()%2500;
