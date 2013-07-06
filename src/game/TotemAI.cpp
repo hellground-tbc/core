@@ -101,7 +101,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         i_victimGuid = victim->GetGUID();
 
         // attack
-        i_totem.CastSpell(victim, i_totem.GetSpell(), false);
+        i_totem.CastSpell(victim, i_totem.GetSpell(), false, NULL, NULL, i_totem.GetOwner()->GetGUID());
     }
     else
         i_victimGuid = 0;
