@@ -86,7 +86,7 @@ struct boss_vanndarAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isAlive() && c->IsAIEnabled && c->AI())
                             c->AI()->AttackStart(who);
                   });
@@ -112,7 +112,7 @@ struct boss_vanndarAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->IsAIEnabled && c->AI())
                             c->AI()->EnterEvadeMode();
                   });
@@ -216,7 +216,7 @@ struct boss_vanndarOfficerAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isAlive() && c->IsAIEnabled && c->AI())
                             c->AI()->AttackStart(who);
                   });
@@ -241,7 +241,7 @@ struct boss_vanndarOfficerAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isInCombat() && c->IsAIEnabled && c->AI())
                             c->AI()->EnterEvadeMode();
                   });

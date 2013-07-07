@@ -90,7 +90,7 @@ struct boss_drektharAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isAlive() && c->IsAIEnabled && c->AI())
                             c->AI()->AttackStart(who);
                   });
@@ -116,7 +116,7 @@ struct boss_drektharAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isInCombat() && c->IsAIEnabled && c->AI())
                             c->AI()->EnterEvadeMode();
                   });
@@ -226,7 +226,7 @@ struct boss_drektharOfficerAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isAlive() && c->IsAIEnabled && c->AI())
                             c->AI()->AttackStart(who);
                   });
@@ -251,7 +251,7 @@ struct boss_drektharOfficerAI : public ScriptedAI
                         if (a == me->GetEntry())
                             return;
 
-                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        Creature * c = me->GetMap()->GetCreatureById(a);
                         if (c && c->isInCombat() && c->IsAIEnabled && c->AI())
                             c->AI()->EnterEvadeMode();
                   });
