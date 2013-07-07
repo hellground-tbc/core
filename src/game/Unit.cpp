@@ -9771,7 +9771,13 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
                 if (Unit* owner = GetOwner())
                     if (!owner->isInCombat())
                     {
-                        SetSpeed(mtype, owner->GetSpeedRate(mtype) *1.15f, forced);
+                        float owner_speed = owner->GetSpeedRate(mtype);
+                        int32 owner_slow = owner->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
+                        int32 owner_slow_non_stack = owner->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_SPEED_NOT_STACK);
+                        owner_slow = owner_slow < owner_slow_non_stack ? owner_slow : owner_slow_non_stack;
+                        if (owner_slow)
+                            owner_speed *=100.0f/(100.0f + owner_slow); // now we have owners speed without slow
+                        SetSpeed(mtype, owner_speed*1.15f, forced);
                         return;
                     }
             }
