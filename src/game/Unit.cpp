@@ -9769,10 +9769,11 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
             if (GetTypeId() == TYPEID_UNIT && ToCreature()->isPet() && hasUnitState(UNIT_STAT_FOLLOW) && !isInCombat())
             {
                 if (Unit* owner = GetOwner())
-                {
-                    SetSpeed(mtype, owner->GetSpeedRate(mtype) *1.15f, forced);
-                    return;
-                }
+                    if (!owner->isInCombat())
+                    {
+                        SetSpeed(mtype, owner->GetSpeedRate(mtype) *1.15f, forced);
+                        return;
+                    }
             }
             break;
         default:
