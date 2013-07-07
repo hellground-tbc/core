@@ -41,6 +41,16 @@ EndScriptData */
 #define SPELL_THUNDERCLAP       15588
 #define SPELL_STORMBOLT         20685 // not sure
 
+#define AV_VANDAR_NPC_COUNT     5
+
+uint32 avVandarNpcIds[AV_VANDAR_NPC_COUNT] =
+{
+    14762,
+    14763,
+    14764,
+    14765,
+    11948
+};
 
 struct boss_vanndarAI : public ScriptedAI
 {
@@ -68,6 +78,18 @@ struct boss_vanndarAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
+
+        // pull rest
+        std::for_each(avVandarNpcIds, avVandarNpcIds + AV_VANDAR_NPC_COUNT,
+                  [this, who] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isAlive() && c->IsAIEnabled && c->AI())
+                            c->AI()->AttackStart(who);
+                  });
     }
 
     void JustRespawned()
@@ -76,9 +98,25 @@ struct boss_vanndarAI : public ScriptedAI
         DoScriptText(RAND(YELL_RESPAWN1, YELL_RESPAWN2), m_creature);
     }
 
-    void KilledUnit(Unit* victim){}
+    void EnterEvadeMode()
+    {
+        if (!me->isInCombat() || me->IsInEvadeMode())
+            return;
 
-    void JustDied(Unit* Killer){}
+        CreatureAI::EnterEvadeMode();
+
+        // evade rest
+        std::for_each(avVandarNpcIds, avVandarNpcIds + AV_VANDAR_NPC_COUNT,
+                  [this] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->IsAIEnabled && c->AI())
+                            c->AI()->EnterEvadeMode();
+                  });
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -89,6 +127,9 @@ struct boss_vanndarAI : public ScriptedAI
         {
             if (!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
                 EnterEvadeMode();
+
+            me->SetSpeed(MOVE_WALK, 2.0f, true);
+            me->SetSpeed(MOVE_RUN, 2.0f, true)
 
             CheckTimer = 2000;
         }
@@ -134,9 +175,146 @@ struct boss_vanndarAI : public ScriptedAI
     }
 };
 
+enum AVVanndarOfficerSpells
+{
+    AV_VO_CHARGE    = 22911,
+    AV_VO_CLEAVE    = 40504,
+    AV_VO_DEMOSHOUT = 23511,
+    AV_VO_WHIRLWIND = 13736,
+    AV_VO_ENRAGE    = 8599
+}
+
+struct boss_vanndarOfficerAI : public ScriptedAI
+{
+    boss_vanndarOfficerAI(Creature *c) : ScriptedAI(c)
+    {
+        m_creature->GetPosition(wLoc);
+    }
+
+    uint32 chargeTimer;
+    uint32 cleaveTimer;
+    uint32 demoShoutTimer;
+    uint32 whirlwindTimer;
+    uint32 CheckTimer;
+    WorldLocation wLoc;
+
+    void Reset()
+    {
+        chargeTimer             = urand(7500, 20000);
+        cleaveTimer             = urand(5000, 10000);
+        demoShoutTimer          = urand(2000, 4000);
+        whirlwindTimer          = urand(9000, 13000);
+        CheckTimer              = 2000;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        // pull rest
+        std::for_each(avVandarNpcIds, avVandarNpcIds + AV_VANDAR_NPC_COUNT,
+                  [this, who] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isAlive() && c->IsAIEnabled && c->AI())
+                            c->AI()->AttackStart(who);
+                  });
+    }
+
+    void JustRespawned()
+    {
+        Reset();
+    }
+
+    void EnterEvadeMode()
+    {
+        if (!me->isInCombat() || me->IsInEvadeMode())
+            return;
+
+        CreatureAI::EnterEvadeMode();
+
+        // evade rest
+        std::for_each(avVandarNpcIds, avVandarNpcIds + AV_VANDAR_NPC_COUNT,
+                  [this] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isInCombat() && c->IsAIEnabled && c->AI())
+                            c->AI()->EnterEvadeMode();
+                  });
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (CheckTimer < diff)
+        {
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
+                EnterEvadeMode();
+
+            me->SetSpeed(MOVE_WALK, 1.5f, true);
+            me->SetSpeed(MOVE_RUN, 1.5f, true)
+
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
+
+        if (chargeTimer < diff)
+        {
+            Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 25.0f, true, 0, 8.0f);
+
+            if (target)
+                AddSpellToCast(target, AV_VO_CHARGE);
+
+            chargeTimer = urand(7500, 20000);
+        }
+        else
+            chargeTimer -= diff;
+
+        if (cleaveTimer < diff)
+        {
+            AddSpellToCast(AV_VO_CLEAVE, CAST_TANK);
+            cleaveTimer = urand(5000, 10000);
+        }
+        else
+            cleaveTimer -= diff;
+
+        if (demoShoutTimer < diff)
+        {
+            AddSpellToCast(AV_VO_DEMOSHOUT, CAST_NULL);
+            demoShoutTimer = urand(14000, 25000);
+        }
+        else
+            demoShoutTimer -= diff;
+
+        if (whirlwindTimer < diff)
+        {
+            AddSpellToCast(AV_VO_WHIRLWIND, CAST_SELF);
+            whirlwindTimer = urand(9000, 13000);
+        }
+        else
+            whirlwindTimer -= diff;
+
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
+
 CreatureAI* GetAI_boss_vanndar(Creature *_Creature)
 {
     return new boss_vanndarAI (_Creature);
+}
+
+CreatureAI* GetAI_boss_vanndarOfficer(Creature *_Creature)
+{
+    return new boss_vanndarOfficerAI (_Creature);
 }
 
 void AddSC_boss_vanndar()
@@ -145,5 +323,10 @@ void AddSC_boss_vanndar()
     newscript = new Script;
     newscript->Name = "boss_vanndar";
     newscript->GetAI = &GetAI_boss_vanndar;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_vanndar_officer";
+    newscript->GetAI = &GetAI_boss_vanndarOfficer;
     newscript->RegisterSelf();
 }

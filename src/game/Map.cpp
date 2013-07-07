@@ -2624,6 +2624,12 @@ Creature * Map::GetCreature(uint64 guid, float x, float y)
     return NULL;
 }
 
+
+Creature * Map::GetCreatureById(uint32 id, GetCreatureGuidType type)
+{
+    return GetCreature(GetCreatureGUID(id, type));
+}
+
 Creature * Map::GetCreatureOrPet(uint64 guid)
 {
     if (IS_PLAYER_GUID(guid))

@@ -43,6 +43,16 @@ EndScriptData */
 #define SPELL_WINDFURY         35886 // not sure
 #define SPELL_STORMPIKE        51876 // not sure
 
+#define AV_DREKTHAR_NPC_COUNT   5
+
+uint32 avDrekTharNpcId[AV_DREKTHAR_NPC_COUNT] =
+{
+    14772,
+    14777,
+    14776,
+    14773,
+    11946
+};
 
 struct boss_drektharAI : public ScriptedAI
 {
@@ -72,6 +82,18 @@ struct boss_drektharAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(YELL_AGGRO, m_creature);
+
+        // pull rest
+        std::for_each(avDrekTharNpcId, avDrekTharNpcId + AV_DREKTHAR_NPC_COUNT,
+                  [this, who] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isAlive() && c->IsAIEnabled && c->AI())
+                            c->AI()->AttackStart(who);
+                  });
     }
 
     void JustRespawned()
@@ -80,19 +102,38 @@ struct boss_drektharAI : public ScriptedAI
         DoScriptText(YELL_RESPAWN, m_creature);
     }
 
-    void KilledUnit(Unit* victim){}
+    void EnterEvadeMode()
+    {
+        if (!me->isInCombat() || me->IsInEvadeMode())
+            return;
 
-    void JustDied(Unit* Killer){}
+        CreatureAI::EnterEvadeMode();
+
+        // evade rest
+        std::for_each(avDrekTharNpcId, avDrekTharNpcId + AV_DREKTHAR_NPC_COUNT,
+                  [this] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isInCombat() && c->IsAIEnabled && c->AI())
+                            c->AI()->EnterEvadeMode();
+                  });
+    }
 
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
 
-        if(CheckTimer < diff)
+        if (CheckTimer < diff)
         {
             if(!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
                 EnterEvadeMode();
+
+            me->SetSpeed(MOVE_WALK, 2.0f, true);
+            me->SetSpeed(MOVE_RUN, 2.0f, true)
 
             CheckTimer = 2000;
         }
@@ -144,10 +185,145 @@ struct boss_drektharAI : public ScriptedAI
     }
 };
 
+enum AVDrekTharOfficerSpells
+{
+    AV_DT_CHARGE    = 22911,
+    AV_DT_CLEAVE    = 40504,
+    AV_DT_DEMOSHOUT = 23511,
+    AV_DT_WHIRLWIND = 13736,
+    AV_DT_ENRAGE    = 8599
+}
+
+struct boss_drektharOfficerAI : public ScriptedAI
+{
+    boss_drektharOfficerAI(Creature *c) : ScriptedAI(c)
+    {
+        m_creature->GetPosition(wLoc);
+    }
+
+    uint32 chargeTimer;
+    uint32 cleaveTimer;
+    uint32 demoShoutTimer;
+    uint32 whirlwindTimer;
+    uint32 CheckTimer;
+    WorldLocation wLoc;
+
+    void Reset()
+    {
+        chargeTimer             = urand(7500, 20000);
+        cleaveTimer             = urand(5000, 10000);
+        demoShoutTimer          = urand(2000, 4000);
+        whirlwindTimer          = urand(9000, 13000);
+        CheckTimer              = 2000;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        // pull rest
+        std::for_each(avDrekTharNpcId, avDrekTharNpcId + AV_DREKTHAR_NPC_COUNT,
+                  [this, who] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isAlive() && c->IsAIEnabled && c->AI())
+                            c->AI()->AttackStart(who);
+                  });
+    }
+
+    void JustRespawned()
+    {
+        Reset();
+    }
+
+    void EnterEvadeMode()
+    {
+        if (!me->isInCombat() || me->IsInEvadeMode())
+            return;
+
+        CreatureAI::EnterEvadeMode();
+
+        // evade rest
+        std::for_each(avDrekTharNpcId, avDrekTharNpcId + AV_DREKTHAR_NPC_COUNT,
+                  [this] (uint32 a)->void
+                  {
+                        if (a == me->GetEntry())
+                            return;
+
+                        Creature * c = me->GetMap()->GetCreatureById(a)
+                        if (c && c->isInCombat() && c->IsAIEnabled && c->AI())
+                            c->AI()->EnterEvadeMode();
+                  });
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        if (CheckTimer < diff)
+        {
+            if (!m_creature->IsWithinDistInMap(&wLoc, 20.0f))
+                EnterEvadeMode();
+
+            me->SetSpeed(MOVE_WALK, 1.5f, true);
+            me->SetSpeed(MOVE_RUN, 1.5f, true)
+
+            CheckTimer = 2000;
+        }
+        else
+            CheckTimer -= diff;
+
+        if (chargeTimer < diff)
+        {
+            Unit * target = SelectUnit(SELECT_TARGET_RANDOM, 0, 25.0f, true, 0, 8.0f);
+
+            if (target)
+                AddSpellToCast(target, AV_DT_CHARGE);
+
+            chargeTimer = urand(7500, 20000);
+        }
+        else
+            chargeTimer -= diff;
+
+        if (cleaveTimer < diff)
+        {
+            AddSpellToCast(AV_DT_CLEAVE, CAST_TANK);
+            cleaveTimer = urand(5000, 10000);
+        }
+        else
+            cleaveTimer -= diff;
+
+        if (demoShoutTimer < diff)
+        {
+            AddSpellToCast(AV_DT_DEMOSHOUT, CAST_NULL);
+            demoShoutTimer = urand(14000, 25000);
+        }
+        else
+            demoShoutTimer -= diff;
+
+        if (whirlwindTimer < diff)
+        {
+            AddSpellToCast(AV_DT_WHIRLWIND, CAST_SELF);
+            whirlwindTimer = urand(9000, 13000);
+        }
+        else
+            whirlwindTimer -= diff;
+
+        CastNextSpellIfAnyAndReady();
+        DoMeleeAttackIfReady();
+    }
+};
 
 CreatureAI* GetAI_boss_drekthar(Creature *_Creature)
 {
     return new boss_drektharAI (_Creature);
+}
+
+CreatureAI* GetAI_boss_drektharOfficer(Creature *_Creature)
+{
+    return new boss_drektharOfficerAI (_Creature);
 }
 
 void AddSC_boss_drekthar()
@@ -156,5 +332,10 @@ void AddSC_boss_drekthar()
     newscript = new Script;
     newscript->Name = "boss_drekthar";
     newscript->GetAI = &GetAI_boss_drekthar;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "boss_drekthar_officer";
+    newscript->GetAI = &GetAI_boss_drektharOfficer;
     newscript->RegisterSelf();
 }

@@ -252,6 +252,7 @@ class HELLGROUND_IMPORT_EXPORT Map : public GridRefManager<NGridType>
 
         Creature* GetCreature(uint64 guid);
         Creature* GetCreature(uint64 guid, float x, float y);
+        Creature* GetCreatureById(uint32 id, GetCreatureGuidType type = GET_FIRST_CREATURE_GUID);
         Creature* GetCreatureOrPet(uint64 guid);
         GameObject* GetGameObject(uint64 guid);
         DynamicObject* GetDynamicObject(uint64 guid);
