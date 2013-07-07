@@ -192,7 +192,7 @@ enum AVDrekTharOfficerSpells
     AV_DT_DEMOSHOUT = 23511,
     AV_DT_WHIRLWIND = 13736,
     AV_DT_ENRAGE    = 8599
-}
+};
 
 struct boss_drektharOfficerAI : public ScriptedAI
 {

@@ -182,7 +182,7 @@ enum AVVanndarOfficerSpells
     AV_VO_DEMOSHOUT = 23511,
     AV_VO_WHIRLWIND = 13736,
     AV_VO_ENRAGE    = 8599
-}
+};
 
 struct boss_vanndarOfficerAI : public ScriptedAI
 {
