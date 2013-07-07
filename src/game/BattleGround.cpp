@@ -1450,7 +1450,6 @@ Creature* BattleGround::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
     }
 
     pCreature->SetHomePosition(x, y, z, o);
-    pCreature->setFaction(teamval);
 
     map->Add(pCreature);
     m_BgCreatures[type] = pCreature->GetGUID();
