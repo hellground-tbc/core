@@ -133,7 +133,7 @@ struct boss_drektharAI : public ScriptedAI
                 EnterEvadeMode();
 
             me->SetSpeed(MOVE_WALK, 2.0f, true);
-            me->SetSpeed(MOVE_RUN, 2.0f, true)
+            me->SetSpeed(MOVE_RUN, 2.0f, true);
 
             CheckTimer = 2000;
         }
@@ -268,7 +268,7 @@ struct boss_drektharOfficerAI : public ScriptedAI
                 EnterEvadeMode();
 
             me->SetSpeed(MOVE_WALK, 1.5f, true);
-            me->SetSpeed(MOVE_RUN, 1.5f, true)
+            me->SetSpeed(MOVE_RUN, 1.5f, true);
 
             CheckTimer = 2000;
         }
