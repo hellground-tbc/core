@@ -3343,7 +3343,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectImplicitTargetA[1] = 1;
                 break;
             case 37370: // Kelidan the breaker - vortex
-                spellInfo->EffectMiscValue[0] /= 2;
+                spellInfo->EffectMiscValue[0] /= 3;
                 break;
             case 41345: // Infatuation (BT Trash)
                 spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_IGNORE_LOS;

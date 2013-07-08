@@ -94,7 +94,6 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         check_Timer = 0;
         Firenova = false;
         addYell = false;
-        SummonChannelers();
     }
 
     void EnterCombat(Unit *who)
@@ -177,6 +176,18 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
            pInstance->SetData(DATA_KELIDANEVENT, DONE);
     }
 
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (id == 1)
+        {
+            SummonChannelers();
+            DoCast(m_creature,SPELL_EVOCATION);
+        }
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
@@ -184,7 +195,11 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
             if(check_Timer < diff)
             {
                 if (!m_creature->IsNonMeleeSpellCasted(false))
-                    DoCast(m_creature,SPELL_EVOCATION);
+                {
+                    float x, y, z;
+                    me->GetRespawnCoord(x, y, z);
+                    me->GetMotionMaster()->MovePoint(1, x, y, z);
+                }
 
                 check_Timer = 5000;
             }
