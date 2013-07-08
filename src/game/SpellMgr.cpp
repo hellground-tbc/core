@@ -3420,6 +3420,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 25678:
                 spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_TARGET_ANY;
                 break;
+            case 40129: // Summon Air Elemental (by quest  [The Soul Cannon of Reth'hedron], fix cast freeze - fix quest)
+                spellInfo->AttributesEx &= ~SPELL_ATTR_EX_CHANNELED_1;
+                break;
             default:
                 break;
         }
