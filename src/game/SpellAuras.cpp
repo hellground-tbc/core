@@ -2563,8 +2563,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 {
                     if (apply)
                         caster->CastSpell(caster, 45044, true);
-                    else if (caster->HasAura(45044))
-                        caster->RemoveAurasDueToSpell(45044);
                     return;
                 }
                 return;
