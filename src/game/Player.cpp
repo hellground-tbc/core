@@ -18388,9 +18388,6 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 {
     if (BattleGround *bg = GetBattleGround())
     {
-        if (InArena() && isInCombat() && bg->GetStatus() == STATUS_IN_PROGRESS)
-            return;
-
         if (bg->isArena() && !isGameMaster())
         {
             SetVisibility(VISIBILITY_ON);
