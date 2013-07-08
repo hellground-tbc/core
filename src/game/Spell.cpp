@@ -4492,6 +4492,10 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!m_targets.getUnitTarget())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
+                if (Unit *owner = m_targets.getUnitTarget()->GetOwner())
+                    if (owner->GetTypeId() == TYPEID_PLAYER)
+                        return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
+
                 if (m_targets.getUnitTarget()->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
 
