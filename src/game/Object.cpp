@@ -1921,7 +1921,7 @@ void WorldObject::GetRandomPoint(float x, float y, float z, float distance, floa
 }
 
 // this will find point in LOS before collision occur
-void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePos, bool ignoreLOSOffset) const
+void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePos, bool ignoreLOSOffset, float allowHeightDifference) const
 {
     angle += GetOrientation();
 
@@ -1958,7 +1958,7 @@ void WorldObject::GetValidPointInAngle(Position &pos, float dist, float angle, b
     for (int j = 0; j < 10; ++j)
     {
         // do not allow too big z changes
-        if (fabs(pos.z - dest.z) > 4.3f)
+        if (fabs(pos.z - dest.z) > allowHeightDifference)
         {
             dest.x -= step * cos(angle);
             dest.y -= step * sin(angle);

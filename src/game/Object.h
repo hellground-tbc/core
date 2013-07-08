@@ -40,6 +40,7 @@
 #define MIN_MELEE_REACH             2.0f
 #define NOMINAL_MELEE_RANGE         5.0f
 #define MELEE_RANGE                 (NOMINAL_MELEE_RANGE - MIN_MELEE_REACH * 2) //center to center for players
+#define COMMON_ALLOW_HEIGHT_DIFF    4.3f
 
 uint32 GuidHigh2TypeId(uint32 guid_hi);
 
@@ -438,7 +439,7 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
         }
 
         void GetRandomPoint(float x, float y, float z, float distance, float &rand_x, float &rand_y, float &rand_z) const;
-        void GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePo, bool ignoreLOSOffset = false) const;
+        void GetValidPointInAngle(Position &pos, float dist, float angle, bool meAsSourcePo, bool ignoreLOSOffset = false, float allowHeightDifference = COMMON_ALLOW_HEIGHT_DIFF) const;
 
 #pragma endregion Move all this shit to Position struct
 

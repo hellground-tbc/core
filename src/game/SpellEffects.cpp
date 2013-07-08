@@ -7697,30 +7697,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     Map *cMap = m_caster->GetMap();
 
-    if (goinfo->type == GAMEOBJECT_TYPE_FISHINGNODE)
-    {
-        GridMapLiquidData liqData;
-        /*if(cMap->GetId() == 548 && m_caster->GetDistance(36.69, -416.38, -19.9645) <= 16)    //center of strange pool             // Hack to prevent fishing bobber from failing to land on fishing hole
-        {
-            fx = 36.69 +irand(-8,8);
-            fy = -416.38 +irand(-8,8);
-            fz = -19.9645;
-
-        }
-        else */if (!m_caster->GetTerrain()->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))           // Hack to prevent fishing bobber from failing to land on fishing hole
-        {
-            // but this is not proper, we really need to ignore not materialized objects
-            SendCastResult(SPELL_FAILED_NOT_HERE);
-            SendChannelUpdate(0);
-            return;
-        }
-
-        // replace by water level in this case
-        //if(cMap->GetId() != 548)
-        fz = liqData.level;
-    }
-    // if gameobject is summoning object, it should be spawned right on caster's position
-    else if (goinfo->type==GAMEOBJECT_TYPE_SUMMONING_RITUAL)
+    if (goinfo->type==GAMEOBJECT_TYPE_SUMMONING_RITUAL)
     {
         m_caster->GetPosition(fx,fy,fz);
     }
