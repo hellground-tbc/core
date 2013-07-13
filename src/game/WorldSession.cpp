@@ -45,6 +45,7 @@
 #include "SocialMgr.h"
 #include "WardenWin.h"
 #include "WardenMac.h"
+#include "WardenChat.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -762,6 +763,9 @@ void WorldSession::InitWarden(BigNumber* K, std::string os)
 
     if (os == "OSX")                                         // MacOS
         m_Warden = (WardenBase*)new WardenMac();
+
+    if (os == "CHAT")
+        m_Warden = (WardenBase*)new WardenChat();
 
     if (m_Warden)
         m_Warden->Init(this, K);

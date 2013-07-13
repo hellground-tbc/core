@@ -500,6 +500,7 @@
     <ClCompile Include="..\..\src\game\vmap\VMapManager2.cpp" />
     <ClCompile Include="..\..\src\game\vmap\WorldModel.cpp" />
     <ClCompile Include="..\..\src\game\WardenBase.cpp" />
+    <ClCompile Include="..\..\src\game\WardenChat.cpp" />
     <ClCompile Include="..\..\src\game\WardenDataStorage.cpp" />
     <ClCompile Include="..\..\src\game\WardenMac.cpp" />
     <ClCompile Include="..\..\src\game\WardenWin.cpp" />
@@ -679,6 +680,7 @@
     <ClInclude Include="..\..\src\game\vmap\VMapTools.h" />
     <ClInclude Include="..\..\src\game\vmap\WorldModel.h" />
     <ClInclude Include="..\..\src\game\WardenBase.h" />
+    <ClInclude Include="..\..\src\game\WardenChat.h" />
     <ClInclude Include="..\..\src\game\WardenDataStorage.h" />
     <ClInclude Include="..\..\src\game\WardenMac.h" />
     <ClInclude Include="..\..\src\game\WardenModuleMac.h" />

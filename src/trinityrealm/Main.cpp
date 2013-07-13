@@ -241,6 +241,7 @@ extern int main(int argc, char **argv)
     sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
     if (sRealmList.size() == 0)
         sLog.outLog(LOG_DEFAULT, "ERROR: No valid realms specified.");
+    sRealmList.ChatboxOsName = sConfig.GetStringDefault("ChatboxClientOsName","");
 
 #ifdef REGEX_NAMESPACE
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip_pattern, localip_pattern FROM pattern_banned");
