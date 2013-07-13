@@ -86,6 +86,7 @@ struct instance_shattered_halls : public ScriptedInstance
 
     uint32 Encounter[ENCOUNTERS];
     std::list<uint64> OrcGUID;
+    uint32 checktimer;
     uint64 nethekurseGUID;
     uint64 warbringerGUID;
     uint64 nethekurseDoor1GUID;
@@ -107,6 +108,7 @@ struct instance_shattered_halls : public ScriptedInstance
 
     void Initialize()
     {
+        checktimer = 0;
         nethekurseGUID = 0;
         warbringerGUID = 0;
         nethekurseDoor1GUID = 0;
@@ -171,12 +173,12 @@ struct instance_shattered_halls : public ScriptedInstance
             case DOOR_NETHEKURSE1:
                 nethekurseDoor1GUID = go->GetGUID();
                 if(GetData(TYPE_NETHEKURSE) == DONE)
-                    HandleGameObject(nethekurseDoor1GUID, true);
+                    HandleGameObject(nethekurseDoor1GUID, 0);
                 break;
             case DOOR_NETHEKURSE2:
                 nethekurseDoor2GUID = go->GetGUID();
                 if(GetData(TYPE_NETHEKURSE) == DONE)
-                    HandleGameObject(nethekurseDoor2GUID, true);
+                    HandleGameObject(nethekurseDoor2GUID, 0);
                 break;
         }
     }
@@ -235,8 +237,8 @@ struct instance_shattered_halls : public ScriptedInstance
                 }
                 if (data == DONE)
                 {
-                    HandleGameObject(nethekurseDoor1GUID, true);
-                    HandleGameObject(nethekurseDoor2GUID, true);
+                    HandleGameObject(nethekurseDoor1GUID, 0);
+                    HandleGameObject(nethekurseDoor2GUID, 0);
                 }
 
                 if (Encounter[0] != DONE)
@@ -273,6 +275,8 @@ struct instance_shattered_halls : public ScriptedInstance
                         DoCastGroupDebuff(SPELL_KARGATH_EXECUTIONER_1);
                         ExecutionTimer = 55*MINUTE*IN_MILISECONDS;
                    }
+
+                   checktimer = 5000;
                }
                if (data == DONE)
                {
@@ -331,12 +335,26 @@ struct instance_shattered_halls : public ScriptedInstance
     {
         Map::PlayerList const& lPlayers = instance->GetPlayers();
 
+        if (lPlayers.isEmpty())
+            return;
+
         for (Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
         {
             Player* player = itr->getSource();
             if (player && !player->HasAura(SpellId, 0))
                 player->CastSpell(player, SpellId, true);
         }
+    }
+
+    void HandleGameObject(uint64 guid, uint32 state)
+    {
+        Player *player = GetPlayerInMap();
+
+        if (!player || !guid)
+            return;
+
+        if (GameObject *go = GameObject::GetGameObject(*player,guid))
+            go->SetGoState(GOState(state));
     }
 
     void Update(uint32 diff)
@@ -391,6 +409,23 @@ struct instance_shattered_halls : public ScriptedInstance
 
             summon = SUMMONED;
         }
+
+        if (checktimer)
+        {
+            if (checktimer <= diff)
+            {
+                Map::PlayerList const& mplayers = instance->GetPlayers();
+
+                if (mplayers.isEmpty())
+                {
+                    SetData(TYPE_EXECUTION, NOT_STARTED);
+                    checktimer = 0;
+                }
+
+                checktimer = 5000;
+            }
+            else checktimer -= diff;
+        }
     }
 
     std::string GetSaveData()
@@ -425,6 +460,12 @@ struct instance_shattered_halls : public ScriptedInstance
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
             if (Encounter[i] == IN_PROGRESS)
                 Encounter[i] = NOT_STARTED;
+
+        if (Encounter[0] == DONE)
+        {
+            HandleGameObject(nethekurseDoor1GUID, 0);
+            HandleGameObject(nethekurseDoor2GUID, 0);
+        }
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }
