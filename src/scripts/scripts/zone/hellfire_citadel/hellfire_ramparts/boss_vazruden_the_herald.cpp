@@ -381,10 +381,13 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
 
                 if (checktimer <= diff)
                 {
-                    if (me->getVictim())
-                        return;
-                    else
-                        EnterEvadeMode();
+                    if (!me->getVictim())
+                    {
+                        if (Unit *victim = SelectUnit(SELECT_TARGET_NEAREST,0))
+                            me->AI()->AttackStart(victim);
+                        else
+                            EnterEvadeMode();
+                    }
 						
                     checktimer = 2000;
 						
