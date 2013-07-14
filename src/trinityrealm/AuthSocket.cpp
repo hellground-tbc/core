@@ -719,7 +719,7 @@ bool AuthSocket::_HandleLogonProof()
         const char* K_hex = K.AsHexStr();
 
         AccountsDatabase.escape_string(localIp);
-        AccountsDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_local_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, os = '%s' WHERE username = '%s'", K_hex, get_remote_address().c_str(), localIp.c_str(), GetLocaleByName(_localizationName), (_os != sRealmList.ChatboxOsName) ?_os.c_str() : "CHAT", _safelogin.c_str());
+        AccountsDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_ip = '%s', last_local_ip = '%s', last_login = NOW(), locale = '%u', failed_logins = 0, os = '%s' WHERE username = '%s'", K_hex, get_remote_address().c_str(), localIp.c_str(), GetLocaleByName(_localizationName), (_os != sRealmList.ChatboxOsName) ?_os.c_str() : "CHA", _safelogin.c_str());
 
         OPENSSL_free((void*)K_hex);
 

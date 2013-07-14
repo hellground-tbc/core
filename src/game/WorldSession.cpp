@@ -764,7 +764,7 @@ void WorldSession::InitWarden(BigNumber* K, std::string os)
     if (os == "OSX")                                         // MacOS
         m_Warden = (WardenBase*)new WardenMac();
 
-    if (os == "CHAT")
+    if (os == "CHA")
         m_Warden = (WardenBase*)new WardenChat();
 
     if (m_Warden)

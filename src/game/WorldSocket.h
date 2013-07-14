@@ -181,6 +181,9 @@ class WorldSocket : protected WorldHandler
         /// to mark the socket for output).
         bool iFlushPacketQueue ();
 
+        // Use to check if custom chat only client can use such opcode
+        bool IsChatOpcode(uint16 opcode);
+
     private:
         /// Time in which the last ping was received
         ACE_Time_Value m_LastPingTime;
@@ -228,6 +231,8 @@ class WorldSocket : protected WorldHandler
         bool m_OutActive;
 
         uint32 m_Seed;
+
+        std::string _os; // stores client's operating system
 };
 
 #endif  /* _WORLDSOCKET_H */
