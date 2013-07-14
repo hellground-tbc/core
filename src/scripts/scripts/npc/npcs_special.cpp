@@ -1075,7 +1075,7 @@ struct npc_snake_trap_serpentsAI : public ScriptedAI
         if (ScriptedAI::UpdateVictim())
             return true;
 
-        if (Unit* target = me->SelectNearbyTarget(5.0f))
+        if (Unit* target = me->SelectNearestTarget(5.0f))
             AttackStart(target);
 
         return me->getVictim();
