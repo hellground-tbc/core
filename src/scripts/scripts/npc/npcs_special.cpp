@@ -38,6 +38,7 @@ npc_mojo                    100%    AI for companion Mojo (summoned by item: 339
 npc_master_omarion          100%    Master Craftsman Omarion, patterns menu
 npc_lorekeeper_lydros       100%    Dialogue (story) + add A Dull and Flat Elven Blade
 npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from engineering
+npc_gnomish_flame_turret
 EndContentData */
 
 #include "precompiled.h"
@@ -2814,6 +2815,62 @@ bool GossipSelect_npc_meridith_the_mermaiden(Player *player, Creature * creature
     return true;
 }
 
+// npc_gnomish_flame_turret
+#define SPELL_GNOMISH_FLAME_TURRET 43050
+
+struct npc_gnomish_flame_turret : public Scripted_NoMovementAI
+{
+    npc_gnomish_flame_turret(Creature* c) : Scripted_NoMovementAI(c)
+    {
+        me->SetAggroRange(10.0f); // radius of spell
+    }
+    Timer CheckTimer;
+
+    void Reset() 
+    {
+        SetAutocast(SPELL_GNOMISH_FLAME_TURRET, 1000);
+        StartAutocast();
+        me->SetReactState(REACT_AGGRESSIVE);
+        CheckTimer.Reset(2000);
+    }
+
+    bool UpdateVictim()
+    {
+        if (ScriptedAI::UpdateVictim())
+            return true;
+
+        if (Unit* target = me->SelectNearestTarget(10.0f))
+            AttackStart(target);
+
+        return me->getVictim();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        CheckTimer.Update(diff);
+        if (CheckTimer.Passed())
+        {
+            Unit* owner = me->GetOwner();
+            if (!owner || !owner->IsInMap(me))
+            {
+                me->ForcedDespawn();
+                return;
+            }
+            CheckTimer.Reset(2000);
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        CastNextSpellIfAnyAndReady(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_gnomish_flame_turret(Creature *_Creature)
+{
+    return new npc_gnomish_flame_turret(_Creature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -3008,5 +3065,10 @@ void AddSC_npcs_special()
     newscript->Name = "npc_meridith_the_mermaiden";
     newscript->pGossipHello = &GossipHello_npc_meridith_the_mermaiden;
     newscript->pGossipSelect = &GossipSelect_npc_meridith_the_mermaiden;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_gnomish_flame_turret";
+    newscript->GetAI = &GetAI_npc_gnomish_flame_turret;
     newscript->RegisterSelf();
 }
