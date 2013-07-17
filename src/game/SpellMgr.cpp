@@ -3002,6 +3002,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 27285:                     // Seed of Corruption - final boom damage
                 spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_CANT_TRIGGER_PROC;
                 break;
+            /* HUNTER CUSTOM ATTRIBUTES */
+            case 1543:                      // Flare no longer produces combat
+                spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
+                break;
             // Triggered spells that should be delayed
             case 20272:                     // Illumination
             case 32848:                     // Mana Restore
