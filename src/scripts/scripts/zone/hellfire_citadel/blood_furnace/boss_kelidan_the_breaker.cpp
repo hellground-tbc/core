@@ -69,7 +69,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
 {
     boss_kelidan_the_breakerAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
         for(int i=0; i<5; ++i) Channelers[i] = 0;
     }
 
@@ -94,11 +94,18 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         check_Timer = 0;
         Firenova = false;
         addYell = false;
+
+        if (pInstance)
+            pInstance->SetData(DATA_KELIDANEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_WAKE, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_KELIDANEVENT, IN_PROGRESS);
+
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(true);
         DoStartMovement(who);
@@ -172,8 +179,9 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DIE, m_creature);
-       if(pInstance)
-           pInstance->SetData(DATA_KELIDANEVENT, DONE);
+
+        if(pInstance)
+            pInstance->SetData(DATA_KELIDANEVENT, DONE);
     }
 
     void MovementInform(uint32 type, uint32 id)

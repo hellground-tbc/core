@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Instance_Blood_Furnace
-SD%Complete: 85
+SD%Complete: 95
 SDComment:
 SDCategory: Hellfire Citadel, Blood Furnace
 EndScriptData */
@@ -24,59 +24,86 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_blood_furnace.h"
 
-#define ENTRY_SEWER1                 181823
-#define ENTRY_SEWER2                 181766
+#define ENCOUNTERS    3
+
+enum Doors
+{
+    NOT_OPENED    = 0,
+    WAIT_FOR_OPEN = 1,
+    OPENED        = 2
+};
 
 struct instance_blood_furnace : public ScriptedInstance
 {
     instance_blood_furnace(Map *map) : ScriptedInstance(map) {Initialize();};
 
+    uint32 Encounter[ENCOUNTERS];
 
     uint64 Sewer1GUID;
     uint64 Sewer2GUID;
-
-    uint32 BroggokEncounter;
-    uint32 MakerEncounter;
-
-    uint64 BroggokDoor;
-    uint64 MakerDoorGUID;
+    uint64 BroggokDoor1GUID;
+    uint64 BroggokDoor2GUID;
+    uint64 MakerDoor1GUID;
+    uint64 MakerDoor2GUID;
+    uint64 MakerGUID;
+    uint64 BroggokGUID;
+    uint64 KelidanGUID;
 
     uint64 CellDoor[4];
+
+    Doors door;
 
     void Initialize()
     {
         Sewer1GUID = 0;
         Sewer2GUID = 0;
-        MakerDoorGUID = 0;
-        BroggokEncounter = NOT_STARTED;
-        MakerEncounter = NOT_STARTED;
+        MakerDoor1GUID = 0;
+        MakerDoor2GUID = 0;
+        BroggokDoor1GUID = 0;
+        BroggokDoor2GUID = 0;
+        MakerGUID = 0;
+        BroggokGUID = 0;
+        KelidanGUID = 0;
 
         for(int i = 0; i < 4; i++)
             CellDoor[i] = 0;
 
-        BroggokDoor = 0;
+        for(uint8 i = 0; i < ENCOUNTERS; i++)
+            Encounter[i] = NOT_STARTED;
+
+        door = NOT_OPENED;
+    }
+
+    void OnPlayerEnter(Player* player)
+    {
+        if (door == NOT_OPENED)
+            door = WAIT_FOR_OPEN;
+    }
+
+    void OnCreatureCreate(Creature *creature, uint32 creature_entry)
+    {
+        switch(creature->GetEntry())
+        {
+            case 17381: MakerGUID = creature->GetGUID(); break;
+            case 17380: BroggokGUID = creature->GetGUID(); break;
+            case 17377: KelidanGUID = creature->GetGUID(); break;
+        }
     }
 
     void OnObjectCreate(GameObject *go)
     {
         switch (go->GetEntry())
         {
-            case ENTRY_SEWER1: Sewer1GUID = go->GetGUID(); break;
-            case ENTRY_SEWER2: Sewer2GUID = go->GetGUID(); break;
-            case 181819:
-                BroggokDoor = go->GetGUID();
-                if (BroggokEncounter == DONE)
-                    HandleGameObject(BroggokDoor, 0);
-                break;
+            case 181811: MakerDoor1GUID = go->GetGUID(); break;
+            case 181812: MakerDoor2GUID = go->GetGUID(); break;
             case 181821: CellDoor[0] = go->GetGUID(); break;
             case 181820: CellDoor[1] = go->GetGUID(); break;
             case 181818: CellDoor[2] = go->GetGUID(); break;
             case 181817: CellDoor[3] = go->GetGUID(); break;
-            case 181812:
-                MakerDoorGUID = go->GetGUID();
-                if (MakerEncounter == DONE)
-                    HandleGameObject(MakerDoorGUID,0);
-                break;
+            case 181822: BroggokDoor1GUID = go->GetGUID(); break;
+            case 181819: BroggokDoor2GUID = go->GetGUID(); break;
+            case 181823: Sewer1GUID = go->GetGUID(); break;
+            case 181766: Sewer2GUID = go->GetGUID(); break;
         }
     }
 
@@ -107,7 +134,7 @@ struct instance_blood_furnace : public ScriptedInstance
             return;
         }
 
-        if (GameObject *go = GameObject::GetGameObject(*player,guid))
+        if (GameObject *go = GameObject::GetGameObject(*player, guid))
             go->SetGoState(GOState(state));
     }
 
@@ -115,36 +142,50 @@ struct instance_blood_furnace : public ScriptedInstance
     {
         switch (type)
         {
-            case DATA_KELIDANEVENT:
+            case DATA_MAKEREVENT:
                 if (data == DONE)
-                {
-                    HandleGameObject(Sewer1GUID,0);
-                    HandleGameObject(Sewer2GUID,0);
-                }
+                    HandleGameObject(MakerDoor2GUID, 0);
+
+                if (Encounter[0] != DONE)
+                    Encounter[0] = data;
                 break;
             case DATA_BROGGOKEVENT:
                 if (data == DONE)
-                    HandleGameObject(BroggokDoor, 0);
+                    HandleGameObject(BroggokDoor2GUID, 0);
 
-                BroggokEncounter = data;
+                if (Encounter[1] != DONE)
+                    Encounter[1] = data;
                 break;
-            case DATA_MAKEREVENT:
+            case DATA_KELIDANEVENT:
                 if (data == DONE)
-                    HandleGameObject(MakerDoorGUID,0);
+                {
+                    HandleGameObject(Sewer1GUID, 0);
+                    HandleGameObject(Sewer2GUID, 0);
+                }
 
-                MakerEncounter = data;
+                if (Encounter[2] != DONE)
+                    Encounter[2] = data;
                 break;
 
             if (data == DONE)
+            {
                 SaveToDB();
+                OUT_SAVE_INST_DATA_COMPLETE;
+            }
         }
     }
 
     uint32 GetData(uint32 type)
     {
-        if (type == DATA_BROGGOKEVENT)
-            return BroggokEncounter;
-
+        switch (type)
+        {
+            case DATA_MAKEREVENT:
+                return Encounter[0];
+            case DATA_BROGGOKEVENT:
+                return Encounter[1];
+            case DATA_KELIDANEVENT:
+                return Encounter[2];
+        }
         return 0;
     }
 
@@ -158,9 +199,42 @@ struct instance_blood_furnace : public ScriptedInstance
             case 4:
                 return CellDoor[type-1];
             case 5:
-                return BroggokDoor;
+                return BroggokDoor2GUID;
             default:
                 return 0;
+        }
+    }
+
+    void Update(uint32 diff)
+    {
+        if (door == WAIT_FOR_OPEN)
+        {
+            if (Creature* Maker = instance->GetCreature(MakerGUID))
+            {
+                HandleGameObject(MakerDoor1GUID, 0);
+
+                if (Maker && !Maker->isAlive())
+                    HandleGameObject(MakerDoor2GUID, 0);
+            }
+
+            if (Creature* Broggok = instance->GetCreature(BroggokGUID))
+            {
+                HandleGameObject(BroggokDoor1GUID, 0);
+
+                if (Broggok && !Broggok->isAlive())
+                    HandleGameObject(BroggokDoor2GUID, 0);
+            }
+
+            if (Creature* Kelidan = instance->GetCreature(KelidanGUID))
+            {
+                if (Kelidan && !Kelidan->isAlive())
+                {
+                    HandleGameObject(Sewer1GUID, 0);
+                    HandleGameObject(Sewer2GUID, 0);
+                }
+            }
+
+            door = OPENED;
         }
     }
 
@@ -169,8 +243,9 @@ struct instance_blood_furnace : public ScriptedInstance
         OUT_SAVE_INST_DATA;
 
         std::ostringstream stream;
-        stream << MakerEncounter << " ";
-        stream << BroggokEncounter;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] ;
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -184,15 +259,15 @@ struct instance_blood_furnace : public ScriptedInstance
             OUT_LOAD_INST_DATA_FAIL;
             return;
         }
+
         OUT_LOAD_INST_DATA(in);
+
         std::istringstream stream(in);
-        stream >> MakerEncounter >> BroggokEncounter;
+        stream  >> Encounter[0] >> Encounter[1] >> Encounter[2];
 
-        if (MakerEncounter == DONE)
-            HandleGameObject(MakerDoorGUID,0);
-
-        if (BroggokEncounter == DONE)
-            HandleGameObject(BroggokDoor, 0);
+        for (uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounter[i] == IN_PROGRESS)
+                Encounter[i] = NOT_STARTED;
 
         OUT_LOAD_INST_DATA_COMPLETE;
     }

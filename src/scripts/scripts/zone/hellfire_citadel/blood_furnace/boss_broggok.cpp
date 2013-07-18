@@ -53,17 +53,12 @@ static CellPosition CellLocation[]=
     { 501.118f,  84.228f, 9.657f, 3.188f }
 };
 
-/* static float CellPrisoner[]
-{
-    { },
-    { },
-    { },
-    { },
-}; */
-
 struct boss_broggokAI : public ScriptedAI
 {
-    boss_broggokAI(Creature *c) : ScriptedAI(c), summons(c) { pInstance = c->GetInstanceData(); }
+    boss_broggokAI(Creature *c) : ScriptedAI(c), summons(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
 
     uint32 AcidSpray_Timer;
     uint32 PoisonSpawn_Timer;
@@ -87,7 +82,9 @@ struct boss_broggokAI : public ScriptedAI
         summons.DespawnAll();
         prisoners.clear();
 
-        pInstance->SetData(DATA_BROGGOKEVENT, NOT_STARTED);
+        if (pInstance)
+            pInstance->SetData(DATA_BROGGOKEVENT, NOT_STARTED);
+
         me->SetReactState(REACT_PASSIVE);
 
         phase = EVENT_NULL;
@@ -120,12 +117,15 @@ struct boss_broggokAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, m_creature);
+
         phase = EVENT_FIGHT;
     }
 
     void JustDied(Unit *pKiller)
     {
-        pInstance->SetData(DATA_BROGGOKEVENT, DONE);
+        if (pInstance)
+            pInstance->SetData(DATA_BROGGOKEVENT, DONE);
+
         summons.DespawnAll();
         prisoners.clear();
     }
@@ -135,7 +135,8 @@ struct boss_broggokAI : public ScriptedAI
         switch (param)
         {
             case EVENT_1_CAGE:
-                pInstance->SetData(DATA_BROGGOKEVENT, IN_PROGRESS);
+                if (pInstance)
+                    pInstance->SetData(DATA_BROGGOKEVENT, IN_PROGRESS);
             case EVENT_2_CAGE:
             case EVENT_3_CAGE:
             case EVENT_4_CAGE:
@@ -250,6 +251,7 @@ bool GOUse_go_broggok_lever(Player* pPlayer, GameObject* pGo)
         if (Creature *pBoss = GetClosestCreatureWithEntry(pPlayer, 17380, 200.0f))
             pBoss->AI()->DoAction(EVENT_1_CAGE);
     }
+    pGo->UseDoorOrButton(5);
     return true;
 }
 
