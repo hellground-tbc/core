@@ -518,6 +518,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "doaction",       SEC_MODERATOR,      false,  &ChatHandler::HandleNpcDoActionCommand,         "", NULL },
         { "enterevademode", SEC_GAMEMASTER,     false,  &ChatHandler::HandleNpcEnterEvadeModeCommand,   "", NULL },
         { "factionid",      SEC_GAMEMASTER,     false,  &ChatHandler::HandleNpcFactionIdCommand,        "", NULL },
+        { "fieldflag",      SEC_GAMEMASTER,     false,  &ChatHandler::HandleNpcFieldFlagCommand,        "", NULL },
         { "flag",           SEC_GAMEMASTER,     false,  &ChatHandler::HandleNpcFlagCommand,             "", NULL },
         { "follow",         SEC_GAMEMASTER,     false,  &ChatHandler::HandleNpcFollowCommand,           "", NULL },
         { "info",           SEC_ADMINISTRATOR,  false,  &ChatHandler::HandleNpcInfoCommand,             "", NULL },

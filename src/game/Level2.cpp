@@ -1614,6 +1614,31 @@ bool ChatHandler::HandleNpcFlagCommand(const char* args)
     return true;
 }
 
+//set field flags of creature
+bool ChatHandler::HandleNpcFieldFlagCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    uint32 Flags = (uint32) atoi((char*)args);
+
+    Creature* pCreature = getSelectedCreature();
+
+    if (!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    pCreature->SetUInt32Value(UNIT_FIELD_FLAGS, Flags);
+
+    GameDataDatabase.PExecuteLog("UPDATE creature_template SET unit_flags = '%u' WHERE entry = '%u'", Flags, pCreature->GetEntry());
+
+    SendSysMessage(LANG_VALUE_SAVED_REJOIN);
+
+    return true;
+}
 //set model of creature
 bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 {

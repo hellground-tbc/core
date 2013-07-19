@@ -1073,6 +1073,8 @@ bool WorldSocket::IsChatOpcode(uint16 opcode)
     case CMSG_JOIN_CHANNEL:
     case CMSG_LEAVE_CHANNEL:
     case CMSG_MESSAGECHAT:
+    case CMSG_NAME_QUERY:
+    case CMSG_CHANNEL_LIST:
         return true;
     }
     return false;
