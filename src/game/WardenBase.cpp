@@ -36,9 +36,12 @@ WardenBase::WardenBase() : iCrypto(16), oCrypto(16), m_WardenCheckTimer(10000/*1
 
 WardenBase::~WardenBase()
 {
-    delete[] Module->CompressedData;
-    delete Module;
-    Module = NULL;
+    if (Module != NULL)
+    {
+        delete[] Module->CompressedData;
+        delete Module;
+        Module = NULL;
+    }
     m_initialized = false;
 }
 

@@ -1075,6 +1075,7 @@ bool WorldSocket::IsChatOpcode(uint16 opcode)
     case CMSG_MESSAGECHAT:
     case CMSG_NAME_QUERY:
     case CMSG_CHANNEL_LIST:
+    case CMSG_LOGOUT_REQUEST:
         return true;
     }
     return false;

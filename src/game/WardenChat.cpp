@@ -30,12 +30,13 @@ WardenChat::~WardenChat()
 
 void WardenChat::Init(WorldSession *pClient, BigNumber *K)
 {
+    Client = pClient;
+    Module = GetModuleForClient(Client);
 }
 
 ClientWardenModule *WardenChat::GetModuleForClient(WorldSession *session)
 {
-    ClientWardenModule *mod = new ClientWardenModule;
-    return mod;
+    return NULL;
 }
 
 void WardenChat::InitializeModule()
