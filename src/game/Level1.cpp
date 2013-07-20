@@ -1844,7 +1844,7 @@ bool ChatHandler::HandleModifyFlyCommand(const char* args)
 
     float FSpeed = (float)atof((char*)args);
 
-    if (FSpeed > 10.0f || FSpeed < 0.1f)
+    if (FSpeed > 30.0f || FSpeed < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
