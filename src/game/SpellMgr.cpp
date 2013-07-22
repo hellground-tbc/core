@@ -3004,6 +3004,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             /* HUNTER CUSTOM ATTRIBUTES */
             case 1543:                      // Flare no longer produces combat
+				spellInfo->speed = 0;
                 spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
                 break;
             // Triggered spells that should be delayed
