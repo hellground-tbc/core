@@ -6647,7 +6647,7 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     // loss durability so there is no need to check for 'apply' (prevent bug abuse by stats stacking))
     if (item->IsBroken())
     {
-        if (proto->Socket[0].Color)	
+        if (proto->Socket[0].Color)
             CorrectMetaGemEnchants(slot, apply);
         return;
     }

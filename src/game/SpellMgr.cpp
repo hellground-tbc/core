@@ -2826,7 +2826,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Devotion Aura
                 else if (spellInfo->SpellFamilyFlags & 0x40 && spellInfo->SpellIconID == 291)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
-
+                else if (spellProto->Id == 25997) // Eye for an eye
+                    spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 break;
             }
             case SPELLFAMILY_PRIEST:
@@ -3004,7 +3005,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             /* HUNTER CUSTOM ATTRIBUTES */
             case 1543:                      // Flare no longer produces combat
-				spellInfo->speed = 0;
+                spellInfo->speed = 0;
                 spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
                 break;
             // Triggered spells that should be delayed
