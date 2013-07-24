@@ -2826,7 +2826,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Devotion Aura
                 else if (spellInfo->SpellFamilyFlags & 0x40 && spellInfo->SpellIconID == 291)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SCROLL_STACK;
-                else if (spellProto->Id == 25997) // Eye for an eye
+                else if (spellInfo->Id == 25997) // Eye for an eye
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 break;
             }
