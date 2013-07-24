@@ -115,8 +115,8 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
     {
         DoScriptText(SAY_MECHANICS, me);
 
-		me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
-		me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+        me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+        me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
         me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
 
         if (roll_chance_i(30))
