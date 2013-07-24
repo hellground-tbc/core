@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Hydromancer_Thespia
-SD%Complete: 80
+SD%Complete: 90
 SDComment: Needs additional adjustments (when instance script is adjusted)
 SDCategory: Coilfang Resevoir, The Steamvault
 EndScriptData */
@@ -46,7 +46,7 @@ struct boss_thespiaAI : public ScriptedAI
     boss_thespiaAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -70,13 +70,13 @@ struct boss_thespiaAI : public ScriptedAI
             (*it)->GetMotionMaster()->MoveTargetedHome();
         }
 
-        if (pInstance && m_creature->isAlive())
+        if (pInstance && me->isAlive())
             pInstance->SetData(TYPE_HYDROMANCER_THESPIA, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEAD, m_creature);
+        DoScriptText(SAY_DEAD, me);
 
         if (pInstance)
             pInstance->SetData(TYPE_HYDROMANCER_THESPIA, DONE);
@@ -84,16 +84,16 @@ struct boss_thespiaAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
         std::list<Creature*> water_elementals = FindAllCreaturesWithEntry(17917, 100);
         for(std::list<Creature*>::iterator it = water_elementals.begin(); it != water_elementals.end(); it++)
-            (*it)->SetInCombatWith(who);
+            (*it)->AI()->AttackStart(who);
 
         if (pInstance)
             pInstance->SetData(TYPE_HYDROMANCER_THESPIA, IN_PROGRESS);
@@ -152,7 +152,7 @@ struct mob_coilfang_waterelementalAI : public ScriptedAI
 
     void Reset()
     {
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
         WaterBoltVolley_Timer = 3000+rand()%3000;
     }
 
@@ -165,7 +165,7 @@ struct mob_coilfang_waterelementalAI : public ScriptedAI
 
         if (WaterBoltVolley_Timer < diff)
         {
-            DoCast(m_creature, HeroicMode ? H_SPELL_WATER_BOLT_VOLLEY : SPELL_WATER_BOLT_VOLLEY);
+            DoCast(me, HeroicMode ? H_SPELL_WATER_BOLT_VOLLEY : SPELL_WATER_BOLT_VOLLEY);
             WaterBoltVolley_Timer = 7000+rand()%5000;
         }else WaterBoltVolley_Timer -= diff;
 
