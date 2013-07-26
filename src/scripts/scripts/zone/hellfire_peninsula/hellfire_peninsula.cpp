@@ -2128,27 +2128,48 @@ CreatureAI* GetAI_npc_deranged_helboar(Creature* creature)
 # Quest 10792 "Zeth'Gor Must Burn!" (Horde) - Visual Effect
 ####*/
 
+enum Quest10792
+{
+    SPELL_FIRE                  = 35724,
+    GO_FIRE                     = 183816
+};
 struct npc_east_hovelAI : public ScriptedAI
 {
     npc_east_hovelAI(Creature* creature) : ScriptedAI(creature) {}
 
+    bool Summon;
+    uint32 ResetTimer;
     void Reset()
     {
+        Summon = true;
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if(spell->Id == 35724)
+        if(spell->Id == SPELL_FIRE)
         {
-            me->SummonGameObject(183816, -934.393005, 1934.01001, 82.031601, 3.35103, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -927.877991, 1927.44995, 81.048897, 5.25344, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -935.54303, 1921.160034, 82.4132, 2.67035, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -944.015015, 1928.160034, 82.105499, 5.98648, 0, 0, 0, 0, 15);
+			if(Summon)
+            {
+                me->SummonGameObject(GO_FIRE, -934.393005, 1934.01001, 82.031601, 3.35103, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -927.877991, 1927.44995, 81.048897, 5.25344, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -935.54303, 1921.160034, 82.4132, 2.67035, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -944.015015, 1928.160034, 82.105499, 5.98648, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
     }
 };
 CreatureAI* GetAI_npc_east_hovel(Creature* creature)
@@ -2160,22 +2181,38 @@ struct npc_west_hovelAI : public ScriptedAI
 {
     npc_west_hovelAI(Creature* creature) : ScriptedAI(creature) {}
 
+    bool Summon;
+    uint32 ResetTimer;
     void Reset()
     {
+        Summon = true;
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if(spell->Id == 35724)
+        if(spell->Id == SPELL_FIRE)
         {
-            me->SummonGameObject(183816, -1145.410034, 2064.830078, 80.782600, 5.044, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1156.839966, 2060.870117, 79.176399, 3.83972, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1152.719971, 2073.5, 80.622902, 2.00713, 0, 0, 0, 0, 15);
+			if(Summon)
+            {
+                me->SummonGameObject(183816, -1145.410034, 2064.830078, 80.782600, 5.044, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1156.839966, 2060.870117, 79.176399, 3.83972, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1152.719971, 2073.5, 80.622902, 2.00713, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
     }
 };
 CreatureAI* GetAI_npc_west_hovel(Creature* creature)
@@ -2187,23 +2224,39 @@ struct npc_stableAI : public ScriptedAI
 {
     npc_stableAI(Creature* creature) : ScriptedAI(creature) {}
 
+    bool Summon;
+    uint32 ResetTimer;
     void Reset()
     {
+        Summon = true;
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if(spell->Id == 35724)
+        if(spell->Id == SPELL_FIRE)
         {
-            me->SummonGameObject(183816, -1067.280029, 1998.949951, 76.286301, 5.86431, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1052.189941, 2012.099976, 80.946198, 5.95157, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1043.439941, 2002.140015, 76.030502, 2.00713, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1052.26001, 1996.339966, 79.377502, 0.628319, 0, 0, 0, 0, 15);
+			if(Summon)
+            {
+                me->SummonGameObject(183816, -1067.280029, 1998.949951, 76.286301, 5.86431, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1052.189941, 2012.099976, 80.946198, 5.95157, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1043.439941, 2002.140015, 76.030502, 2.00713, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1052.26001, 1996.339966, 79.377502, 0.628319, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
     }
 };
 CreatureAI* GetAI_npc_stable(Creature* creature)
@@ -2215,23 +2268,39 @@ struct npc_barracksAI : public ScriptedAI
 {
     npc_barracksAI(Creature* creature) : ScriptedAI(creature) {}
 
+    bool Summon;
+    uint32 ResetTimer;
     void Reset()
     {
+        Summon = true;
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
     {
-        if(spell->Id == 35724)
+        if(spell->Id == SPELL_FIRE)
         {
-            me->SummonGameObject(183816, -1176.709961, 1972.189941, 107.182999, 5.18363, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1120.219971, 1929.890015, 92.360901, 0.89011, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1137.099976, 1951.25, 94.115898, 2.32129, 0, 0, 0, 0, 15);
-            me->SummonGameObject(183816, -1152.890015, 1961.48999, 92.9795, 0.994838, 0, 0, 0, 0, 15);
+			if(Summon)
+            {
+                me->SummonGameObject(183816, -1176.709961, 1972.189941, 107.182999, 5.18363, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1120.219971, 1929.890015, 92.360901, 0.89011, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1137.099976, 1951.25, 94.115898, 2.32129, 0, 0, 0, 0, 15);
+                me->SummonGameObject(183816, -1152.890015, 1961.48999, 92.9795, 0.994838, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
     }
 };
 CreatureAI* GetAI_npc_barracks(Creature* creature)
