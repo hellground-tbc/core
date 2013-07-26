@@ -1302,6 +1302,7 @@ struct npc_akamaAI : public Scripted_NoMovementAI
 
             if (Creature *pShade = me->GetCreature(*me, ShadeGUID))
             {
+				me->InterruptNonMeleeSpells(false);
                 AttackStart(pShade);
                 return me->getVictim();
             }
