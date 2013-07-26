@@ -1061,7 +1061,7 @@ void Map::AddObjectToSwitchList(WorldObject *obj, bool on)
 {
     ASSERT(obj->GetMapId()==GetId() && obj->GetInstanceId()==GetInstanceId());
 
-    std::map<WorldObject*, bool>::iterator itr = i_objectsToSwitch.find(obj);
+    UNORDERED_MAP<WorldObject*, bool>::iterator itr = i_objectsToSwitch.find(obj);
     if (itr == i_objectsToSwitch.end())
         i_objectsToSwitch.insert(itr, std::make_pair(obj, on));
     else if (itr->second != on)
@@ -1074,7 +1074,7 @@ void Map::RemoveAllObjectsInRemoveList()
 {
     while (!i_objectsToSwitch.empty())
     {
-        std::map<WorldObject*, bool>::iterator itr = i_objectsToSwitch.begin();
+        UNORDERED_MAP<WorldObject*, bool>::iterator itr = i_objectsToSwitch.begin();
         WorldObject *obj = itr->first;
         bool on = itr->second;
         i_objectsToSwitch.erase(itr);

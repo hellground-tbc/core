@@ -100,7 +100,7 @@ enum MagtheridonEvents
 // count of clickers needed to interrupt blast nova
 #define CLICKERS_COUNT              5
 
-typedef std::map<uint64, uint64> CubeMap;
+typedef UNORDERED_MAP<uint64, uint64> CubeMap;
 
 struct mob_abyssalAI : public ScriptedAI
 {

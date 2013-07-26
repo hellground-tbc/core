@@ -41,7 +41,7 @@ struct PoolObject
     PoolObject(uint32 _guid, float _chance): guid(_guid), chance(fabs(_chance)), exclude(false) {}
 
     template<typename T>
-    void CheckEventLinkAndReport(uint32 poolId, int16 event_id, std::map<uint32, int16> const& creature2event, std::map<uint32, int16> const& go2event) const;
+    void CheckEventLinkAndReport(uint32 poolId, int16 event_id, UNORDERED_MAP<uint32, int16> const& creature2event, UNORDERED_MAP<uint32, int16> const& go2event) const;
 };
 
 class Pool                                                  // for Pool of Pool case
@@ -49,7 +49,7 @@ class Pool                                                  // for Pool of Pool 
 };
 
 typedef std::set<uint32> SpawnedPoolObjects;
-typedef std::map<uint32,uint32> SpawnedPoolPools;
+typedef UNORDERED_MAP<uint32,uint32> SpawnedPoolPools;
 
 class SpawnedPoolData
 {
@@ -81,7 +81,7 @@ class PoolGroup
         bool isEmpty() const { return ExplicitlyChanced.empty() && EqualChanced.empty(); }
         void AddEntry(PoolObject& poolitem, uint32 maxentries);
         bool CheckPool() const;
-        void CheckEventLinkAndReport(int16 event_id, std::map<uint32, int16> const& creature2event, std::map<uint32, int16> const& go2event) const;
+        void CheckEventLinkAndReport(int16 event_id, UNORDERED_MAP<uint32, int16> const& creature2event, UNORDERED_MAP<uint32, int16> const& go2event) const;
         PoolObject* RollOne(SpawnedPoolData& spawns, uint32 triggerFrom);
         void DespawnObject(SpawnedPoolData& spawns, uint32 guid=0);
         void Despawn1Object(uint32 guid);
@@ -133,7 +133,7 @@ class PoolManager
         void SetExcludeObject(uint16 pool_id, uint32 db_guid_or_pool_id, bool state);
 
         bool CheckPool(uint16 pool_id) const;
-        void CheckEventLinkAndReport(uint16 pool_id, int16 event_id, std::map<uint32, int16> const& creature2event, std::map<uint32, int16> const& go2event) const;
+        void CheckEventLinkAndReport(uint16 pool_id, int16 event_id, UNORDERED_MAP<uint32, int16> const& creature2event, UNORDERED_MAP<uint32, int16> const& go2event) const;
 
         void SpawnPool(uint16 pool_id, bool instantly);
         void DespawnPool(uint16 pool_id);
@@ -153,7 +153,7 @@ class PoolManager
         typedef std::vector<PoolGroup<GameObject> > PoolGroupGameObjectMap;
         typedef std::vector<PoolGroup<Pool> >       PoolGroupPoolMap;
         typedef std::pair<uint32, uint16> SearchPair;
-        typedef std::map<uint32, uint16> SearchMap;
+        typedef UNORDERED_MAP<uint32, uint16> SearchMap;
 
         PoolTemplateDataMap mPoolTemplate;
         PoolGroupCreatureMap mPoolCreatureGroups;

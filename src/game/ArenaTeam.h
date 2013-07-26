@@ -254,7 +254,7 @@ class ArenaTeam
         int32 LostAgainst(uint32 againstRating);
         void MemberLost(Player * plr, uint32 againstRating, uint32 againstHiddenRating);
 
-        void UpdateArenaPointsHelper(std::map<uint32, uint32> & PlayerPoints);
+        void UpdateArenaPointsHelper(UNORDERED_MAP<uint32, uint32> & PlayerPoints);
 
         void NotifyStatsChanged();
 

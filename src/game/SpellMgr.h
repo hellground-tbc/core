@@ -140,7 +140,7 @@ enum SpellLinkedType
 };
 
 // Spell affects related declarations (accessed using SpellMgr functions)
-typedef std::map<uint32, uint64> SpellAffectMap;
+typedef UNORDERED_MAP<uint32, uint64> SpellAffectMap;
 
 // Spell proc event related declarations (accessed using SpellMgr functions)
 enum ProcFlags
@@ -257,7 +257,7 @@ struct SpellBonusData
     float direct_ap_co;
     float    dot_ap_co;
 };
-typedef std::map<uint32, SpellBonusData> SpellBonusDataMap;
+typedef UNORDERED_MAP<uint32, SpellBonusData> SpellBonusDataMap;
 
 #define ELIXIR_BATTLE_MASK    0x1
 #define ELIXIR_GUARDIAN_MASK  0x2
@@ -265,7 +265,7 @@ typedef std::map<uint32, SpellBonusData> SpellBonusDataMap;
 #define ELIXIR_UNSTABLE_MASK  0x4
 #define ELIXIR_SHATTRATH_MASK 0x8
 
-typedef std::map<uint32, uint8> SpellElixirMap;
+typedef UNORDERED_MAP<uint32, uint8> SpellElixirMap;
 
 // Spell script target related declarations (accessed using SpellMgr functions)
 enum SpellScriptTargetType
@@ -317,12 +317,12 @@ class PetAura
 
         uint16 GetAura(uint16 petEntry) const
         {
-            std::map<uint16, uint16>::const_iterator itr = auras.find(petEntry);
+            UNORDERED_MAP<uint16, uint16>::const_iterator itr = auras.find(petEntry);
             if (itr != auras.end())
                 return itr->second;
             else
             {
-                std::map<uint16, uint16>::const_iterator itr2 = auras.find(0);
+                UNORDERED_MAP<uint16, uint16>::const_iterator itr2 = auras.find(0);
                 if (itr2 != auras.end())
                     return itr2->second;
                 else
@@ -346,11 +346,11 @@ class PetAura
         }
 
     private:
-        std::map<uint16, uint16> auras;
+        UNORDERED_MAP<uint16, uint16> auras;
         bool removeOnChangePet;
         int32 damage;
 };
-typedef std::map<uint16, PetAura> SpellPetAuraMap;
+typedef UNORDERED_MAP<uint16, PetAura> SpellPetAuraMap;
 
 // Spell rank chain  (accessed using SpellMgr functions)
 struct SpellChainNode
@@ -378,7 +378,7 @@ struct SpellLearnSkillNode
     uint32 maxvalue;                                        // 0  - max skill value for player level
 };
 
-typedef std::map<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
+typedef UNORDERED_MAP<uint32, SpellLearnSkillNode> SpellLearnSkillMap;
 
 struct SpellLearnSpellNode
 {
@@ -417,7 +417,7 @@ enum AttributesCu
 
 #define SPELL_FAKE_DELAY 200LL
 
-typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
+typedef UNORDERED_MAP<int32, std::vector<int32> > SpellLinkedMap;
 
 extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 

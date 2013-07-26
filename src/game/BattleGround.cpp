@@ -143,7 +143,7 @@ void BattleGround::Update(uint32 diff)
 
     if (GetRemovedPlayersSize())
     {
-        for (std::map<uint64, uint8>::iterator itr = m_RemovedPlayers.begin(); itr != m_RemovedPlayers.end(); ++itr)
+        for (UNORDERED_MAP<uint64, uint8>::iterator itr = m_RemovedPlayers.begin(); itr != m_RemovedPlayers.end(); ++itr)
         {
             Player *plr = sObjectMgr.GetPlayer(itr->first);
             switch (itr->second)
@@ -185,7 +185,7 @@ void BattleGround::Update(uint32 diff)
     {
         if (GetReviveQueueSize())
         {
-            for (std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
+            for (UNORDERED_MAP<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
             {
                 Creature *sh = NULL;
                 for (std::vector<uint64>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
@@ -838,7 +838,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         participant = true;
     }
 
-    std::map<uint64, BattleGroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
+    UNORDERED_MAP<uint64, BattleGroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
     if (itr2 != m_PlayerScores.end())
     {
         BattleGroundScore *temp = itr2->second;  // delete player's score
@@ -1201,7 +1201,7 @@ bool BattleGround::HasFreeSlots() const
 void BattleGround::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
     //this procedure is called from virtual function implemented in bg subclass
-    std::map<uint64, BattleGroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    UNORDERED_MAP<uint64, BattleGroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
 
     if (itr == m_PlayerScores.end())                         // player not found...
         return;
@@ -1260,7 +1260,7 @@ void BattleGround::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
 
 void BattleGround::RemovePlayerFromResurrectQueue(uint64 player_guid)
 {
-    for (std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
+    for (UNORDERED_MAP<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
     {
         for (std::vector<uint64>::iterator itr2 =(itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
         {

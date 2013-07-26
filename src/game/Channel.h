@@ -147,7 +147,7 @@ class Channel
         }
     };
 
-    typedef     std::map<uint64, PlayerInfo> PlayerList;
+    typedef     UNORDERED_MAP<uint64, PlayerInfo> PlayerList;
     PlayerList  players;
     typedef     std::set<uint64> BannedList;
     BannedList  banned;

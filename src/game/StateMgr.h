@@ -69,7 +69,7 @@ struct ActionInfo
     bool               restoreable;
 };
 
-//typedef std::map<UnitActionPriority, ActionInfo> UnitActionStorage;
+//typedef UNORDERED_MAP<UnitActionPriority, ActionInfo> UnitActionStorage;
 typedef ACE_Based::LockedVector<ActionInfo> UnitActionStorage;
 
 class HELLGROUND_IMPORT_EXPORT UnitStateMgr

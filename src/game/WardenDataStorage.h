@@ -47,8 +47,8 @@ class WardenDataStorage
         ~WardenDataStorage();
 
     private:
-        std::map<uint32, WardenData*> data_map;
-        std::map<uint32, WardenDataResult*> result_map;
+        UNORDERED_MAP<uint32, WardenData*> data_map;
+        UNORDERED_MAP<uint32, WardenDataResult*> result_map;
         uint32 internalDataID;
         std::vector<uint32> memCheckIds;
 

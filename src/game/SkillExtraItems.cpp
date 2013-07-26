@@ -47,7 +47,7 @@ struct SkillExtraItemEntry
 };
 
 // map to store the extra item creation info, the key is the spellId of the creation spell, the mapped value is the assigned SkillExtraItemEntry
-typedef std::map<uint32,SkillExtraItemEntry> SkillExtraItemMap;
+typedef UNORDERED_MAP<uint32,SkillExtraItemEntry> SkillExtraItemMap;
 
 SkillExtraItemMap SkillExtraItemStore;
 

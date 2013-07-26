@@ -62,7 +62,7 @@ struct GameEventData
     uint32 occurence;   // time between end and start
     uint32 length;  // length of the event (minutes) after finishing all conditions
     GameEventState state;   // state of the game event, these are saved into the game_event table on change!
-    std::map<uint32 /*condition id*/, GameEventFinishCondition> conditions;  // conditions to finish
+    UNORDERED_MAP<uint32 /*condition id*/, GameEventFinishCondition> conditions;  // conditions to finish
     std::set<uint16 /*gameevent id*/> prerequisite_events;  // events that must be completed before starting this event
     std::string description;
 
@@ -144,7 +144,7 @@ class GameEventMgr
         typedef std::vector<QuestRelList> GameEventQuestMap;
         typedef std::list<NPCVendorEntry> NPCVendorList;
         typedef std::vector<NPCVendorList> GameEventNPCVendorMap;
-        typedef std::map<uint32 /*quest id*/, GameEventQuestToEventConditionNum> QuestIdToEventConditionMap;
+        typedef UNORDERED_MAP<uint32 /*quest id*/, GameEventQuestToEventConditionNum> QuestIdToEventConditionMap;
         typedef std::pair<uint32 /*guid*/, uint32 /*npcflag*/> GuidNPCFlagPair;
         typedef std::list<GuidNPCFlagPair> NPCFlagList;
         typedef std::vector<NPCFlagList> GameEventNPCFlagMap;

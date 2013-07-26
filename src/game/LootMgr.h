@@ -127,7 +127,7 @@ struct Loot;
 class LootTemplate;
 
 typedef std::vector<QuestItem> QuestItemList;
-typedef std::map<uint32, QuestItemList *> QuestItemMap;
+typedef UNORDERED_MAP<uint32, QuestItemList *> QuestItemMap;
 typedef std::vector<LootStoreItem> LootStoreItemList;
 typedef UNORDERED_MAP<uint32, LootTemplate*> LootTemplateMap;
 

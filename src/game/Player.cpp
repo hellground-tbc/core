@@ -15103,7 +15103,7 @@ void Player::LoadCorpse()
 void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
 {
     //QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT data,bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", GetGUIDLow());
-    std::map<uint64, Bag*> bagMap;                          // fast guid lookup for bags
+    UNORDERED_MAP<uint64, Bag*> bagMap;                          // fast guid lookup for bags
     //NOTE: the "order by `bag`" is important because it makes sure
     //the bagMap is filled before items in the bags are loaded
     //NOTE2: the "order by `slot`" is needed because mainhand weapons are (wrongly?)
@@ -15208,7 +15208,7 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
             {
                 item->SetSlot(NULL_SLOT);
                 // the item is in a bag, find the bag
-                std::map<uint64, Bag*>::iterator itr = bagMap.find(bag_guid);
+                UNORDERED_MAP<uint64, Bag*>::iterator itr = bagMap.find(bag_guid);
                 if (itr != bagMap.end())
                 {
                     itr->second->StoreItem(slot, item, true);

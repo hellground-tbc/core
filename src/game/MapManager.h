@@ -123,7 +123,7 @@ class MapManager
         typedef std::set<Transport *> TransportSet;
         TransportSet m_Transports;
 
-        typedef std::map<uint32, TransportSet> TransportMap;
+        typedef UNORDERED_MAP<uint32, TransportSet> TransportMap;
         TransportMap m_TransportsByMap;
 
         bool CanPlayerEnter(uint32 mapid, Player* player);

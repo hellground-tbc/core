@@ -222,9 +222,9 @@ bool OPvPCapturePoint::DelCapturePoint()
 
 void OPvPCapturePoint::DeleteSpawns()
 {
-    for (std::map<uint32,uint64>::iterator i = m_Objects.begin(); i != m_Objects.end(); ++i)
+    for (UNORDERED_MAP<uint32,uint64>::iterator i = m_Objects.begin(); i != m_Objects.end(); ++i)
         DelObject(i->first);
-    for (std::map<uint32,uint64>::iterator i = m_Creatures.begin(); i != m_Creatures.end(); ++i)
+    for (UNORDERED_MAP<uint32,uint64>::iterator i = m_Creatures.begin(); i != m_Creatures.end(); ++i)
         DelCreature(i->first);
     DelCapturePoint();
 }
@@ -551,7 +551,7 @@ bool OPvPCapturePoint::HandleDropFlag(Player * /*plr*/, uint32 /*id*/)
 
 int32 OPvPCapturePoint::HandleOpenGo(Player * /*plr*/, uint64 guid)
 {
-    std::map<uint64,uint32>::iterator itr = m_ObjectTypes.find(guid);
+    UNORDERED_MAP<uint64,uint32>::iterator itr = m_ObjectTypes.find(guid);
     if (itr != m_ObjectTypes.end())
     {
         return itr->second;

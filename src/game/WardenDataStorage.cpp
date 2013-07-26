@@ -44,11 +44,11 @@ void WardenDataStorage::Init()
 
 void WardenDataStorage::Cleanup()
 {
-    std::map<uint32, WardenData*>::iterator itr1 = data_map.begin();
+    UNORDERED_MAP<uint32, WardenData*>::iterator itr1 = data_map.begin();
     for (; itr1 != data_map.end(); ++itr1)
         delete itr1->second;
 
-    std::map<uint32, WardenDataResult*>::iterator itr2 = result_map.begin();
+    UNORDERED_MAP<uint32, WardenDataResult*>::iterator itr2 = result_map.begin();
     for (; itr2 != result_map.end(); ++itr2)
         delete itr2->second;
 
@@ -156,7 +156,7 @@ void WardenDataStorage::LoadWardenDataResult(bool reload)
 
 WardenData *WardenDataStorage::GetWardenDataById(uint32 Id) const
 {
-    std::map<uint32, WardenData*>::const_iterator itr = data_map.find(Id);
+    UNORDERED_MAP<uint32, WardenData*>::const_iterator itr = data_map.find(Id);
     if (itr != data_map.end())
         return itr->second;
     return NULL;
@@ -164,7 +164,7 @@ WardenData *WardenDataStorage::GetWardenDataById(uint32 Id) const
 
 WardenDataResult *WardenDataStorage::GetWardenResultById(uint32 Id) const
 {
-    std::map<uint32, WardenDataResult*>::const_iterator itr = result_map.find(Id);
+    UNORDERED_MAP<uint32, WardenDataResult*>::const_iterator itr = result_map.find(Id);
     if (itr != result_map.end())
         return itr->second;
     return NULL;

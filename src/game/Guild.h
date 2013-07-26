@@ -286,7 +286,7 @@ class Guild
         bool create(uint64 lGuid, std::string gname);
         void Disband();
 
-        typedef std::map<uint32, MemberSlot> MemberList;
+        typedef UNORDERED_MAP<uint32, MemberSlot> MemberList;
         typedef std::list<uint32> MemberGuidList;
         typedef std::vector<RankInfo> RankList;
 

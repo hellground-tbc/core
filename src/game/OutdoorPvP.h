@@ -156,10 +156,10 @@ protected:
 
     // map to store the various gameobjects and creatures spawned by the objective
     //        type , guid
-    std::map<uint32,uint64> m_Objects;
-    std::map<uint32,uint64> m_Creatures;
-    std::map<uint64,uint32> m_ObjectTypes;
-    std::map<uint64,uint32> m_CreatureTypes;
+    UNORDERED_MAP<uint32,uint64> m_Objects;
+    UNORDERED_MAP<uint32,uint64> m_Creatures;
+    UNORDERED_MAP<uint64,uint32> m_ObjectTypes;
+    UNORDERED_MAP<uint64,uint32> m_CreatureTypes;
 };
 
 // base class for specific outdoor pvp handlers
@@ -174,7 +174,7 @@ public:
     // deletes all gos/creatures spawned by the pvp
     void DeleteSpawns();
 
-    typedef std::map<uint32/*lowguid*/, OPvPCapturePoint*> OPvPCapturePointMap;
+    typedef UNORDERED_MAP<uint32/*lowguid*/, OPvPCapturePoint*> OPvPCapturePointMap;
 
     virtual void FillInitialWorldStates(WorldPacket & /*data*/) {}
     // called when a player triggers an areatrigger

@@ -354,7 +354,7 @@ void InstanceSaveManager::LoadResetTimes()
     // get the current reset times for normal instances (these may need to be updated)
     // these are only kept in memory for InstanceSaves that are loaded later
     // resettime = 0 in the DB for raid/heroic instances so those are skipped
-    typedef std::map<uint32, std::pair<uint32, uint64> > ResetTimeMapType;
+    typedef UNORDERED_MAP<uint32, std::pair<uint32, uint64> > ResetTimeMapType;
     ResetTimeMapType InstResetTime;
     QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT id, map, resettime FROM instance WHERE resettime > 0");
     if (result)

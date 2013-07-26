@@ -601,7 +601,7 @@ void Loot::saveLootToDB(Player *owner)
         return;
     }
 
-    std::map<uint32, uint32> item_count;
+    UNORDERED_MAP<uint32, uint32> item_count;
     RealmDataDatabase.BeginTransaction();
 
     static SqlStatementID updateItemCount;

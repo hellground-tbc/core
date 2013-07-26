@@ -70,7 +70,7 @@ struct boss_broggokAI : public ScriptedAI
 
     eEvents phase;
 
-    std::map<uint64, uint8> prisoners;
+    UNORDERED_MAP<uint64, uint8> prisoners;
 
     void Reset()
     {
@@ -155,7 +155,7 @@ struct boss_broggokAI : public ScriptedAI
         }
 
         pInstance->HandleGameObject(pInstance->GetData64(phase), true, NULL);
-        for (std::map<uint64, uint8>::iterator it = prisoners.begin(); it != prisoners.end(); it++)
+        for (UNORDERED_MAP<uint64, uint8>::iterator it = prisoners.begin(); it != prisoners.end(); it++)
         {
             if (it->second == phase)
             {
@@ -181,7 +181,7 @@ struct boss_broggokAI : public ScriptedAI
                 if (phase != EVENT_NULL && phase != EVENT_FIGHT)
                 {
                     bool found = false;
-                    for (std::map<uint64, uint8>::iterator it = prisoners.begin(); it != prisoners.end(); it++)
+                    for (UNORDERED_MAP<uint64, uint8>::iterator it = prisoners.begin(); it != prisoners.end(); it++)
                     {
                         if (it->second == phase)
                         {

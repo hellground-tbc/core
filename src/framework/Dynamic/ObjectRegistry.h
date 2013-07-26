@@ -34,7 +34,7 @@ template<class T, class Key = std::string>
 class ObjectRegistry
 {
     public:
-        typedef std::map<Key, T *> RegistryMapType;
+        typedef UNORDERED_MAP<Key, T *> RegistryMapType;
 
         /// Returns a registry item
         const T* GetRegistryItem(Key key) const

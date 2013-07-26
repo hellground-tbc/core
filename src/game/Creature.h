@@ -431,9 +431,9 @@ struct TrainerSpellData
 
 typedef std::list<GossipOption> GossipOptionList;
 
-typedef std::map<uint32,time_t> CreatureSpellCooldowns;
+typedef UNORDERED_MAP<uint32,time_t> CreatureSpellCooldowns;
 
-extern std::map<uint32, uint32> CreatureAIReInitialize;
+extern UNORDERED_MAP<uint32, uint32> CreatureAIReInitialize;
 
 // max different by z coordinate for creature aggro reaction
 #define CREATURE_Z_ATTACK_RANGE 3
