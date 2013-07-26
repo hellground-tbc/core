@@ -573,7 +573,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 IsAIEnabled = true;
             }
 
-            if (!(isTotem() || isPet() || IsTempSummon() || IS_CREATURE_GUID(GetOwnerGUID()) && !GetOwner()->ToCreature()->isTotem()) && GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() && 
+            if (!(isTotem() || isPet() || IsTempSummon() || IS_CREATURE_GUID(GetOwnerGUID()) && GetOwner()->ToCreature()->isTotem()) && GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() && 
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
             {
