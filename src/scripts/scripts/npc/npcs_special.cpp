@@ -1679,7 +1679,7 @@ struct npc_elemental_guardianAI : public ScriptedAI
 
             if (pTotem)
             {
-                if (!pTotem->isAlive())
+                if (pTotem->!IsAlive())
                 {
                     me->ForcedDespawn();
                     return;
