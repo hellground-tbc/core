@@ -12,8 +12,6 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "escort_ai.h"
-#include "EscortAI.h"
-#include "../game/ScriptMgr.h"
 
 enum ePoints
 {
@@ -365,16 +363,16 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
 
 void npc_escortAI::FillPointMovementListForCreature()
 {
-    std::vector<Waypoint> const &pPointsEntries = sScriptMgr.GetWaypointsForEntry(me->GetEntry());
+    std::vector<ScriptPointMove> const &pPointsEntries = pSystemMgr.GetPointMoveList(me->GetEntry());
 
     if (pPointsEntries.empty())
         return;
 
-    std::vector<Waypoint>::const_iterator itr;
+    std::vector<ScriptPointMove>::const_iterator itr;
 
     for (itr = pPointsEntries.begin(); itr != pPointsEntries.end(); ++itr)
     {
-        Escort_Waypoint pPoint(itr->Id, itr->Pos.x, itr->Pos.y, itr->Pos.z, itr->Delay);
+        Escort_Waypoint pPoint(itr->uiPointId, itr->fX, itr->fY, itr->fZ, itr->uiWaitTime);
         WaypointList.push_back(pPoint);
     }
 }

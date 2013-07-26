@@ -679,15 +679,6 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
             homeLocation.mapid = GetMapId();
         }
 
-        void SetHomePosition(Position pos)
-        {
-            homeLocation.coord_x = pos.x;
-            homeLocation.coord_y = pos.y;
-            homeLocation.coord_z = pos.z;
-            homeLocation.orientation = pos.o;
-            homeLocation.mapid = GetMapId();
-        }
-
         void GetHomePosition(float &x, float &y, float &z, float &ori)
         {
             x = homeLocation.coord_x;

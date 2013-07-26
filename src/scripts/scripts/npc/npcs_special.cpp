@@ -44,8 +44,6 @@ EndContentData */
 #include "BattleGround.h"
 #include "Totem.h"
 #include "PetAI.h"
-#include "EscortAI.h"
-
 #include <list>
 
 #include <cstring>
@@ -2781,58 +2779,6 @@ CreatureAI* GetAI_npc_explosive_sheep(Creature* pCreature)
     return new npc_explosive_sheepAI(pCreature);
 }
 
-struct test_escortai : public EscortAI
-{
-    test_escortai(Creature* c) : EscortAI(c) {}
-
-    void WaypointReached(uint32) override {}
-
-    bool FillWaypointsList() override
-    {
-        // by default it loads way points from database
-        bool result = EscortAI::FillWaypointsList();
-
-        // there were no way points in database for this NPC so we can add them manually
-        if (!result)
-        {
-//             AddWaypoint(0,);
-//             AddWaypoint(1,);
-//             AddWaypoint(2,);
-//             AddWaypoint(3,);
-//             AddWaypoint(4,);
-//            result = true;
-        }
-
-        return result;
-    }
-
-    void EscortUpdateAI(const uint32 diff) override
-    {
-        EscortAI::EscortUpdateAI(diff);
-    }
-};
-
-bool GossipHello_test_escortai(Player* player, Creature* creature) 
-{ 
-    player->ADD_GOSSIP_ITEM(0, "Begin EscortAI test.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1); 
-
-    // Hey there, $N. How can I help you?
-    player->SEND_GOSSIP_MENU(2, creature->GetGUID()); 
-    return true; 
-} 
-
-bool GossipSelect_test_escortai(Player* player, Creature* creature, uint32 sender, uint32 action) 
-{ 
-    if (action == GOSSIP_ACTION_INFO_DEF + 1)
-        CAST_AI(EscortAI, creature->AI())->EscortStart(1234, player, EscortAI::Flags(EscortAI::FLAG_IS_AGGRESSIVE | EscortAI::FLAG_RESPAWN_AT_END));
-    return true; 
-}
-
-CreatureAI* GetAI_test_escortai(Creature* creature)
-{
-    return new test_escortai(creature);
-}
-
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -3021,12 +2967,5 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_explosive_sheep";
     newscript->GetAI = &GetAI_npc_explosive_sheep;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "test_escortai";
-    newscript->GetAI = &GetAI_test_escortai;
-    newscript->pGossipHello =  &GossipHello_test_escortai;
-    newscript->pGossipSelect = &GossipSelect_test_escortai;
     newscript->RegisterSelf();
 }

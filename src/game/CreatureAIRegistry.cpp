@@ -24,7 +24,6 @@
 #include "GuardAI.h"
 #include "PetAI.h"
 #include "TotemAI.h"
-#include "EscortAI.h"
 #include "CreatureEventAI.h"
 #include "RandomMovementGenerator.h"
 #include "MovementGeneratorImpl.h"
