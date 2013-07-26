@@ -2194,9 +2194,9 @@ struct npc_west_hovelAI : public ScriptedAI
         {
 			if(Summon)
             {
-                me->SummonGameObject(183816, -1145.410034, 2064.830078, 80.782600, 5.044, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1156.839966, 2060.870117, 79.176399, 3.83972, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1152.719971, 2073.5, 80.622902, 2.00713, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1145.410034, 2064.830078, 80.782600, 5.044, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1156.839966, 2060.870117, 79.176399, 3.83972, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1152.719971, 2073.5, 80.622902, 2.00713, 0, 0, 0, 0, 15);
                 ResetTimer = 15000;
                 Summon = false;
             }
@@ -2237,10 +2237,10 @@ struct npc_stableAI : public ScriptedAI
         {
 			if(Summon)
             {
-                me->SummonGameObject(183816, -1067.280029, 1998.949951, 76.286301, 5.86431, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1052.189941, 2012.099976, 80.946198, 5.95157, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1043.439941, 2002.140015, 76.030502, 2.00713, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1052.26001, 1996.339966, 79.377502, 0.628319, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1067.280029, 1998.949951, 76.286301, 5.86431, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1052.189941, 2012.099976, 80.946198, 5.95157, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1043.439941, 2002.140015, 76.030502, 2.00713, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1052.26001, 1996.339966, 79.377502, 0.628319, 0, 0, 0, 0, 15);
                 ResetTimer = 15000;
                 Summon = false;
             }
@@ -2281,10 +2281,10 @@ struct npc_barracksAI : public ScriptedAI
         {
 			if(Summon)
             {
-                me->SummonGameObject(183816, -1176.709961, 1972.189941, 107.182999, 5.18363, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1120.219971, 1929.890015, 92.360901, 0.89011, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1137.099976, 1951.25, 94.115898, 2.32129, 0, 0, 0, 0, 15);
-                me->SummonGameObject(183816, -1152.890015, 1961.48999, 92.9795, 0.994838, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1176.709961, 1972.189941, 107.182999, 5.18363, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1120.219971, 1929.890015, 92.360901, 0.89011, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1137.099976, 1951.25, 94.115898, 2.32129, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1152.890015, 1961.48999, 92.9795, 0.994838, 0, 0, 0, 0, 15);
                 ResetTimer = 15000;
                 Summon = false;
             }
