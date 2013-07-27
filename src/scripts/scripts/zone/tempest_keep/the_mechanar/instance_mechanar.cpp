@@ -237,7 +237,7 @@ struct instance_mechanar : public ScriptedInstance
             SaveToDB();
     }
 
-    void instance_mechanar::DoSpawnBridgeWave()
+    void DoSpawnBridgeWave()
     {
         if (Player* player = instance->GetPlayers().begin()->getSource())
         {
