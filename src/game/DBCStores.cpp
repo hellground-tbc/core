@@ -27,8 +27,8 @@
 
 #include <map>
 
-typedef UNORDERED_MAP<uint16,uint32> AreaFlagByAreaID;
-typedef UNORDERED_MAP<uint32,uint32> AreaFlagByMapID;
+typedef std::map<uint16,uint32> AreaFlagByAreaID;
+typedef std::map<uint32,uint32> AreaFlagByMapID;
 struct WMOAreaTableTripple
 {
     WMOAreaTableTripple(int32 r, int32 a, int32 g) : rootId(r), adtId(a), groupId(g)
@@ -74,7 +74,7 @@ DBCStorage <DurabilityCostsEntry> sDurabilityCostsStore(DurabilityCostsfmt);
 DBCStorage <EmotesEntry> sEmotesStore(EmotesEntryfmt);
 DBCStorage <EmotesTextEntry> sEmotesTextStore(EmotesTextEntryfmt);
 
-typedef UNORDERED_MAP<uint32,SimpleFactionsList> FactionTeamMap;
+typedef std::map<uint32,SimpleFactionsList> FactionTeamMap;
 static FactionTeamMap sFactionTeamMap;
 DBCStorage <FactionEntry> sFactionStore(FactionEntryfmt);
 DBCStorage <FactionTemplateEntry> sFactionTemplateStore(FactionTemplateEntryfmt);
@@ -135,7 +135,7 @@ TalentSpellPosMap sTalentSpellPosMap;
 DBCStorage <TalentTabEntry> sTalentTabStore(TalentTabEntryfmt);
 
 // store absolute bit position for first rank for talent inspect
-typedef UNORDERED_MAP<uint32,uint32> TalentInspectMap;
+typedef std::map<uint32,uint32> TalentInspectMap;
 static TalentInspectMap sTalentPosInInspect;
 static TalentInspectMap sTalentTabSizeInInspect;
 static uint32 sTalentTabPages[12/*MAX_CLASSES*/][3];
@@ -378,7 +378,7 @@ void LoadDBCStores(const std::string& dataPath)
     {
         // fill table by amount of talent ranks and fill sTalentTabBitSizeInInspect
         // store in with (row,col,talent)->size key for correct sorting by (row,col)
-        typedef UNORDERED_MAP<uint32,uint32> TalentBitSize;
+        typedef std::map<uint32,uint32> TalentBitSize;
         TalentBitSize sTalentBitSize;
         for(uint32 i = 1; i < sTalentStore.GetNumRows(); ++i)
         {

@@ -75,7 +75,7 @@ struct instance_black_temple : public ScriptedInstance
 
     uint32 Encounters[ENCOUNTERS];
 
-    UNORDERED_MAP<uint64, uint32> sodList;
+    std::map<uint64, uint32> sodList;
     std::vector<uint64> weaponmasterList;
     std::list<uint64> SoulFragmentsList;
     std::list<uint64> AshtongueBrokenList;
@@ -545,7 +545,7 @@ struct instance_black_temple : public ScriptedInstance
             case DATA_SHADOWOFDEATH_DONE:
                 if(sodList.size() && GetData(EVENT_TERONGOREFIEND) == IN_PROGRESS)
                 {
-                    for(UNORDERED_MAP<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
+                    for(std::map<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
                     {
                         if(itr->first == value)
                             sodList.erase(itr);
@@ -582,7 +582,7 @@ struct instance_black_temple : public ScriptedInstance
         {
             if(sodList.size())
             {
-                for(UNORDERED_MAP<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
+                for(std::map<uint64,uint32>::iterator itr = sodList.begin(); itr != sodList.end(); itr++)
                 {
                     if(itr->second <= diff)
                     {

@@ -173,7 +173,7 @@ struct boss_warlord_kalithreshAI : public ScriptedAI
             if (distiller)
             {
                 float x, y, z;
-                distiller->GetNearPoint(x, y, z, INTERACTION_DISTANCE);
+                distiller->GetContactPoint(me, x, y, z, INTERACTION_DISTANCE);
                 me->GetMotionMaster()->MovePoint(1, x, y, z);
                 CurrentDistiller = distiller->GetGUID();
             }

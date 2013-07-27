@@ -57,7 +57,7 @@
 // apply implementation of the singletons
 #include "Map.h"
 
-UNORDERED_MAP<uint32, uint32> CreatureAIReInitialize;
+std::map<uint32, uint32> CreatureAIReInitialize;
 
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
 {

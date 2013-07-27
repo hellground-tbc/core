@@ -103,7 +103,7 @@ enum LevelRequirementVsMode
 #define MIN_UNLOAD_DELAY      1                             // immediate unload
 
 typedef UNORDERED_MAP<Creature*, CreatureMover>                 CreatureMoveList;
-typedef UNORDERED_MAP<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
+typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 typedef tbb::concurrent_hash_map<uint64, GameObject*>           GObjectMapType;
 typedef tbb::concurrent_hash_map<uint64, DynamicObject*>        DObjectMapType;
 typedef tbb::concurrent_hash_map<uint64, Creature*>             CreaturesMapType;
@@ -291,7 +291,7 @@ class HELLGROUND_IMPORT_EXPORT Map : public GridRefManager<NGridType>
         }
 
         //per-map script storage
-        void ScriptsStart(UNORDERED_MAP<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
+        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target);
         void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
 
     private:
@@ -366,7 +366,7 @@ class HELLGROUND_IMPORT_EXPORT Map : public GridRefManager<NGridType>
         bool i_scriptLock;
 
         std::set<WorldObject *> i_objectsToRemove;
-        UNORDERED_MAP<WorldObject*, bool> i_objectsToSwitch;
+        std::map<WorldObject*, bool> i_objectsToSwitch;
         std::multimap<time_t, ScriptAction> m_scriptSchedule;
 
         // Type specific code for add/remove to/from grid

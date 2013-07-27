@@ -314,7 +314,7 @@ const T& RAND(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, c
     }
 }
 
-class EventMap : private UNORDERED_MAP<uint32, uint32>
+class EventMap : private std::map<uint32, uint32>
 {
     private:
         uint32 m_time, m_phase;

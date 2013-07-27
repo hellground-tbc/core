@@ -120,7 +120,7 @@ struct SpellCooldown
     uint16 itemid;
 };
 
-typedef UNORDERED_MAP<uint32, SpellCooldown> SpellCooldowns;
+typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 
 enum TrainerSpellState
 {
@@ -158,7 +158,7 @@ enum ActionButtonType
 
 #define  MAX_ACTION_BUTTONS 132                             //checked in 2.3.0
 
-typedef UNORDERED_MAP<uint8,ActionButton> ActionButtonList;
+typedef std::map<uint8,ActionButton> ActionButtonList;
 
 typedef std::pair<uint16, uint8> CreateSpellPair;
 
@@ -546,7 +546,7 @@ enum AtLoginFlags
     AT_LOGIN_DISPLAY_CHANGE = 0x8
 };
 
-typedef UNORDERED_MAP<uint32, QuestStatusData> QuestStatusMap;
+typedef std::map<uint32, QuestStatusData> QuestStatusMap;
 
 enum QuestSlotOffsets
 {

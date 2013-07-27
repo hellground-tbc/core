@@ -46,7 +46,7 @@ void OutdoorPvPNA::HandleKillImpl(Player *plr, Unit * killed)
 uint32 OPvPCapturePointNA::GetAliveGuardsCount()
 {
     uint32 cnt = 0;
-    for (UNORDERED_MAP<uint32, uint64>::iterator itr = m_Creatures.begin(); itr != m_Creatures.end(); ++itr)
+    for (std::map<uint32, uint64>::iterator itr = m_Creatures.begin(); itr != m_Creatures.end(); ++itr)
     {
         switch (itr->first)
         {

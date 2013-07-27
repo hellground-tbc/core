@@ -55,7 +55,7 @@ struct Realm
 class RealmList
 {
     public:
-        typedef UNORDERED_MAP<std::string, Realm> RealmMap;
+        typedef std::map<std::string, Realm> RealmMap;
 
         static RealmList& Instance();
 

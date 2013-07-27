@@ -106,7 +106,7 @@ namespace VMAP
             pTree.build(mapSpawns, BoundsTrait<ModelSpawn*>::getBounds);
 
             // ===> possibly move this code to StaticMapTree class
-            UNORDERED_MAP<uint32, uint32> modelNodeIdx;
+            std::map<uint32, uint32> modelNodeIdx;
             for (uint32 i=0; i<mapSpawns.size(); ++i)
                 modelNodeIdx.insert(pair<uint32, uint32>(mapSpawns[i]->ID, i));
 
@@ -170,7 +170,7 @@ namespace VMAP
                     const ModelSpawn &spawn2 = map_iter->second->UniqueEntries[tile->second];
                     success = success && ModelSpawn::writeToFile(tilefile, spawn2);
                     // MapTree nodes to update when loading tile:
-                    UNORDERED_MAP<uint32, uint32>::iterator nIdx = modelNodeIdx.find(spawn2.ID);
+                    std::map<uint32, uint32>::iterator nIdx = modelNodeIdx.find(spawn2.ID);
                     if (success && fwrite(&nIdx->second, sizeof(uint32), 1, tilefile) != 1) success = false;
                 }
                 fclose(tilefile);

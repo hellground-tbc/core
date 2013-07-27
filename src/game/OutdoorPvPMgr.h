@@ -67,7 +67,7 @@ class OutdoorPvPMgr
         void HandleDropFlag(Player * plr, uint32 spellId);
 
         typedef std::vector<OutdoorPvP*> OutdoorPvPSet;
-        typedef UNORDERED_MAP<uint32 /* zoneid */, OutdoorPvP*> OutdoorPvPMap;
+        typedef std::map<uint32 /* zoneid */, OutdoorPvP*> OutdoorPvPMap;
 
     private:
         // contains all initiated outdoor pvp events

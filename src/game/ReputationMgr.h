@@ -47,10 +47,10 @@ struct FactionState
     bool needSave;
 };
 
-typedef UNORDERED_MAP<RepListID,FactionState> FactionStateList;
+typedef std::map<RepListID,FactionState> FactionStateList;
 typedef std::pair<FactionStateList::const_iterator,FactionStateList::const_iterator> FactionStateListPair;
 
-typedef UNORDERED_MAP<uint32,ReputationRank> ForcedReactions;
+typedef std::map<uint32,ReputationRank> ForcedReactions;
 
 class Player;
 

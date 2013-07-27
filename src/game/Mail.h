@@ -181,7 +181,7 @@ class MailDraft
         /**
          * Holds a Map of GUIDs of items and pointers to the items.
          */
-        typedef UNORDERED_MAP<uint32, Item*> MailItemMap;
+        typedef std::map<uint32, Item*> MailItemMap;
 
     public:                                                 // Constructors
        /**

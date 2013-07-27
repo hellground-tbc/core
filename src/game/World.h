@@ -538,7 +538,7 @@ struct MapUpdateDiffInfo
 
     void PrintCumulativeMapUpdateDiff();
 
-    typedef UNORDERED_MAP<uint32, atomic_uint*> CumulativeDiffMap;
+    typedef std::map<uint32, atomic_uint*> CumulativeDiffMap;
 
     CumulativeDiffMap _cumulativeDiffInfo;
 };

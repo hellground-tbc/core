@@ -663,7 +663,7 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHidd
     }
 }
 
-void ArenaTeam::UpdateArenaPointsHelper(UNORDERED_MAP<uint32, uint32>& PlayerPoints)
+void ArenaTeam::UpdateArenaPointsHelper(std::map<uint32, uint32>& PlayerPoints)
 {
     // called after a match has ended and the stats are already modified
     // helper function for arena point distribution (this way, when distributing, no actual calculation is required, just a few comparisons)
@@ -680,7 +680,7 @@ void ArenaTeam::UpdateArenaPointsHelper(UNORDERED_MAP<uint32, uint32>& PlayerPoi
             points_to_add = GetPoints(itr->personal_rating);
         // OBSOLETE : CharacterDatabase.PExecute("UPDATE arena_team_member SET points_to_add = '%u' WHERE arenateamid = '%u' AND guid = '%u'", points_to_add, Id, itr->guid);
 
-        UNORDERED_MAP<uint32, uint32>::iterator plr_itr = PlayerPoints.find(GUID_LOPART(itr->guid));
+        std::map<uint32, uint32>::iterator plr_itr = PlayerPoints.find(GUID_LOPART(itr->guid));
         if (plr_itr != PlayerPoints.end())
         {
             //check if there is already more points

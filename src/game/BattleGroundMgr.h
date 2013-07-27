@@ -26,7 +26,7 @@
 #include "Common.h"
 #include "BattleGround.h"
 
-typedef UNORDERED_MAP<uint32, BattleGround*> BattleGroundSet;
+typedef std::map<uint32, BattleGround*> BattleGroundSet;
 
 //this container can't be deque, because deque doesn't like removing the last element - if you remove it, it invalidates next iterator and crash appears
 typedef std::list<BattleGround*> BGFreeSlotQueueType;
@@ -48,7 +48,7 @@ struct PlayerQueueInfo                                      // stores informatio
 
 struct GroupQueueInfo                                       // stores information about the group in queue (also used when joined as solo!)
 {
-    UNORDERED_MAP<uint64, PlayerQueueInfo*> Players;        // player queue info map
+    std::map<uint64, PlayerQueueInfo*> Players;             // player queue info map
     uint32  Team;                                           // Player team (ALLIANCE/HORDE)
     BattleGroundTypeId BgTypeId;                            // battleground type id
     bool    IsRated;                                        // rated
@@ -97,7 +97,7 @@ class BattleGroundQueue
 
         uint32 GetQueuedPlayersCount(BattleGroundTeamId team, BattleGroundBracketId bracketId);
 
-        typedef UNORDERED_MAP<uint64, PlayerQueueInfo> QueuedPlayersMap;
+        typedef std::map<uint64, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
 
         //we need constant add to begin and constant remove / add from the end, therefore deque suits our problem well

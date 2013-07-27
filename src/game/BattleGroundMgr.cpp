@@ -241,7 +241,7 @@ void BattleGroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     queuedPlayersCount[group->GetBGTeam()][bracket_id] -= 1;
 
     // remove player queue info from group queue info
-    UNORDERED_MAP<uint64, PlayerQueueInfo*>::iterator pitr = group->Players.find(guid);
+    std::map<uint64, PlayerQueueInfo*>::iterator pitr = group->Players.find(guid);
     if (pitr != group->Players.end())
         group->Players.erase(pitr);
 
@@ -298,7 +298,7 @@ bool BattleGroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, BattleGround * b
         ginfo->IsInvitedToBGInstanceGUID = bg->GetInstanceID();
         BattleGroundQueueTypeId bgQueueTypeId = BattleGroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
         // loop through the players
-        for(UNORDERED_MAP<uint64,PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
+        for(std::map<uint64,PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
             // set status
             itr->second->InviteTime = WorldTimer::getMSTime();
@@ -356,7 +356,7 @@ void BattleGroundQueue::BGEndedRemoveInvites(BattleGround *bg)
                 for(uint32 j = 0; j < to_remove; j++)
                 {
                     // always remove the first one in the group
-                    UNORDERED_MAP<uint64, PlayerQueueInfo * >::iterator itr2 = ginfo->Players.begin();
+                    std::map<uint64, PlayerQueueInfo * >::iterator itr2 = ginfo->Players.begin();
                     if( itr2 == ginfo->Players.end() )
                     {
                         sLog.outLog(LOG_DEFAULT, "ERROR: Empty Players in ginfo, this should never happen!");
@@ -1670,7 +1670,7 @@ void BattleGroundMgr::DistributeArenaPoints()
     sWorld.SendGlobalText("Distributing arena points to players...", NULL);
 
     //temporary structure for storing maximum points to add values for all players
-    UNORDERED_MAP<uint32, uint32> PlayerPoints;
+    std::map<uint32, uint32> PlayerPoints;
 
     //at first update all points for all team members
     for (ObjectMgr::ArenaTeamMap::iterator team_itr = sObjectMgr.GetArenaTeamMapBegin(); team_itr != sObjectMgr.GetArenaTeamMapEnd(); ++team_itr)
@@ -1682,7 +1682,7 @@ void BattleGroundMgr::DistributeArenaPoints()
     }
 
     //cycle that gives points to all players
-    for (UNORDERED_MAP<uint32, uint32>::iterator plr_itr = PlayerPoints.begin(); plr_itr != PlayerPoints.end(); ++plr_itr)
+    for (std::map<uint32, uint32>::iterator plr_itr = PlayerPoints.begin(); plr_itr != PlayerPoints.end(); ++plr_itr)
     {
         //update to database
         RealmDataDatabase.PExecute("UPDATE characters SET arena_pending_points = '%u' WHERE `guid` = '%u'", plr_itr->second, plr_itr->first);

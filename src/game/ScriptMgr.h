@@ -59,7 +59,7 @@ struct ScriptInfo
 };
 
 typedef std::multimap<uint32, ScriptInfo> ScriptMap;
-typedef UNORDERED_MAP<uint32, ScriptMap > ScriptMapMap;
+typedef std::map<uint32, ScriptMap > ScriptMapMap;
 extern ScriptMapMap sQuestEndScripts;
 extern ScriptMapMap sQuestStartScripts;
 extern ScriptMapMap sSpellScripts;

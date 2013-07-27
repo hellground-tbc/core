@@ -68,7 +68,7 @@ class Transport : public GameObject
             uint32 id;
         };
 
-        typedef UNORDERED_MAP<uint32, WayPoint> WayPointMap;
+        typedef std::map<uint32, WayPoint> WayPointMap;
 
         WayPointMap::iterator m_curr;
         WayPointMap::iterator m_next;

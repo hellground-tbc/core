@@ -1367,7 +1367,6 @@ struct npc_anchorite_baradaAI : public ScriptedAI
             default: return 0;
             }
         }
-        return 0;
     }
 
     void JustDied(Unit* who)
