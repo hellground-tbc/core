@@ -125,7 +125,6 @@ void WardenBase::RequestModule()
     WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse));
     pkt.append((uint8*)&Request, sizeof(WardenModuleUse));
     Client->SendPacket(&pkt);
-    m_WardenDataSent = true;
 }
 
 void WardenBase::Update()

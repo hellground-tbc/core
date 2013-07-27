@@ -69,9 +69,6 @@ void WardenMac::Init(WorldSession *pClient, BigNumber *K)
 //    PrintHexArray("  Module Key: ", Module->Key, 16, true);
 //    PrintHexArray("  Module ID: ", Module->ID, 16, true);
     RequestModule();
-
-    m_initialized = true;
-    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 ClientWardenModule *WardenMac::GetModuleForClient(WorldSession *session)
@@ -175,6 +172,10 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
 
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
+
+    m_initialized = true;
+
+    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 void WardenMac::RequestData()
