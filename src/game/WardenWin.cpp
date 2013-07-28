@@ -74,6 +74,9 @@ void WardenWin::Init(WorldSession *pClient, BigNumber *K)
 //    PrintHexArray("  Module Key: ", Module->Key, 16, true);
 //    PrintHexArray("  Module ID: ", Module->ID, 16, true);
     RequestModule();
+    
+    m_initialized = true;
+    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 ClientWardenModule *WardenWin::GetModuleForClient(WorldSession *session)
@@ -160,6 +163,9 @@ void WardenWin::RequestHash()
 
 void WardenWin::HandleHashResult(ByteBuffer &buff)
 {
+    m_WardenDataSent = false;
+    m_WardenKickTimer = 0;
+
     buff.rpos(buff.wpos());
 
     const uint8 validHash[20] = { 0x56, 0x8C, 0x05, 0x4C, 0x78, 0x1A, 0x97, 0x2A, 0x60, 0x37, 0xA2, 0x29, 0x0C, 0x22, 0xB5, 0x25, 0x71, 0xA0, 0x6F, 0x4E };
@@ -187,10 +193,6 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
 
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
-
-    m_initialized = true;
-
-    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 void WardenWin::RequestData()
