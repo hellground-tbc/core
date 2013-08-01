@@ -7042,11 +7042,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         {
             float chance = 0;
             chance = 6.02-0.067*getLevel();
-            if (!roll_chance_f(chance))
+            if (roll_chance_f(chance) == true)
+                trigger_spell_id = 15601;
+            else
                 return false;
-
-            trigger_spell_id = 15601;
-
             break;
         }
     }
