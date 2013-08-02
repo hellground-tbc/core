@@ -241,34 +241,49 @@ struct instance_mechanar : public ScriptedInstance
     {
         if (Player* player = instance->GetPlayers().begin()->getSource())
         {
-            if (BridgeEventPhase == MAX_BRIDGE_LOCATIONS)
+            switch (BridgeEventPhase)
             {
-                if (Creature* Pathaleon = instance->GetCreature(PathaleonGUID))
-                {
-                    Pathaleon->SetVisibility(VISIBILITY_ON);
-                    Pathaleon->SetReactState(REACT_AGGRESSIVE);
-                    Pathaleon->CastSpell(Pathaleon, SPELL_ETHEREAL_TELEPORT, false);
-                    DoScriptText(SAY_PATHALEON_INTRO, Pathaleon, player);
-                    BridgeEventTimer = 0;
-                    EventTimer = 0;
-                }
-            }
-            else
-            {
-                for (uint8 i = 0; i < MAX_BRIDGE_TRASH; ++i)
-                {
-                    if (BridgeEventLocs[BridgeEventPhase][i].m_uiSpawnEntry == 0)
-                        break;
-
-                    if (Creature* temp = player->SummonCreature(BridgeEventLocs[BridgeEventPhase][i].m_uiSpawnEntry, BridgeEventLocs[BridgeEventPhase][i].x, BridgeEventLocs[BridgeEventPhase][i].y, BridgeEventLocs[BridgeEventPhase][i].z, BridgeEventLocs[BridgeEventPhase][i].o, TEMPSUMMON_DEAD_DESPAWN, 0))
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    for (uint8 i = 0; i < MAX_BRIDGE_TRASH; ++i)
                     {
-                        BridgeTrashGuidList.push_back(temp->GetGUID());
-                        temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
+                        if (BridgeEventLocs[BridgeEventPhase][i].m_uiSpawnEntry == 0)
+                            break;
 
-                        if (player->isAlive())
-                            temp->AI()->AttackStart(player);
+                        if (Creature* temp = player->SummonCreature(BridgeEventLocs[BridgeEventPhase][i].m_uiSpawnEntry, BridgeEventLocs[BridgeEventPhase][i].x, BridgeEventLocs[BridgeEventPhase][i].y, BridgeEventLocs[BridgeEventPhase][i].z, BridgeEventLocs[BridgeEventPhase][i].o, TEMPSUMMON_DEAD_DESPAWN, 0))
+                        {
+                            BridgeTrashGuidList.push_back(temp->GetGUID());
+                            temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
+
+                            switch (BridgeEventPhase)
+                            {
+                                case 1:
+                                case 2:
+                                case 3:
+                                case 4:
+                                case 5:
+                                    if (player->isAlive())
+                                        temp->AI()->AttackStart(player);
+                                    break;
+                            }
+                        }
                     }
-                }
+                    break;
+                case 6:
+                    if (Creature* Pathaleon = instance->GetCreature(PathaleonGUID))
+                    {
+                        Pathaleon->SetVisibility(VISIBILITY_ON);
+                        Pathaleon->SetReactState(REACT_AGGRESSIVE);
+                        Pathaleon->CastSpell(Pathaleon, SPELL_ETHEREAL_TELEPORT, false);
+                        DoScriptText(SAY_PATHALEON_INTRO, Pathaleon, player);
+                        BridgeEventTimer = 0;
+                        EventTimer = 0;
+                    }
+                    break;
             }
         }
 
