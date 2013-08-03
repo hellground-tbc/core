@@ -26,17 +26,11 @@
 
 #if COMPILER == COMPILER_INTEL
 #include <ext/hash_map>
-#elif COMPILER == COMPILER_GNU && __GNUC__ >= 4
-    #if __GNUC_MINOR__ >= 3 && __GNUC_MINOR__ < 7
-        #include <tr1/unordered_map>
-    #else
-        #include <unordered_map>
-    #endif
+#elif COMPILER == COMPILER_GNU && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 3)
+#include <tr1/unordered_map>
 #elif COMPILER == COMPILER_GNU && __GNUC__ >= 3
 #include <ext/hash_map>
 #elif COMPILER == COMPILER_MICROSOFT && _MSC_VER >= 1500 && _HAS_TR1    // VC9.0 and later
-#include <unordered_map>
-#elif COMPILER == COMPILER_MICROSOFT && _MSC_VER >= 1700
 #include <unordered_map>
 #else
 #include <hash_map>
@@ -45,8 +39,6 @@
 #ifdef _STLPORT_VERSION
 #define UNORDERED_MAP std::hash_map
 using std::hash_map;
-#elif COMPILER == COMPILER_MICROSOFT && _MSC_VER >= 1700
-#define UNORDERED_MAP std::unordered_map
 #elif COMPILER == COMPILER_MICROSOFT && _MSC_VER >= 1500 && _HAS_TR1
 #define UNORDERED_MAP std::tr1::unordered_map
 #elif COMPILER == COMPILER_MICROSOFT && _MSC_VER >= 1300
@@ -55,12 +47,8 @@ using stdext::hash_map;
 #elif COMPILER == COMPILER_INTEL
 #define UNORDERED_MAP std::hash_map
 using std::hash_map;
-#elif COMPILER == COMPILER_GNU && __GNUC__ >= 4
-    #if __GNUC_MINOR__ >= 3 && __GNUC_MINOR__ < 7
-        #define UNORDERED_MAP std::tr1::unordered_map
-    #else
-        #define UNORDERED_MAP std::unordered_map
-    #endif
+#elif COMPILER == COMPILER_GNU && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 3)
+#define UNORDERED_MAP std::tr1::unordered_map
 #elif COMPILER == COMPILER_GNU && __GNUC__ >= 3
 #define UNORDERED_MAP __gnu_cxx::hash_map
 

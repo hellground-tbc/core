@@ -14,5 +14,6 @@
 #define TYPE_KARGATH            6
 
 #define TYPE_EXECUTION          7
+#define TYPE_EXECUTION_DONE     8
 #endif
 

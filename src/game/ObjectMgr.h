@@ -84,7 +84,7 @@ struct AreaTrigger
 };
 
 typedef std::set<uint32> CellGuidSet;
-typedef UNORDERED_MAP<uint32/*player guid*/,uint32/*instance*/> CellCorpseSet;
+typedef std::map<uint32/*player guid*/,uint32/*instance*/> CellCorpseSet;
 struct CellObjectGuids
 {
     CellGuidSet creatures;
@@ -109,7 +109,7 @@ struct TrinityStringLocale
     std::vector<std::string> Content;                       // 0 -> default, i -> i-1 locale index
 };
 
-typedef UNORDERED_MAP<uint32,uint32> CreatureLinkedRespawnMap;
+typedef std::map<uint32,uint32> CreatureLinkedRespawnMap;
 typedef UNORDERED_MAP<uint32,CreatureData> CreatureDataMap;
 typedef UNORDERED_MAP<uint32,GameObjectData> GameObjectDataMap;
 typedef UNORDERED_MAP<uint32,CreatureLocale> CreatureLocaleMap;
@@ -845,7 +845,7 @@ class ObjectMgr
         void ConvertCreatureAddonAuras(CreatureDataAddon* addon, char const* table, char const* guidEntryStr);
         void LoadQuestRelationsHelper(QuestRelations& map,char const* table);
 
-        typedef UNORDERED_MAP<uint32,PetLevelInfo*> PetLevelInfoMap;
+        typedef std::map<uint32,PetLevelInfo*> PetLevelInfoMap;
         // PetLevelInfoMap[creature_id][level]
         PetLevelInfoMap petInfo;                            // [creature_id][level]
 
@@ -854,13 +854,13 @@ class ObjectMgr
         void BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* plinfo) const;
         PlayerInfo playerInfo[MAX_RACES][MAX_CLASSES];
 
-        typedef UNORDERED_MAP<uint32,uint32> BaseXPMap;          // [area level][base xp]
+        typedef std::map<uint32,uint32> BaseXPMap;          // [area level][base xp]
         BaseXPMap mBaseXPTable;
 
-        typedef UNORDERED_MAP<uint32,int32> FishingBaseSkillMap; // [areaId][base skill level]
+        typedef std::map<uint32,int32> FishingBaseSkillMap; // [areaId][base skill level]
         FishingBaseSkillMap mFishingBaseForArea;
 
-        typedef UNORDERED_MAP<uint32,std::vector<std::string> > HalfNameMap;
+        typedef std::map<uint32,std::vector<std::string> > HalfNameMap;
         HalfNameMap PetHalfName0;
         HalfNameMap PetHalfName1;
 

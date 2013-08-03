@@ -867,9 +867,9 @@ struct SpellEntry
 };
 
 typedef std::set<uint32> SpellCategorySet;
-typedef UNORDERED_MAP<uint32,SpellCategorySet > SpellCategoryStore;
+typedef std::map<uint32,SpellCategorySet > SpellCategoryStore;
 typedef std::set<uint32> PetFamilySpellsSet;
-typedef UNORDERED_MAP<uint32,PetFamilySpellsSet > PetFamilySpellsStore;
+typedef std::map<uint32,PetFamilySpellsSet > PetFamilySpellsStore;
 
 struct SpellCastTimesEntry
 {
@@ -1110,7 +1110,7 @@ struct TalentSpellPos
     uint8  rank;
 };
 
-typedef UNORDERED_MAP<uint32,TalentSpellPos> TalentSpellPosMap;
+typedef std::map<uint32,TalentSpellPos> TalentSpellPosMap;
 
 struct TaxiPathBySourceAndDestination
 {
@@ -1120,8 +1120,8 @@ struct TaxiPathBySourceAndDestination
     uint32    ID;
     uint32    price;
 };
-typedef UNORDERED_MAP<uint32,TaxiPathBySourceAndDestination> TaxiPathSetForSource;
-typedef UNORDERED_MAP<uint32,TaxiPathSetForSource> TaxiPathSetBySource;
+typedef std::map<uint32,TaxiPathBySourceAndDestination> TaxiPathSetForSource;
+typedef std::map<uint32,TaxiPathSetForSource> TaxiPathSetBySource;
 
 struct TaxiPathNodePtr
 {

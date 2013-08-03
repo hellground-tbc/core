@@ -160,7 +160,7 @@ void GameEventMgr::StopEvent(uint16 event_id, bool overwrite)
             // reset conditions
             mGameEvent[event_id].nextstart = 0;
             mGameEvent[event_id].state = GAMEEVENT_WORLD_INACTIVE;
-            UNORDERED_MAP<uint32 /*condition id*/, GameEventFinishCondition>::iterator itr;
+            std::map<uint32 /*condition id*/, GameEventFinishCondition>::iterator itr;
             for (itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
                 itr->second.done = 0;
 
@@ -687,7 +687,7 @@ void GameEventMgr::LoadFromDB()
                 continue;
             }
 
-            UNORDERED_MAP<uint32, GameEventFinishCondition>::iterator itr = mGameEvent[event_id].conditions.find(condition);
+            std::map<uint32, GameEventFinishCondition>::iterator itr = mGameEvent[event_id].conditions.find(condition);
             if (itr != mGameEvent[event_id].conditions.end())
             {
                 itr->second.done = fields[2].GetFloat();
@@ -1515,7 +1515,7 @@ void GameEventMgr::HandleQuestComplete(uint32 quest_id)
         // not in correct phase, return
         if (mGameEvent[event_id].state != GAMEEVENT_WORLD_CONDITIONS)
             return;
-        UNORDERED_MAP<uint32,GameEventFinishCondition>::iterator citr = mGameEvent[event_id].conditions.find(condition);
+        std::map<uint32,GameEventFinishCondition>::iterator citr = mGameEvent[event_id].conditions.find(condition);
         // condition is registered
         if (citr != mGameEvent[event_id].conditions.end())
         {
@@ -1554,7 +1554,7 @@ void GameEventMgr::HandleQuestComplete(uint32 quest_id)
 
 bool GameEventMgr::CheckOneGameEventConditions(uint16 event_id)
 {
-    for (UNORDERED_MAP<uint32,GameEventFinishCondition>::iterator itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
+    for (std::map<uint32,GameEventFinishCondition>::iterator itr = mGameEvent[event_id].conditions.begin(); itr != mGameEvent[event_id].conditions.end(); ++itr)
         if (itr->second.done < itr->second.reqNum)
             // return false if a condition doesn't match
             return false;
@@ -1617,7 +1617,7 @@ void GameEventMgr::HandleWorldEventGossip(Player *plr, Creature *c)
 
 void GameEventMgr::SendWorldStateUpdate(Player * plr, uint16 event_id)
 {
-    UNORDERED_MAP<uint32,GameEventFinishCondition>::iterator itr;
+    std::map<uint32,GameEventFinishCondition>::iterator itr;
     for (itr = mGameEvent[event_id].conditions.begin(); itr !=mGameEvent[event_id].conditions.end(); ++itr)
     {
         // if required limit exists, than show done values in percents

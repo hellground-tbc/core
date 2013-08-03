@@ -70,7 +70,7 @@ struct boss_najentusAI : public ScriptedAI
     WorldLocation wLoc;
 
     //       go_guid, target_guid
-    UNORDERED_MAP<uint64 , uint64> SpineTargetMap;
+    std::map<uint64 , uint64> SpineTargetMap;
 
     void Reset()
     {
@@ -86,7 +86,7 @@ struct boss_najentusAI : public ScriptedAI
         plToNeedle = 3;
         checkAura = false;
 
-        UNORDERED_MAP<uint64, uint64>::iterator spineTarget = SpineTargetMap.begin();
+        std::map<uint64, uint64>::iterator spineTarget = SpineTargetMap.begin();
         for(;spineTarget != SpineTargetMap.end(); ++spineTarget)
         {
             if(GameObject *go = GameObject::GetGameObject(*m_creature, spineTarget->first))
@@ -158,7 +158,7 @@ struct boss_najentusAI : public ScriptedAI
         if(SpineTargetMap.empty())
             return false;
 
-        UNORDERED_MAP<uint64, uint64>::iterator spineTarget = SpineTargetMap.find(go_guid);
+        std::map<uint64, uint64>::iterator spineTarget = SpineTargetMap.find(go_guid);
         if(spineTarget == SpineTargetMap.end())
             return false;
 

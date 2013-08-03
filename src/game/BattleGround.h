@@ -244,7 +244,7 @@ class BattleGroundScore
         uint32 HealingDone;
 };
 
-typedef UNORDERED_MAP<uint64, BattleGroundScore*> BattleGroundScoreMap;
+typedef std::map<uint64, BattleGroundScore*> BattleGroundScoreMap;
 
 enum BGHonorMode
 {
@@ -358,13 +358,13 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
         bool isBattleGround() const { return !m_IsArena; }
         bool isRated() const        { return m_IsRated; }
 
-        typedef UNORDERED_MAP<uint64, BattleGroundPlayer> BattleGroundPlayerMap;
+        typedef std::map<uint64, BattleGroundPlayer> BattleGroundPlayerMap;
         BattleGroundPlayerMap const& GetPlayers() const { return m_Players; }
         uint32 GetPlayersSize() const { return m_Players.size(); }
         uint32 GetRemovedPlayersSize() const { return m_RemovedPlayers.size(); }
 
-        UNORDERED_MAP<uint64, BattleGroundScore*>::const_iterator GetPlayerScoresBegin() const { return m_PlayerScores.begin(); }
-        UNORDERED_MAP<uint64, BattleGroundScore*>::const_iterator GetPlayerScoresEnd() const { return m_PlayerScores.end(); }
+        std::map<uint64, BattleGroundScore*>::const_iterator GetPlayerScoresBegin() const { return m_PlayerScores.begin(); }
+        std::map<uint64, BattleGroundScore*>::const_iterator GetPlayerScoresEnd() const { return m_PlayerScores.end(); }
         uint32 GetPlayerScoresSize() const { return m_PlayerScores.size(); }
 
         uint32 GetReviveQueueSize() const { return m_ReviveQueue.size(); }
@@ -501,14 +501,14 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 
         /* Scorekeeping */
                                                             // Player scores
-        UNORDERED_MAP<uint64, BattleGroundScore*>    m_PlayerScores;
+        std::map<uint64, BattleGroundScore*>    m_PlayerScores;
         // must be implemented in BG subclass
         virtual void RemovePlayer(Player * /*player*/, uint64 /*guid*/) {}
 
         /* Player lists, those need to be accessible by inherited classes */
         BattleGroundPlayerMap  m_Players;
                                                             // Spirit Guide guid + Player list GUIDS
-        UNORDERED_MAP<uint64, std::vector<uint64> >  m_ReviveQueue;
+        std::map<uint64, std::vector<uint64> >  m_ReviveQueue;
 
         /*
         these are important variables used for starting messages
@@ -547,7 +547,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 
         /* Player lists */
         std::vector<uint64> m_ResurrectQueue;               // Player GUID
-        UNORDERED_MAP<uint64, uint8> m_RemovedPlayers;           // uint8 is remove type (0 - bgqueue, 1 - bg, 2 - resurrect queue)
+        std::map<uint64, uint8> m_RemovedPlayers;           // uint8 is remove type (0 - bgqueue, 1 - bg, 2 - resurrect queue)
 
         /* Invited counters are useful for player invitation to BG - do not allow, if BG is started to one faction to have 2 more players than another faction */
         /* Invited counters will be changed only when removing already invited player from queue, removing player from battleground and inviting player to BG */

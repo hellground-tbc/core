@@ -562,10 +562,10 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v)
 }
 
 template <typename K, typename V>
-inline ByteBuffer &operator<<(ByteBuffer &b, UNORDERED_MAP<K, V> &m)
+inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m)
 {
     b << (uint32)m.size();
-    for (typename UNORDERED_MAP<K, V>::iterator i = m.begin(); i != m.end(); ++i)
+    for (typename std::map<K, V>::iterator i = m.begin(); i != m.end(); ++i)
     {
         b << i->first << i->second;
     }
@@ -573,7 +573,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, UNORDERED_MAP<K, V> &m)
 }
 
 template <typename K, typename V>
-inline ByteBuffer &operator>>(ByteBuffer &b, UNORDERED_MAP<K, V> &m)
+inline ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m)
 {
     uint32 msize;
     b >> msize;

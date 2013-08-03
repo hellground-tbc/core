@@ -37,7 +37,7 @@ struct boss_the_black_stalkerAI : public ScriptedAI
 {
     boss_the_black_stalkerAI(Creature *c) : ScriptedAI(c)
     {
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
         c->GetPosition(wLoc);
     }
 
@@ -72,18 +72,18 @@ struct boss_the_black_stalkerAI : public ScriptedAI
         if(summon && summon->GetEntry() == ENTRY_SPORE_STRIDER)
         {
             Striders.push_back(summon->GetGUID());
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, me->getVictimGUID()))
                 summon->AI()->AttackStart(target);
             else
-                if(m_creature->getVictim())
-                    summon->AI()->AttackStart(m_creature->getVictim());
+                if(me->getVictim())
+                    summon->AI()->AttackStart(me->getVictim());
         }
     }
 
     void JustDied(Unit *who)
     {
         for(std::list<uint64>::iterator i = Striders.begin(); i != Striders.end(); ++i)
-            if(Creature *strider = Unit::GetCreature(*m_creature, *i))
+            if(Creature *strider = Unit::GetCreature(*me, *i))
             {
                 strider->SetLootRecipient(NULL);
                 strider->DealDamage(strider,strider->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -99,7 +99,7 @@ struct boss_the_black_stalkerAI : public ScriptedAI
         // Evade if too far
         if(check_Timer < diff)
         {
-            if(!m_creature->IsWithinDistInMap(&wLoc, 60))
+            if(!me->IsWithinDistInMap(&wLoc, 60))
             {
                 EnterEvadeMode();
                 return;
@@ -110,7 +110,7 @@ struct boss_the_black_stalkerAI : public ScriptedAI
         // Spore Striders
         if(HeroicMode && SporeStriders_Timer < diff)
         {
-            DoCast(m_creature,SPELL_SUMMON_SPORE_STRIDER);
+            DoCast(me,SPELL_SUMMON_SPORE_STRIDER);
             SporeStriders_Timer = 10000+rand()%5000;
         }else SporeStriders_Timer -= diff;
 
@@ -119,7 +119,7 @@ struct boss_the_black_stalkerAI : public ScriptedAI
         {
             if(LevitatedTarget_Timer < diff)
             {
-                if(Unit* target = (Unit*)Unit::GetUnit(*m_creature, LevitatedTarget))
+                if(Unit* target = (Unit*)Unit::GetUnit(*me, LevitatedTarget))
                 {
                     if(!target->HasAura(SPELL_LEVITATE,0))
                     {
@@ -144,7 +144,7 @@ struct boss_the_black_stalkerAI : public ScriptedAI
         }
         if(Levitate_Timer < diff)
         {
-            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID()))
+            if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, me->getVictimGUID()))
             {
                 DoCast(target, SPELL_LEVITATE);
                 LevitatedTarget = target->GetGUID();

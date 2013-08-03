@@ -99,7 +99,7 @@ class AuctionHouseObject
                 delete itr->second;
         }
 
-        typedef UNORDERED_MAP<uint32, AuctionEntry*> AuctionEntryMap;
+        typedef std::map<uint32, AuctionEntry*> AuctionEntryMap;
         typedef std::pair<AuctionEntryMap::const_iterator, AuctionEntryMap::const_iterator> AuctionEntryMapBounds;
 
         uint32 GetCount() { return AuctionsMap.size(); }

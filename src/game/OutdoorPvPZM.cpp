@@ -330,7 +330,7 @@ void OPvPCapturePointZM_GraveYard::SetBeaconState(uint32 controlling_faction)
 bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player * plr, Creature * c, GossipOption & gso)
 {
     uint64 guid = c->GetGUID();
-    UNORDERED_MAP<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
+    std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if (itr != m_CreatureTypes.end())
     {
         if (itr->second == ZM_ALLIANCE_FIELD_SCOUT && plr->GetTeam() == ALLIANCE && m_BothControllingFaction == ALLIANCE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_A)
@@ -349,7 +349,7 @@ bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player * plr, Creature * c, GossipO
 
 bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player *plr, uint64 guid, uint32 /*gossipid*/)
 {
-    UNORDERED_MAP<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
+    std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if (itr != m_CreatureTypes.end())
     {
         if (!m_PvP->GetMap())

@@ -543,6 +543,11 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->BuildPlayerRepop();
                 _player->RepopAtGraveyard();
             }
+            else
+            {
+                 _player->RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
+                 _player->RemoveCharmAuras();
+            }
         }
 
         //drop a flag if player is carrying it

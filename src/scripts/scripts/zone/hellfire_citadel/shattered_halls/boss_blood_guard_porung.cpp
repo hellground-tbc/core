@@ -31,6 +31,18 @@ EndContentData */
 
 #define SPELL_CLEAVE 15496
 
+struct SumonPos
+{
+    float x, y, z;
+};
+
+static SumonPos Pos[]=
+{
+    {502.24f, 339.12f, 2.105f},
+    {503.24f, 292.17f, 1.937f}
+};
+
+
 struct boss_blood_guard_porungAI : public ScriptedAI
 {
     boss_blood_guard_porungAI(Creature *c) : ScriptedAI(c)
@@ -40,13 +52,59 @@ struct boss_blood_guard_porungAI : public ScriptedAI
 
     ScriptedInstance* pInstance;
     uint32 Cleave_Timer;
+    uint64 playerGUID;
+    uint8 wave;
+    bool waveone;
+    bool wavetwo;
+
 
     void Reset() 
     {
         Cleave_Timer = 10000;
+        playerGUID = 0;
+        waveone = false;
+        wavetwo = false;
+        wave = 0;
 
         if (pInstance)
             pInstance->SetData(TYPE_PORUNG, NOT_STARTED); 
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && !((Player*)who)->isGameMaster())
+        {
+            if (who->IsWithinDistInMap(me, 126.0f) && !waveone)
+            {
+                playerGUID = who->GetGUID();
+                DoSummon();
+                ++wave;
+                waveone = true;
+            }
+
+            if (who->IsWithinDistInMap(me, 76.0f) && !wavetwo)
+            {
+                playerGUID = who->GetGUID();
+                DoSummon();
+                wavetwo = true;
+            }
+        }
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void DoSummon()
+    {
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            me->SummonCreature(17462, Pos[wave].x, Pos[wave].y, Pos[wave].z, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (Player* player = Unit::GetPlayer(playerGUID))
+            summoned->AI()->AttackStart(player);
     }
 
     void JustDied(Unit* Killer)
@@ -83,6 +141,74 @@ CreatureAI* GetAI_boss_blood_guard_porung(Creature *_Creature)
     return new boss_blood_guard_porungAI (_Creature);
 }
 
+struct npc_blood_guardAI : public ScriptedAI
+{
+    npc_blood_guardAI(Creature *c) : ScriptedAI(c) {}
+
+    uint64 playerGUID;
+    uint8 wave;
+    bool waveone;
+    bool wavetwo;
+
+    void Reset() 
+    {
+        playerGUID = 0;
+        waveone = false;
+        wavetwo = false;
+        wave = 0;
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && !((Player*)who)->isGameMaster())
+        {
+            if (who->IsWithinDistInMap(me, 126.0f) && !waveone)
+            {
+                playerGUID = who->GetGUID();
+                DoSummon();
+                ++wave;
+                waveone = true;
+            }
+
+            if (who->IsWithinDistInMap(me, 76.0f) && !wavetwo)
+            {
+                playerGUID = who->GetGUID();
+                DoSummon();
+                wavetwo = true;
+            }
+        }
+
+        ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void DoSummon()
+    {
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            me->SummonCreature(17462, Pos[wave].x, Pos[wave].y, Pos[wave].z, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+        }
+    }
+
+    void JustSummoned(Creature* summoned)
+    {
+        if (Player* player = Unit::GetPlayer(playerGUID))
+            summoned->AI()->AttackStart(player);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_blood_guard(Creature *_Creature)
+{
+    return new npc_blood_guardAI (_Creature);
+}
+
 void AddSC_boss_blood_guard_porung()
 {
     Script *newscript;
@@ -90,5 +216,10 @@ void AddSC_boss_blood_guard_porung()
     newscript = new Script;
     newscript->Name="boss_blood_guard_porung";
     newscript->GetAI = &GetAI_boss_blood_guard_porung;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_blood_guard";
+    newscript->GetAI = &GetAI_npc_blood_guard;
     newscript->RegisterSelf();
 }

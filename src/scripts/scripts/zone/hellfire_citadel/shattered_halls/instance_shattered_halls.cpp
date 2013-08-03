@@ -25,7 +25,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_shattered_halls.h"
 
-#define ENCOUNTERS           5
+#define ENCOUNTERS           6
 
 #define DOOR_NETHEKURSE1     182539
 #define DOOR_NETHEKURSE2     182540
@@ -86,7 +86,6 @@ struct instance_shattered_halls : public ScriptedInstance
 
     uint32 Encounter[ENCOUNTERS];
     std::list<uint64> OrcGUID;
-    uint32 checktimer;
     uint64 nethekurseGUID;
     uint64 warbringerGUID;
     uint64 nethekurseDoor1GUID;
@@ -108,7 +107,6 @@ struct instance_shattered_halls : public ScriptedInstance
 
     void Initialize()
     {
-        checktimer = 0;
         nethekurseGUID = 0;
         warbringerGUID = 0;
         nethekurseDoor1GUID = 0;
@@ -262,7 +260,7 @@ struct instance_shattered_halls : public ScriptedInstance
                     Encounter[3] = data;
                 break;
             case TYPE_EXECUTION:
-                if (data == IN_PROGRESS && !instance->GetCreature(executionerGUID))
+                if (data == DONE && !instance->GetCreature(executionerGUID))
                 {
                     if (Player* player = GetPlayerInMap())
                     {
@@ -275,16 +273,18 @@ struct instance_shattered_halls : public ScriptedInstance
                         DoCastGroupDebuff(SPELL_KARGATH_EXECUTIONER_1);
                         ExecutionTimer = 55*MINUTE*IN_MILISECONDS;
                    }
-
-                   checktimer = 5000;
                }
+               else
+                   Encounter[4] = data;
+               break;
+            case TYPE_EXECUTION_DONE:
                if (data == DONE)
                {
                    if (Creature* Officer = instance->GetCreature(Team == ALLIANCE ? officeraGUID : officerhGUID))
                        Officer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER);
                }
                else
-                   Encounter[4] = data;
+                   Encounter[5] = data;
                break;
         }
 
@@ -309,6 +309,8 @@ struct instance_shattered_halls : public ScriptedInstance
                 return Encounter[3];
             case TYPE_EXECUTION:
                 return Encounter[4];
+            case TYPE_EXECUTION_DONE:
+                return Encounter[5];
         }
         return 0;
     }
@@ -328,7 +330,7 @@ struct instance_shattered_halls : public ScriptedInstance
     void OnCreatureDeath(Creature* pCreature)
     {
         if (pCreature->GetEntry() == NPC_EXECUTIONER)
-            SetData(TYPE_EXECUTION, DONE);
+            SetData(TYPE_EXECUTION_DONE, DONE);
     }
 
     void DoCastGroupDebuff(uint32 SpellId)
@@ -385,7 +387,7 @@ struct instance_shattered_halls : public ScriptedInstance
                          if (Creature* Soldier = instance->GetCreature(Team == ALLIANCE ? soldiera3GUID : soldierh3GUID))
                              Soldier->DealDamage(Soldier, Soldier->GetHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
 
-                         SetData(TYPE_EXECUTION, FAIL);
+                         SetData(TYPE_EXECUTION_DONE, FAIL);
                          ExecutionTimer = 0;
                          break;
                 }
@@ -409,23 +411,6 @@ struct instance_shattered_halls : public ScriptedInstance
 
             summon = SUMMONED;
         }
-
-        if (checktimer)
-        {
-            if (checktimer <= diff)
-            {
-                Map::PlayerList const& mplayers = instance->GetPlayers();
-
-                if (mplayers.isEmpty())
-                {
-                    SetData(TYPE_EXECUTION, NOT_STARTED);
-                    checktimer = 0;
-                }
-
-                checktimer = 5000;
-            }
-            else checktimer -= diff;
-        }
     }
 
     std::string GetSaveData()
@@ -437,7 +422,8 @@ struct instance_shattered_halls : public ScriptedInstance
         stream << Encounter[1] << " ";
         stream << Encounter[2] << " ";
         stream << Encounter[3] << " ";
-        stream << Encounter[4] ;
+        stream << Encounter[4] << " ";
+        stream << Encounter[5] ;
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -455,7 +441,7 @@ struct instance_shattered_halls : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         std::istringstream stream(in);
-        stream  >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4];
+        stream  >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4] >> Encounter[5];
 
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
             if (Encounter[i] == IN_PROGRESS)
@@ -493,7 +479,7 @@ bool AreaTrigger_at_shattered_halls(Player* player, AreaTriggerEntry const* /*pA
         return false;
 
     if (pInstance->GetData(TYPE_EXECUTION) == NOT_STARTED)
-        pInstance->SetData(TYPE_EXECUTION, IN_PROGRESS);
+        pInstance->SetData(TYPE_EXECUTION, DONE);
 
     return true;
 }

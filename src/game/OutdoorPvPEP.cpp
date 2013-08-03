@@ -503,7 +503,7 @@ bool OPvPCapturePointEP::CanTalkTo(Player * p, Creature * c, GossipOption &gso)
 
 bool OPvPCapturePointEP::HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid)
 {
-    UNORDERED_MAP<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
+    std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
     if (itr != m_CreatureTypes.end())
     {
         Creature * cr = m_PvP->GetMap()->GetCreature(guid);

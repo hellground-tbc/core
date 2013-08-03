@@ -69,9 +69,6 @@ void WardenMac::Init(WorldSession *pClient, BigNumber *K)
 //    PrintHexArray("  Module Key: ", Module->Key, 16, true);
 //    PrintHexArray("  Module ID: ", Module->ID, 16, true);
     RequestModule();
-
-    m_initialized = true;
-    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 ClientWardenModule *WardenMac::GetModuleForClient(WorldSession *session)
@@ -115,11 +112,15 @@ void WardenMac::RequestHash()
     WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenHashRequest));
     pkt.append((uint8*)&Request, sizeof(WardenHashRequest));
     Client->SendPacket(&pkt);
+    
+    m_initialized = true;
+    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 void WardenMac::HandleHashResult(ByteBuffer &buff)
 {
-
+    m_WardenDataSent = false;
+    m_WardenKickTimer = 0;
     // test
     int keyIn[4];
 
