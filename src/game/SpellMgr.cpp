@@ -3048,6 +3048,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 40447: // BT: Akama - Soul Channel
                 spellInfo->Effect[0] = 0;
                 break;
+            case 29538:
+                spellInfo->EffectApplyAuraName[0] = 0;
+                break;
             case 24311: // Powerful Healing Ward
                 spellInfo->CastingTimeIndex = 14;
                 break;

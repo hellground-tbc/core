@@ -1068,14 +1068,26 @@ bool WorldSocket::IsChatOpcode(uint16 opcode)
 {
     switch(opcode)
     {
-    case CMSG_CHAR_ENUM:
-    case CMSG_PLAYER_LOGIN:
-    case CMSG_JOIN_CHANNEL:
-    case CMSG_LEAVE_CHANNEL:
-    case CMSG_MESSAGECHAT:
-    case CMSG_NAME_QUERY:
-    case CMSG_CHANNEL_LIST:
-    case CMSG_LOGOUT_REQUEST:
+    case CMSG_CHAR_ENUM:            //0x037
+    case CMSG_PLAYER_LOGIN:         //0x03D
+    case CMSG_LOGOUT_REQUEST:       //0x04B
+    case CMSG_NAME_QUERY:           //0x050
+    case CMSG_ITEM_QUERY_SINGLE:    //0x056
+    case CMSG_QUEST_QUERY:          //0x05C
+    case CMSG_WHO:                  //0x062
+    case CMSG_CONTACT_LIST:         //0x066
+    case CMSG_ADD_FRIEND:           //0x069
+    case CMSG_DEL_FRIEND:           //0x06A
+    case CMSG_ADD_IGNORE:           //0x06C
+    case CMSG_DEL_IGNORE:           //0x06D
+    case CMSG_GUILD_ROSTER:         //0x089
+    case CMSG_MESSAGECHAT:          //0x095
+    case CMSG_JOIN_CHANNEL:         //0x097
+    case CMSG_LEAVE_CHANNEL:        //0x098
+    case CMSG_CHANNEL_LIST:         //0x09A
+    case CMSG_EMOTE:                //0x102
+    case CMSG_TEXT_EMOTE:           //0x104
+    case CMSG_ITEM_NAME_QUERY:      //0x2C4
         return true;
     }
     return false;
