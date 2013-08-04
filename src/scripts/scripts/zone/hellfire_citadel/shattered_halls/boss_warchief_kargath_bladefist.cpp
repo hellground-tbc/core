@@ -67,6 +67,7 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
     uint32 Charge_timer;
     uint32 Blade_Dance_Timer;
     uint32 Summon_Assistant_Timer;
+    uint32 Assistant_Timer;
     uint32 resetcheck_timer;
     uint32 Wait_Timer;
 
@@ -74,6 +75,7 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
 
     uint32 summoned;
     bool InBlade;
+    bool Assistant;
 
     uint32 target_num;
 
@@ -87,10 +89,12 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
         summoned = 1;
         InBlade = false;
         Wait_Timer = 0;
+        Assistant = false;
 
         Charge_timer = 0;
         Blade_Dance_Timer = 30000;
         Summon_Assistant_Timer = (HeroicMode ? 20000 : 30000);
+        Assistant_Timer = 120000;
         Assassins_Timer = 5000;
         resetcheck_timer = 5000;
 
@@ -203,7 +207,7 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!UpdateVictim() )
+        if (!UpdateVictim())
             return;
 
         if (Assassins_Timer)
@@ -215,6 +219,17 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
             }
             else
                 Assassins_Timer -= diff;
+        }
+
+        if (Assistant_Timer)
+        {
+            if (Assistant_Timer < diff)
+            {
+                Assistant = true;
+                Assistant_Timer = 0;
+            }
+            else
+                Assistant_Timer -= diff;
         }
 
         if (InBlade)
@@ -284,8 +299,11 @@ struct boss_warchief_kargath_bladefistAI : public ScriptedAI
                 for (int i = 0; i < summoned; i++)
                     Summoned = me->SummonCreature(RAND(MOB_HEARTHEN_GUARD, MOB_SHARPSHOOTER_GUARD, MOB_REAVER_GUARD), AddsEntrance[0], AddsEntrance[1], AddsEntrance[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
 
-                if (rand()%100 < 2)
-                    summoned++;
+                if (Assistant)
+                {
+                    if (rand()%100 < 2)
+                        summoned++;
+                }
 
                 Summon_Assistant_Timer = (HeroicMode ? 15000 : 20000);
             }
