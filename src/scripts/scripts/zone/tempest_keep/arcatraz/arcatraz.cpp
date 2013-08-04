@@ -93,16 +93,16 @@ struct npc_millhouse_manastormAI : public ScriptedAI
 
             if( pInstance->GetData(TYPE_HARBINGERSKYRISS) == DONE )
             {
-                DoScriptText(SAY_COMPLETE, m_creature);
+                DoScriptText(SAY_COMPLETE, me);
             }
         }
     }
 
     void AttackStart(Unit* who)
     {
-        if (m_creature->Attack(who, true))
+        if (me->Attack(who, true))
         {
-            m_creature->AddThreat(who, 0.0f);
+            me->AddThreat(who, 0.0f);
 
             //TODO: Make it so he moves when target out of range
             DoStartNoMovement(who);
@@ -115,12 +115,12 @@ struct npc_millhouse_manastormAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         /*for questId 10886 (heroic mode only)
         if( pInstance && pInstance->GetData(TYPE_HARBINGERSKYRISS) != DONE )
@@ -138,30 +138,30 @@ struct npc_millhouse_manastormAI : public ScriptedAI
                     switch( Phase )
                     {
                         case 1:
-                            DoScriptText(SAY_INTRO_1, m_creature);
+                            DoScriptText(SAY_INTRO_1, me);
                             EventProgress_Timer = 18000;
                             break;
                         case 2:
-                            DoScriptText(SAY_INTRO_2, m_creature);
+                            DoScriptText(SAY_INTRO_2, me);
                             EventProgress_Timer = 18000;
                             break;
                         case 3:
-                            DoScriptText(SAY_WATER, m_creature);
-                            DoCast(m_creature,SPELL_CONJURE_WATER);
+                            DoScriptText(SAY_WATER, me);
+                            DoCast(me,SPELL_CONJURE_WATER);
                             EventProgress_Timer = 7000;
                             break;
                         case 4:
-                            DoScriptText(SAY_BUFFS, m_creature);
-                            DoCast(m_creature,SPELL_ICE_ARMOR);
+                            DoScriptText(SAY_BUFFS, me);
+                            DoCast(me,SPELL_ICE_ARMOR);
                             EventProgress_Timer = 7000;
                             break;
                         case 5:
-                             DoScriptText(SAY_DRINK, m_creature);
-                            DoCast(m_creature,SPELL_ARCANE_INTELLECT);
+                             DoScriptText(SAY_DRINK, me);
+                            DoCast(me,SPELL_ARCANE_INTELLECT);
                             EventProgress_Timer = 7000;
                             break;
                         case 6:
-                              DoScriptText(SAY_READY, m_creature);
+                              DoScriptText(SAY_READY, me);
                             EventProgress_Timer = 6000;
                             break;
                         case 7:
@@ -178,26 +178,26 @@ struct npc_millhouse_manastormAI : public ScriptedAI
         if( !UpdateVictim() )
             return;
 
-        if( !LowHp && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) )
+        if( !LowHp && ((me->GetHealth()*100 / me->GetMaxHealth()) < 20) )
         {
-            DoScriptText(SAY_LOWHP, m_creature);
+            DoScriptText(SAY_LOWHP, me);
             LowHp = true;
         }
 
         if( Pyroblast_Timer < diff )
         {
-            if( m_creature->IsNonMeleeSpellCasted(false) )
+            if( me->IsNonMeleeSpellCasted(false) )
                 return;
 
-             DoScriptText(SAY_PYRO, m_creature);
+             DoScriptText(SAY_PYRO, me);
 
-            DoCast(m_creature->getVictim(),SPELL_PYROBLAST);
+            DoCast(me->getVictim(),SPELL_PYROBLAST);
             Pyroblast_Timer = 40000;
         }else Pyroblast_Timer -=diff;
 
         if( Fireball_Timer < diff )
         {
-            DoCast(m_creature->getVictim(),SPELL_FIREBALL);
+            DoCast(me->getVictim(),SPELL_FIREBALL);
             Fireball_Timer = 4000;
         }else Fireball_Timer -=diff;
 
@@ -268,12 +268,12 @@ struct npc_warden_mellicharAI : public ScriptedAI
         EventProgress_Timer = 22000;
         Phase = 1;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-        DoCast(m_creature,SPELL_TARGET_OMEGA);
+        me->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+        DoCast(me,SPELL_TARGET_OMEGA);
 
         if( pInstance && !(pInstance->GetData(TYPE_HARBINGERSKYRISS) == DONE))
             pInstance->SetData(TYPE_HARBINGERSKYRISS,NOT_STARTED);
-        if(Unit* millhouse = (Unit*)FindCreature(ENTRY_MILLHOUSE, 100, m_creature)) // despawn only him, others are despawned on evade by their eventAI
+        if(Unit* millhouse = (Unit*)FindCreature(ENTRY_MILLHOUSE, 100, me)) // despawn only him, others are despawned on evade by their eventAI
             millhouse->ToCreature()->ForcedDespawn(0);
     }
 
@@ -284,15 +284,15 @@ struct npc_warden_mellicharAI : public ScriptedAI
         if( IsRunning )
             return;
 
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlacefor(m_creature) )
+        if( !me->getVictim() && who->isTargetableForAttack() && ( me->IsHostileTo( who )) && who->isInAccessiblePlacefor(me) )
         {
-            if (!m_creature->CanFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
+            if (!me->CanFly() && me->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
                 return;
             if (who->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            float attackRadius = m_creature->GetAttackDistance(who)/10;
-            if( m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
+            float attackRadius = me->GetAttackDistance(who)/10;
+            if( me->IsWithinDistInMap(who, attackRadius) && me->IsWithinLOSInMap(who) )
                 EnterCombat(who);
         }
     }
@@ -300,8 +300,8 @@ struct npc_warden_mellicharAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         if (!IsRunning)
-        DoScriptText(YELL_INTRO1, m_creature);
-        DoCast(m_creature,SPELL_BUBBLE_VISUAL);
+        DoScriptText(YELL_INTRO1, me);
+        DoCast(me,SPELL_BUBBLE_VISUAL);
 
         if( pInstance )
         {
@@ -333,25 +333,25 @@ struct npc_warden_mellicharAI : public ScriptedAI
     {
         if( pInstance )
         {
-            m_creature->InterruptNonMeleeSpells(true);
-            m_creature->RemoveSpellsCausingAura(SPELL_AURA_DUMMY);
+            me->InterruptNonMeleeSpells(true);
+            me->RemoveSpellsCausingAura(SPELL_AURA_DUMMY);
 
             switch( Phase )
             {
                 case 2:
-                    DoCast(m_creature,SPELL_TARGET_ALPHA);
+                    DoCast(me,SPELL_TARGET_ALPHA);
                     pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_A),true);
                     break;
                 case 3:
-                    DoCast(m_creature,SPELL_TARGET_BETA);
+                    DoCast(me,SPELL_TARGET_BETA);
                     pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_B),true);
                     break;
                 case 5:
-                    DoCast(m_creature,SPELL_TARGET_DELTA);
+                    DoCast(me,SPELL_TARGET_DELTA);
                     pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_D),true);
                     break;
                 case 6:
-                    DoCast(m_creature,SPELL_TARGET_GAMMA);
+                    DoCast(me,SPELL_TARGET_GAMMA);
                     pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_G),true);
                     break;
                 case 7:
@@ -380,28 +380,28 @@ struct npc_warden_mellicharAI : public ScriptedAI
             {
                 //continue beam omega pod, unless we are about to summon skyriss
                 if( Phase != 7 )
-                    DoCast(m_creature,SPELL_TARGET_OMEGA);
+                    DoCast(me,SPELL_TARGET_OMEGA);
 
                 switch( Phase )
                 {
                     case 2:
-                        m_creature->SummonCreature(RAND(ENTRY_TRICKSTER, ENTRY_PH_HUNTER), 478.326, -148.505, 42.56, 3.19, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                        me->SummonCreature(RAND(ENTRY_TRICKSTER, ENTRY_PH_HUNTER), 478.326, -148.505, 42.56, 3.19, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         break;
                     case 3:
-                        m_creature->SummonCreature(ENTRY_MILLHOUSE,413.292,-148.378,42.56,6.27,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
+                        me->SummonCreature(ENTRY_MILLHOUSE,413.292,-148.378,42.56,6.27,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
                         break;
                     case 4:
-                       DoScriptText(YELL_RELEASE2B, m_creature);
+                       DoScriptText(YELL_RELEASE2B, me);
                         break;
                     case 5:
-                        m_creature->SummonCreature(RAND(ENTRY_AKKIRIS, ENTRY_SULFURON), 420.179, -174.396, 42.58, 0.02, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                        me->SummonCreature(RAND(ENTRY_AKKIRIS, ENTRY_SULFURON), 420.179, -174.396, 42.58, 0.02, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         break;
                     case 6:
-                        m_creature->SummonCreature(RAND(ENTRY_TW_DRAK,ENTRY_BL_DRAK), 471.795, -174.58, 42.58, 3.06, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                        me->SummonCreature(RAND(ENTRY_TW_DRAK,ENTRY_BL_DRAK), 471.795, -174.58, 42.58, 3.06, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
                         break;
                     case 7:
-                        m_creature->SummonCreature(ENTRY_SKYRISS,445.763,-191.639,44.64,1.60,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
-                        DoScriptText(YELL_WELCOME, m_creature);
+                        me->SummonCreature(ENTRY_SKYRISS,445.763,-191.639,44.64,1.60,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
+                        DoScriptText(YELL_WELCOME, me);
                         break;
                 }
                 CanSpawn = false;
@@ -412,17 +412,17 @@ struct npc_warden_mellicharAI : public ScriptedAI
                 switch( Phase )
                 {
                     case 1:
-                        DoScriptText(YELL_INTRO2, m_creature);
+                        DoScriptText(YELL_INTRO2, me);
                         EventProgress_Timer = 10000;
                         ++Phase;
                         break;
                     case 2:
-                        DoScriptText(YELL_RELEASE1, m_creature);
+                        DoScriptText(YELL_RELEASE1, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 7000;
                         break;
                     case 3:
-                        DoScriptText(YELL_RELEASE2A, m_creature);
+                        DoScriptText(YELL_RELEASE2A, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 10000;
                         break;
@@ -431,12 +431,12 @@ struct npc_warden_mellicharAI : public ScriptedAI
                         EventProgress_Timer = 15000;
                         break;
                     case 5:
-                        DoScriptText(YELL_RELEASE3, m_creature);
+                        DoScriptText(YELL_RELEASE3, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 15000;
                         break;
                     case 6:
-                        DoScriptText(YELL_RELEASE4, m_creature);
+                        DoScriptText(YELL_RELEASE4, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 15000;
                         break;
