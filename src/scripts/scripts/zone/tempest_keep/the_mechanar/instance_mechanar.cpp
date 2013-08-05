@@ -239,6 +239,8 @@ struct instance_mechanar : public ScriptedInstance
 
     void DoSpawnBridgeWave()
     {
+        if (BridgeEventPhase > MAX_BRIDGE_LOCATIONS)
+            return;
         if (Player* player = instance->GetPlayers().begin()->getSource())
         {
             switch (BridgeEventPhase)
@@ -285,9 +287,9 @@ struct instance_mechanar : public ScriptedInstance
                     }
                     break;
             }
+            ++BridgeEventPhase;
         }
-
-        ++BridgeEventPhase;
+        
     }
 
     void Update(uint32 diff)
@@ -374,6 +376,8 @@ struct instance_mechanar : public ScriptedInstance
                     }
                 }
 
+                EventTimer = 2000;
+
                 if (!alive)
                 {
                     if (BridgeEventPhase == 3)
@@ -386,7 +390,6 @@ struct instance_mechanar : public ScriptedInstance
                         DoSpawnBridgeWave();
                 }
 
-                EventTimer = 2000;
             }
             else
                 EventTimer -= diff;
