@@ -1278,10 +1278,15 @@ void GameObject::Use(Unit* user)
             m_lootState = GO_ACTIVATED;
 
             AddUniqueUse(pPlayer);
-            if(info->summoningRitual.animSpell)
+            if (info->summoningRitual.animSpell)
                 pPlayer->CastSpell(pPlayer, info->summoningRitual.animSpell, false);
             else
-                pPlayer->CastSpell(pPlayer, 32783, false);
+            {
+                if (m_spellId == 29893)
+                    pPlayer->CastSpell(pPlayer, 43897, false);
+                else
+                    pPlayer->CastSpell(pPlayer, 32783, false);
+            }
 
             if(m_unique_users.size() == GetGOInfo()->summoningRitual.reqParticipants)
             {
