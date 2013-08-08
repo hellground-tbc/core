@@ -104,7 +104,12 @@ there is no difference here (except that default text is chosen with `gameobject
 #define BOX_UNLEARN_TAILOR_SPEC     "Do you really want to unlearn your tailoring specialty and lose all associated recipes? \n Cost: "
 
 #define GOSSIP_LEARN_GOBLIN         "I am absolutely certain that i want to learn Goblin engineering"
+#define GOSSIP_UNLEARN_GOBLIN       "I wish to unlearn my Goblin Engineering specialization!"
 #define GOSSIP_LEARN_GNOMISH        "I am absolutely certain that i want to learn Gnomish engineering"
+#define GOSSIP_UNLEARN_GNOMISH      "I wish to unlearn my Gnomish Engineering specialization!"
+
+#define BOX_UNLEARN_GOBLIN_SPEC     "Do you really want to unlearn your Goblin Engineering specialization and lose all asociated recipes?"
+#define BOX_UNLEARN_GNOMISH_SPEC    "Do you really want to unlearn your Gnomish Engineering specialization and lose all asociated recipes?"
 
 /*###
 # spells defines
@@ -1220,18 +1225,123 @@ bool GossipSelect_npc_prof_tailor(Player *player, Creature *_Creature, uint32 se
 # start menues for GO (engineering and leatherworking)
 ###*/
 
-/*bool GOUse_go_soothsaying_for_dummies(Player *player, GameObject* _GO)
+bool HasLeatherSpec(Player* player)
 {
-    player->PlayerTalkClass->GetGossipMenu()->AddMenuItem(0,GOSSIP_LEARN_DRAGON, GOSSIP_SENDER_INFO, GOSSIP_ACTION_INFO_DEF, "", 0);
+    return (player->HasSpell(S_ELEMENTAL) || player->HasSpell(S_DRAGON) || player->HasSpell(S_TRIBAL));
+}
 
-    player->SEND_GOSSIP_MENU(5584, _GO->GetGUID());
+bool HasEngineerSpec(Player* player)
+{
+    return (player->HasSpell(S_GNOMISH) || player->HasSpell(S_GOBLIN));
+}
 
+bool GossipHello_go_soothsaying_for_dummies(Player *player, GameObject* go)
+{
+    if (player->HasSkill(SKILL_LEATHERWORKING) && player->GetBaseSkillValue(SKILL_LEATHERWORKING) >= 225 && player->getLevel() > 39)
+    {
+        if (!HasLeatherSpec(player))
+        {
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LEARN_DRAGON, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LEARN_ELEMENTAL, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+2);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LEARN_TRIBAL, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+3);
+            player->SEND_GOSSIP_MENU(8326, go->GetGUID());
+            return true;
+        }
+    }
+
+    if (player->HasSkill(SKILL_ENGINERING) && player->GetBaseSkillValue(SKILL_ENGINERING) >= 200 && player->getLevel() > 39)
+    {
+        if (player->GetQuestRewardStatus(3643) || player->GetQuestRewardStatus(3641) || player->GetQuestRewardStatus(3639))
+        {
+            if (!HasEngineerSpec(player))
+            {
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LEARN_GNOMISH, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+4);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_LEARN_GOBLIN, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+5);
+                player->SEND_GOSSIP_MENU(30000, go->GetGUID());
+                return true;
+            }
+            if (player->HasSpell(S_GNOMISH))
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_UNLEARN_GNOMISH, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+6, BOX_UNLEARN_GNOMISH_SPEC, DoHighUnlearnCost(player), false);
+            if (player->HasSpell(S_GOBLIN))
+                player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_CHAT, GOSSIP_UNLEARN_GOBLIN, GOSSIP_SENDER_CHECK, GOSSIP_ACTION_INFO_DEF+7, BOX_UNLEARN_GNOMISH_SPEC, DoHighUnlearnCost(player), false);
+        }
+    }
+    player->SEND_GOSSIP_MENU(30000, go->GetGUID());
     return true;
-}*/
+}
 
-/*###
-#
-###*/
+void SendActionMenu_go_soothsaying_for_dummies(Player *player, GameObject* go, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            if(!player->HasSpell(S_DRAGON))
+                player->CastSpell(player, S_LEARN_DRAGON, true);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            if (!player->HasSpell(S_ELEMENTAL))
+                player->CastSpell(player, S_LEARN_ELEMENTAL, true);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            if (!player->HasSpell(S_TRIBAL))
+                player->CastSpell(player, S_LEARN_TRIBAL, true);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF+4:
+            if (!player->HasSpell(S_GNOMISH))
+                player->CastSpell(player, S_LEARN_GNOMISH, true);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF+5:
+            if (!player->HasSpell(S_GOBLIN))
+                player->CastSpell(player, S_LEARN_GOBLIN, true);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF+6:
+            if(EquippedOk(player,20219)) // Gnomish Engineer
+            {
+                if(player->GetMoney() >= DoLowUnlearnCost(player))
+                {
+                    player->removeSpell(20219);
+                    ProfessionUnlearnSpells(player, 20219);
+                    player->ModifyMoney(-DoLowUnlearnCost(player));
+                }
+                else
+                    player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, NULL, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+        case GOSSIP_ACTION_INFO_DEF+7:
+            if(EquippedOk(player,20222)) // Gnomish Engineer
+            {
+                if(player->GetMoney() >= DoLowUnlearnCost(player))
+                {
+                    player->removeSpell(20222);
+                    ProfessionUnlearnSpells(player, 20222);
+                    player->ModifyMoney(-DoLowUnlearnCost(player));
+                }
+                else
+                    player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, NULL, 0, 0);
+            }
+            else
+                player->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW,NULL,NULL);
+            player->CLOSE_GOSSIP_MENU();
+            break;
+    }
+}
+
+bool GossipSelect_go_soothsaying_for_dummies(Player *player, GameObject* go, uint32 sender, uint32 action)
+{
+    switch(sender)
+    {
+        case GOSSIP_SENDER_CHECK:    SendActionMenu_go_soothsaying_for_dummies(player, go, action); break;
+    }
+    return true;
+}
 
 void AddSC_npc_professions()
 {
@@ -1261,10 +1371,10 @@ void AddSC_npc_professions()
     newscript->pGossipSelect = &GossipSelect_npc_prof_tailor;
     newscript->RegisterSelf();
 
-    /*newscript = new Script;
+    newscript = new Script;
     newscript->Name="go_soothsaying_for_dummies";
-    newscript->pGOUse =  &GOUse_go_soothsaying_for_dummies;
-    //newscript->pGossipSelect = &GossipSelect_go_soothsaying_for_dummies;
-    newscript->RegisterSelf();*/
+    newscript->pGOUse =  &GossipHello_go_soothsaying_for_dummies;
+    newscript->pGossipSelectGO = &GossipSelect_go_soothsaying_for_dummies;
+    newscript->RegisterSelf();
 }
 
