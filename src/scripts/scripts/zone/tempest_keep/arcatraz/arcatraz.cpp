@@ -488,7 +488,7 @@ struct npc_felfire_waveAI : public ScriptedAI
         Burn = 0;
         float x, y, z;
         me->SetSpeed(MOVE_RUN, 1.1);
-        me->GetNearPoint(me, x, y, z, 0, 20, summoner->GetAngle(me));
+        me->GetNearPoint(x, y, z, 0, 20, summoner->GetAngle(me));
         me->UpdateAllowedPositionZ(x, y, z);
         me->GetMotionMaster()->MovePoint(1, x, y, z);
     }

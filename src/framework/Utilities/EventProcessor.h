@@ -25,6 +25,7 @@
 
 #include <map>
 #include <typeinfo>
+#include <algorithm>
 // Note. All times are in milliseconds here.
 
 class HELLGROUND_IMPORT_EXPORT BasicEvent
