@@ -420,6 +420,11 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     case 38441:
                         damage = unitTarget->GetMaxHealth() / 2;
                         break;
+                    //sonic boom
+                    case 33666:
+                    case 38795:
+                        damage = unitTarget->GetHealth()*90/100;
+                        break;
                 }
                 break;
             }

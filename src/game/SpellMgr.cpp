@@ -3191,10 +3191,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 12494: // Frostbite
                 spellInfo->Attributes |= SPELL_ATTR_BREAKABLE_BY_DAMAGE;
                 break;
-            case 38794: case 33711: // Murmur's Touch
-                spellInfo->MaxAffectedTargets = 1;
-                spellInfo->EffectTriggerSpell[0] = 33760;
-                break;
             case 32727: // Arena Preparation - remove invisibility aura
             case 44949: // Whirlwind's offhand attack - TODO: remove this (50% weapon damage effect)
                 spellInfo->Effect[1] = 0;
@@ -3437,6 +3433,21 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 6495: // Sentry totem
                 spellInfo->EffectRadiusIndex[0] = 0;
+                break;
+            case 33666: ///sonic boom. the radius is less than 34 yards, because the tank and melee also can avoid it.
+            case 38795:
+                spellInfo->EffectRadiusIndex[0] = 9;
+                spellInfo->EffectRadiusIndex[1] = 9;
+                spellInfo->EffectRadiusIndex[2] = 9;
+                break;
+            case 33711: // Murmur's Touch
+                spellInfo->MaxAffectedTargets = 1;
+                spellInfo->EffectTriggerSpell[0] = 33760;
+                break;
+            case 38794:
+                spellInfo->Effect[1] = 0;
+                spellInfo->MaxAffectedTargets = 1;
+                spellInfo->EffectTriggerSpell[0] = 33760;
                 break;
             default:
                 break;

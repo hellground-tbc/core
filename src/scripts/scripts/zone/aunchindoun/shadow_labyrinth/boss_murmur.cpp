@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Boss_Murmur
 SD%Complete: 90
-SDComment: Timers may be incorrect
+SDComment: TODO: add fight event when player enter in the room
 SDCategory: Auchindoun, Shadow Labyrinth
 EndScriptData */
 
@@ -26,7 +26,7 @@ EndScriptData */
 #define EMOTE_SONIC_BOOM            -1555036
 
 #define SPELL_SONIC_BOOM_CAST       (HeroicMode?38796:33923)
-#define SPELL_SONIC_BOOM_EFFECT     (HeroicMode?38795:33666)
+#define SPELL_SONIC_BOOM            (HeroicMode?38795:33666)
 #define SPELL_RESONANCE             33657
 #define SPELL_MURMURS_TOUCH         (HeroicMode?38794:33711)
 #define SPELL_MAGNETIC_PULL         33689
@@ -37,7 +37,7 @@ struct boss_murmurAI : public Scripted_NoMovementAI
 {
     boss_murmurAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     uint32 SonicBoom_Timer;
@@ -50,110 +50,137 @@ struct boss_murmurAI : public Scripted_NoMovementAI
 
     void Reset()
     {
-        SonicBoom_Timer = 30000;
-        MurmursTouch_Timer = 20000;
-        Resonance_Timer = 10000;
-        MagneticPull_Timer = 20000;
-        ThunderingStorm_Timer = 15000;
-        SonicShock_Timer = 10000;
+        SonicBoom_Timer = (HeroicMode ? 40000 : 50000);
+        MurmursTouch_Timer = (HeroicMode ? 28000 : 31000);
+        Resonance_Timer = 5000;
+        MagneticPull_Timer = 45000;
+        ThunderingStorm_Timer = 5000;
+        SonicShock_Timer = 5000;
 
         //database should have `RegenHealth`=0 to prevent regen
-        uint32 hp = (m_creature->GetMaxHealth()*40)/100;
+        uint32 hp = (me->GetMaxHealth()*40)/100;
         if (hp)
-            m_creature->SetHealth(hp);
+            me->SetHealth(hp);
 
-        m_creature->ResetPlayerDamageReq();
+        me->ResetPlayerDamageReq();
     }
 
     void EnterCombat(Unit *who) { }
 
-    // Sonic Boom instant damage (needs core fix instead of this)
+    // Murmurs Touch heroic, maybe spell exist ?
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
     {
-        if(target && target->isAlive() && spell && spell->Id == SPELL_SONIC_BOOM_EFFECT)
-            m_creature->DealDamage(target, (target->GetHealth()*90)/100, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NATURE, spell);
+        if (target && target->isAlive() && spell && spell->Id == 38794)
+        {
+            std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+            {
+                if (Unit* targets = Unit::GetUnit((*me),(*i)->getUnitGuid()))
+                {
+                    if (targets->isAlive() && target->GetGUID() != (*i)->getUnitGuid())
+                        target->CastSpell(targets, SPELL_MAGNETIC_PULL, true);
+                }
+            }
+        }
+
+        return;
     }
 
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target or casting
-        if (!UpdateVictim() || m_creature->IsNonMeleeSpellCasted(false))
+        if (!UpdateVictim() || me->IsNonMeleeSpellCasted(false))
             return;
 
         // Murmur's Touch
         if (MurmursTouch_Timer < diff)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 80, true))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 AddSpellToCast(target, SPELL_MURMURS_TOUCH);
 
-            MurmursTouch_Timer = 30000;
+            MurmursTouch_Timer = (HeroicMode ? 30000 : 20000);
         }
         else
             MurmursTouch_Timer -= diff;
 
         // Resonance
-        if(Resonance_Timer < diff)
+        if (Resonance_Timer < diff)
         {
-            if(!m_creature->hasUnitState(UNIT_STAT_CASTING))
-            {
-                Unit *target = SelectUnit(SELECT_TARGET_NEAREST, 0, 100, true);
+            Unit *target = SelectUnit(SELECT_TARGET_NEAREST, 0, 100, true);
 
-                if(target && !m_creature->IsWithinMeleeRange(target))
-                    AddSpellToCast(m_creature, SPELL_RESONANCE);
+            if (target && !me->IsWithinMeleeRange(target))
+                AddSpellToCast(me, SPELL_RESONANCE);
 
-                Resonance_Timer = 5000;
-            }
-            else
-                Resonance_Timer = 2000;
+            Resonance_Timer = 5000;
         }
         else
             Resonance_Timer -= diff;
 
-        if(HeroicMode)
+        if (HeroicMode)
         {
-            // Thundering Storm
-            if(ThunderingStorm_Timer < diff)
+            // Thundering Storm cast to all which are too far away
+            if (ThunderingStorm_Timer < diff)
             {
-                ForceSpellCast(SPELL_THUNDERING_STORM, CAST_NULL, DONT_INTERRUPT);
+                std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+                for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+                {
+                    if (Unit* target = Unit::GetUnit((*me),(*i)->getUnitGuid()))
+                    {
+                        if (target->isAlive() && !target->IsWithinDistInMap(me, 12.0f))
+                            ForceSpellCast(target, SPELL_THUNDERING_STORM, DONT_INTERRUPT);
+                    }
+                }
 
-                ThunderingStorm_Timer = 5000;
+                ThunderingStorm_Timer = 7500;
             }
             else
                 ThunderingStorm_Timer -= diff;
 
-            // Sonic Shock
-            if(SonicShock_Timer < diff)
+            // Sonic Shock cast to tank if someone is too far away
+            if (SonicShock_Timer < diff)
             {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, false))
-                    AddSpellToCast(target, SPELL_SONIC_SHOCK);
+                std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+                for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+                {
+                    if (Unit* target = Unit::GetUnit((*me),(*i)->getUnitGuid()))
+                    {
+                        if (target->isAlive() && !target->IsWithinDistInMap(me, 12.0f))
+                        {
+                            AddSpellToCast(SPELL_SONIC_SHOCK, CAST_TANK);
+                            break;
+                        }
+                    }
+                }
 
-                SonicShock_Timer = urand(10000, 20000);
+                SonicShock_Timer = 2000;
             }
             else
                 SonicShock_Timer -= diff;
         }
 
-        // Magnetic Pull
-        if (MagneticPull_Timer < diff)
+        if (!HeroicMode)
         {
-            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+            // Magnetic Pull normal only
+            if (MagneticPull_Timer < diff)
             {
-                ForceSpellCast(target, SPELL_MAGNETIC_PULL);
-                MagneticPull_Timer = urand (20000, 35000);
+                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
+                    ForceSpellCast(target, SPELL_MAGNETIC_PULL);
+
+                 MagneticPull_Timer = 40000;
             }
             else
-                MagneticPull_Timer = 500;
+                MagneticPull_Timer -= diff;
         }
-        else
-            MagneticPull_Timer -= diff;
 
         // Sonic Boom
-        if(SonicBoom_Timer < diff)
+        if (SonicBoom_Timer < diff)
         {
-            ForceSpellCast(m_creature, SPELL_SONIC_BOOM_EFFECT, DONT_INTERRUPT, true);
-            ForceSpellCastWithScriptText(m_creature, SPELL_SONIC_BOOM_CAST, EMOTE_SONIC_BOOM);
-            SonicBoom_Timer = 30000;
-            Resonance_Timer = 1500;
+            ForceSpellCast(me, SPELL_SONIC_BOOM, DONT_INTERRUPT, true);
+            ForceSpellCastWithScriptText(me, SPELL_SONIC_BOOM_CAST, EMOTE_SONIC_BOOM);
+            SonicBoom_Timer = (HeroicMode ? 30000 : 40000);
+            Resonance_Timer = 5000;
+            ThunderingStorm_Timer = 5000;
+            SonicShock_Timer = 5000;
         }
         else
             SonicBoom_Timer -= diff;
@@ -161,19 +188,19 @@ struct boss_murmurAI : public Scripted_NoMovementAI
         CastNextSpellIfAnyAndReady();
 
         // Select nearest most aggro target if top aggro too far
-        if(!m_creature->isAttackReady())
+        if (!me->isAttackReady())
             return;
 
-        if(!m_creature->IsWithinMeleeRange(m_creature->getVictim()))
+        if (!me->IsWithinMeleeRange(me->getVictim()))
         {
-            std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+            std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
             for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
-                if(Unit* target = Unit::GetUnit((*m_creature),(*i)->getUnitGuid()))
+                if (Unit* target = Unit::GetUnit((*me),(*i)->getUnitGuid()))
                 {
-                    if(target->isAlive() && m_creature->IsWithinMeleeRange(target))
+                    if (target->isAlive() && me->IsWithinMeleeRange(target))
                     {
-                        m_creature->TauntApply(target);
+                        me->TauntApply(target);
                         break;
                     }
                 }
