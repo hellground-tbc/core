@@ -2869,6 +2869,160 @@ CreatureAI* GetAI_npc_gnomish_flame_turret(Creature *_Creature)
     return new npc_gnomish_flame_turret(_Creature);
 }
 
+/*######
+ # dummy park control
+ ######*/
+#define DUMMY_PARK_ON "Start dummy park event"
+#define DUMMY_PARK_OFF "Stop dummy park event"
+#define DUMMY_PARK_OBJECTS 16
+#define DUMMY_PARK_NPCS 6
+
+float dummyparkstorage[3] = {-1899, 5607, -33};
+
+float dummyparkobjectlocs[DUMMY_PARK_OBJECTS][3] = {
+    {-1945.59, 5559.70, -12.428},
+    {-1917.56, 5571.52, -12.428},
+    {-1937.18, 5542.79, -12.428},
+    {-1940.55, 5554.45, -12.427},
+    {-1915.94, 5564.6, -12.427},
+    {-1909.43, 5556.58, -12.428},
+    {-1934.38, 5539.64, -12.428},
+    {-1932.02, 5536.95, -12.427},
+    {-1932.02, 5536.95, -11.184},
+    {-1908.28, 5552.2, -12.426},
+    {-1907.54, 5548.75, -12.428},
+    {-1907.54, 5548.75, -11.185},
+    {-1930.43, 5535.41, -12.428},
+    {-1907.17, 5546.7, -12.426},
+    {-1933.35, 5570.6, -12.427},
+    {-1933.36, 5570.6, -12.427}
+};
+
+uint32 dummyparkobjects[DUMMY_PARK_OBJECTS][2] ={
+    {13228578,184380},
+    {13228592,184381},
+    {13231451,173223},
+    {13228737,173223},
+    {13228733,173223},
+    {13231535,173223},
+    {13229544,187225},
+    {13231413,183992},
+    {13231420,186738},
+    {13229522,187225},
+    {13231299,183992},
+    {13231325,186738},
+    {13266292,173223},
+    {13266474,173223},
+    {13266692,183319},
+    {13246219,180423}
+};
+
+float dummyparknpclocs[DUMMY_PARK_NPCS][3] ={
+    {-1919.98, 5551.57, -12.426},
+    {-1926.75, 5548.27, -12.426},
+    {-1928.70, 5560.42, -12.428},
+    {-1913.47, 5560.28, -12.428},
+    {-1933.36, 5570.6, -12.427},
+    {-1938.83, 5548.67, -12.427}
+};
+
+uint32 dummyparknpcs[DUMMY_PARK_NPCS][2] ={
+    {29312,66700},
+    {29337,66701},
+    {29437,66702},
+    {29461,66703},
+    {133929,66704},
+    {60062,66709}
+};
+
+bool GossipHello_npc_dummy_park(Player *player, Creature *creature)
+{
+    if (player->isGameMaster())
+    {
+        player->ADD_GOSSIP_ITEM(0, DUMMY_PARK_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, DUMMY_PARK_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+    }
+    return true;
+}
+
+bool GossipSelect_npc_dummy_park(Player *player, Creature *creature, uint32 sender, uint32 action)
+{
+    if (player->isGameMaster())
+    {
+        if(action == GOSSIP_ACTION_INFO_DEF+1)
+        {
+            creature->Whisper("Preparing dummy park!",player->GetGUID());
+            GameObject* gob;
+            for (uint8 i = 0 ; i < DUMMY_PARK_OBJECTS ; i++)
+            {
+                gob = NULL;
+                gob = player->GetMap()->GetGameObject(MAKE_NEW_GUID(dummyparkobjects[i][0], dummyparkobjects[i][1], HIGHGUID_GAMEOBJECT));
+                if (gob)
+                {
+                    Map* map = gob->GetMap();
+                    gob->Relocate(dummyparkobjectlocs[i][0], dummyparkobjectlocs[i][1], dummyparkobjectlocs[i][2], gob->GetOrientation());
+                    gob->SetFloatValue(GAMEOBJECT_POS_X, dummyparkobjectlocs[i][0]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Y, dummyparkobjectlocs[i][1]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Z, dummyparkobjectlocs[i][2]);
+                    gob->SaveToDB();
+                    gob->Refresh();
+                }
+            }
+            Creature* mCreature;
+            for (uint8 i = 0 ; i < DUMMY_PARK_NPCS ; i++)
+            {
+
+                mCreature = NULL;
+                mCreature = player->GetMap()->GetCreature(MAKE_NEW_GUID(dummyparknpcs[i][0],dummyparknpcs[i][1],HIGHGUID_UNIT));
+                if (mCreature)
+                {
+                    Map* map = mCreature->GetMap();
+                    mCreature->SetHomePosition(dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], mCreature->GetOrientation());
+                    map->CreatureRelocation(mCreature,dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], mCreature->GetOrientation());
+                }
+                GameDataDatabase.PExecuteLog("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'",
+                    dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], dummyparknpcs[i][0]);
+            }
+        }
+        else if(action == GOSSIP_ACTION_INFO_DEF+2)
+        {
+            creature->Whisper("Removing dummy park!",player->GetGUID());
+            GameObject* gob;
+            for (uint8 i = 0 ; i < DUMMY_PARK_OBJECTS ; i++)
+            {
+                gob = NULL;
+                gob = player->GetMap()->GetGameObject(MAKE_NEW_GUID(dummyparkobjects[i][0], dummyparkobjects[i][1], HIGHGUID_GAMEOBJECT));
+                if (gob)
+                {
+                    Map* map = gob->GetMap();
+                    gob->Relocate(dummyparkstorage[0], dummyparkstorage[1], dummyparkstorage[2], gob->GetOrientation());
+                    gob->SetFloatValue(GAMEOBJECT_POS_X, dummyparkstorage[0]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Y, dummyparkstorage[1]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Z, dummyparkstorage[2]);
+                    gob->SaveToDB();
+                    gob->Refresh();
+                }
+            }
+            Creature* mCreature;
+            for (uint8 i = 0 ; i < DUMMY_PARK_NPCS ; i++)
+            {
+                mCreature = NULL;
+                mCreature = player->GetMap()->GetCreature(MAKE_NEW_GUID(dummyparknpcs[i][0],dummyparknpcs[i][1],HIGHGUID_UNIT));
+                if (mCreature)
+                {
+                    Map* map = mCreature->GetMap();
+                    mCreature->SetHomePosition(dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], mCreature->GetOrientation());
+                    map->CreatureRelocation(mCreature,dummyparkstorage[0], dummyparkstorage[1], dummyparkstorage[2], mCreature->GetOrientation());
+                }
+                GameDataDatabase.PExecuteLog("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'",
+                    dummyparkstorage[0], dummyparkstorage[1], dummyparkstorage[2], dummyparknpcs[i][0]);
+            }
+        }
+    }
+    return true;
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -3068,5 +3222,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_gnomish_flame_turret";
     newscript->GetAI = &GetAI_npc_gnomish_flame_turret;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_dummy_park_controller";
+    newscript->pGossipHello =  &GossipHello_npc_dummy_park;
+    newscript->pGossipSelect = &GossipSelect_npc_dummy_park;
     newscript->RegisterSelf();
 }
