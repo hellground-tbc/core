@@ -91,12 +91,12 @@ struct boss_blackheart_the_inciterAI : public ScriptedAI
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if( pInstance )
             pInstance->SetData(DATA_BLACKHEARTTHEINCITEREVENT, DONE);
@@ -122,13 +122,13 @@ struct boss_blackheart_the_inciterAI : public ScriptedAI
              for(std::list<Creature*>::iterator i = TrashList.begin(); i != TrashList.end(); ++i)
              {
                  (*i)->setActive(true);
-                 (*i)->AI()->AttackStart(m_creature->getVictim());
+                 (*i)->AI()->AttackStart(me->getVictim());
              }
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
 
         TrashAggro();
 
@@ -163,9 +163,9 @@ struct boss_blackheart_the_inciterAI : public ScriptedAI
 
         if(InciteChaos_Timer < diff)
         {
-            DoCast(m_creature, SPELL_INCITE_CHAOS);
+            DoCast(me, SPELL_INCITE_CHAOS);
 
-            Map *map = m_creature->GetMap();
+            Map *map = me->GetMap();
             Map::PlayerList const &PlayerList = map->GetPlayers();
 
             if(PlayerList.isEmpty())
@@ -202,7 +202,7 @@ struct boss_blackheart_the_inciterAI : public ScriptedAI
         //Knockback_Timer
         if (Knockback_Timer < diff)
         {
-            DoCast(m_creature, SPELL_WAR_STOMP);
+            DoCast(me, SPELL_WAR_STOMP);
             Knockback_Timer = 20000;
         }
         else

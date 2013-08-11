@@ -246,12 +246,68 @@ InstanceData* GetInstanceData_instance_shadow_labyrinth(Map* map)
     return new instance_shadow_labyrinth(map);
 }
 
+/*######
+## npc_tortured_skeleton
+######*/
+
+struct npc_tortured_skeletonAI : public ScriptedAI
+{
+    npc_tortured_skeletonAI(Creature* creature) : ScriptedAI(creature) {}
+
+    void Reset()
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetStandState(UNIT_STAND_STATE_DEAD);
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetStandState(UNIT_STAND_STATE_STAND);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop();
+        
+        if (!me->isAlive())
+            return;    
+
+        me->GetMotionMaster()->MoveTargetedHome();
+    }
+
+    void JustReachedHome()
+    {
+        Reset();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_tortured_skeleton(Creature* creature)
+{
+    return new npc_tortured_skeletonAI (creature);
+}
+
 void AddSC_instance_shadow_labyrinth()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "instance_shadow_labyrinth";
     newscript->GetInstanceData = &GetInstanceData_instance_shadow_labyrinth;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_tortured_skeleton";
+    newscript->GetAI = &GetAI_npc_tortured_skeleton;
     newscript->RegisterSelf();
 }
 
