@@ -1774,7 +1774,7 @@ struct npc_razorthorn_ravagerAI : public ScriptedAI
                     if(me->GetCharmer() && me->GetCharmer()->GetTypeId() == TYPEID_PLAYER)
                     {
                         MoundList.push_front(go->GetGUID());
-                        //go->DestroyForPlayer(((Player*)me->GetCharmer()));
+                        go->DestroyForPlayer(((Player*)me->GetCharmer()));
                         checked = false;
                     }
                 }
