@@ -2394,8 +2394,11 @@ void Spell::cancel()
 
             m_caster->RemoveAurasByCasterSpell(GetSpellInfo()->Id, m_caster->GetGUID());
             SendChannelUpdate(0);
-            SendInterrupted(0);
-            SendCastResult(SPELL_FAILED_INTERRUPTED);
+            if (!IsChanneledSpell(m_spellInfo))
+            {
+                SendInterrupted(0);
+                SendCastResult(SPELL_FAILED_INTERRUPTED);
+            }
             break;
         }
         default:
