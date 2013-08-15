@@ -2394,7 +2394,7 @@ void Spell::cancel()
 
             m_caster->RemoveAurasByCasterSpell(GetSpellInfo()->Id, m_caster->GetGUID());
             SendChannelUpdate(0);
-            if (!IsChanneledSpell(m_spellInfo))
+            if (!SpellMgr::IsChanneledSpell(GetSpellInfo()))
             {
                 SendInterrupted(0);
                 SendCastResult(SPELL_FAILED_INTERRUPTED);
@@ -3920,6 +3920,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                 return SPELL_FAILED_TARGET_AURASTATE;
         }
         */
+
+        if (SpellMgr::IsPositiveSpell(GetSpellInfo()->Id))
+        {
+            if (m_spellInfo->Id == 3411 && !target->isAlive())
+                return SPELL_FAILED_BAD_TARGETS;
+        }
 
         //Must be behind the target.
         if (GetSpellInfo()->AttributesEx2 == 0x100000 && (GetSpellInfo()->AttributesEx & 0x200) == 0x200 && target->HasInArc(M_PI, m_caster)
