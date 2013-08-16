@@ -520,6 +520,115 @@ CreatureAI* GetAI_npc_felfire_wave(Creature* _Creature)
     return new npc_felfire_waveAI(_Creature);
 }
 
+#define SPELL_AURA   (HeroicMode ? 38828 : 36716)
+
+struct npc_arcatraz_sentinelAI : public ScriptedAI
+{
+    npc_arcatraz_sentinelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+        HeroicMode = me->GetMap()->IsHeroic();
+    }
+
+    uint32 Reset_Timer;
+
+    ScriptedInstance *pInstance;
+    bool HeroicMode;
+
+    void Reset()
+    {
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 32);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 7);
+        DoCast(me, SPELL_AURA);
+        Reset_Timer = 10000;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+        uint32 hp = (me->GetMaxHealth()*40)/100;
+        if (hp)
+            me->SetHealth(hp);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop();
+        
+        if (!me->isAlive())
+            return;    
+
+        me->GetMotionMaster()->MoveTargetedHome();
+    }
+
+    void JustReachedHome()
+    {
+        Reset();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if( Reset_Timer < diff )
+        {
+            DoResetThreat();
+            Reset_Timer = 10000;
+
+        }else Reset_Timer -=diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_arcatraz_sentinel(Creature *_Creature)
+{
+    return new npc_arcatraz_sentinelAI (_Creature);
+}
+
+#define SPELL_SUMMON   36593
+
+struct npc_warder_corpseAI : public ScriptedAI
+{
+    npc_warder_corpseAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
+
+    bool summon;
+
+    void Reset()
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 32);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 7);
+        summon = false;
+    }
+
+    void EnterCombat(Unit *who) {}
+    void AttackStart(Unit* who) {}
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && me->IsWithinMeleeRange(who) && !summon) //no GM support they fail last days :P
+        {
+            DoCast(me, SPELL_SUMMON, true);
+            summon = true;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_warder_corpse(Creature *_Creature)
+{
+    return new npc_warder_corpseAI (_Creature);
+}
+
 void AddSC_arcatraz()
 {
     Script *newscript;
@@ -537,6 +646,16 @@ void AddSC_arcatraz()
     newscript = new Script;
     newscript->Name="npc_felfire_wave";
     newscript->GetAI = &GetAI_npc_felfire_wave;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="arcatraz_sentinel";
+    newscript->GetAI = &GetAI_npc_arcatraz_sentinel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="warder_corpse";
+    newscript->GetAI = &GetAI_npc_warder_corpse;
     newscript->RegisterSelf();
 }
 

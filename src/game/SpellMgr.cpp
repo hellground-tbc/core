@@ -3452,6 +3452,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->MaxAffectedTargets = 1;
                 spellInfo->EffectTriggerSpell[0] = 33760;
                 break;
+            case 36717: //energy discharge
+                spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_NEARBY_ENEMY;
+                break;
             default:
                 break;
         }
