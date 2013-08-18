@@ -28,19 +28,32 @@ struct mob_coilfang_slavehandlerAI : public ScriptedAI
 
     void JustDied(Unit* )
     {
+        StartRun();
+    }
+
+    void StartRun()
+    {
         std::list<Creature*> alist= FindAllCreaturesWithEntry(17963, 100);
         std::list<Creature*> blist= FindAllCreaturesWithEntry(17964, 100);
         for(std::list<Creature*>::iterator itr = blist.begin(); itr != blist.end(); itr++)
             alist.push_front(*itr);
         for(std::list<Creature*>::iterator itr = alist.begin(); itr != alist.end(); itr++)
         {
-            if ((*itr)->GetFormation() && (*itr)->GetFormation()->getLeader() == me)
+            if ((*itr)->GetFormation() == me->GetFormation())
             {
-                (*itr)->SetHomePosition(120,-132,-0.6,4);
-                // this is EnterEvadeMode() but without formation reset
-                (*itr)->AI()->_EnterEvadeMode();
-                (*itr)->AI()->Reset();
-                (*itr)->GetMotionMaster()->MoveTargetedHome();
+                if ((*itr)->isAlive())
+                {
+                    (*itr)->RemoveAllAuras();
+                    (*itr)->DeleteThreatList();
+                    (*itr)->CombatStop();
+
+                    if (me->GetPositionY() > -150.0f)
+                        (*itr)->GetMotionMaster()->MovePoint(1, 115.0f, -98.0f, -1.5f);
+                    else
+                        (*itr)->GetMotionMaster()->MovePoint(2, -102.0f, -121.0f, -2.1f);
+
+                    (*itr)->ForcedDespawn(7000);
+                } 
             }
         }
     }
@@ -90,44 +103,104 @@ CreatureAI* GetAI_mob_coilfang_slavehandler(Creature *_creature)
     return new mob_coilfang_slavehandlerAI (_creature);
 }
 
-struct npc_slave_pens_dispenserAI : public Scripted_NoMovementAI
-{
-    npc_slave_pens_dispenserAI(Creature *c) : Scripted_NoMovementAI(c) {}
+// SV
+#define SPELL_DISARM        6713
+#define SPELL_GEYSER        10987
+#define SPELL_FRENZY        8269
 
-    uint32 dispensetimer;
+struct npc_coilfang_slavemasterAI : public ScriptedAI
+{
+    npc_coilfang_slavemasterAI(Creature *c) : ScriptedAI(c) {}
+
+    uint32 hamstringtimer;
+    uint32 headcracktimer;
+    uint32 yelltimer;
+
+    bool frenzy;
+
     void Reset()
     {
-        dispensetimer=3000;
+        hamstringtimer = urand(5800,6200);
+        headcracktimer = 11100;
+        yelltimer = urand(60000,120000);
+        frenzy = false;
     }
-    void UpdateAI(const uint32 diff) 
+
+    void JustDied(Unit* )
     {
-        if (dispensetimer <= diff)
+        StartRun();
+    }
+
+    void StartRun()
+    {
+        std::list<Creature*> alist= FindAllCreaturesWithEntry(17799, 100);
+        for(std::list<Creature*>::iterator itr = alist.begin(); itr != alist.end(); itr++)
         {
-            Unit* slave = FindCreature(17963, 20, m_creature);
-            if (slave)
+            if ((*itr)->GetFormation() == me->GetFormation())
             {
-                slave->ToCreature()->ForcedDespawn();
-                slave->ToCreature()->RemoveCorpse();
+                if ((*itr)->isAlive())
+                {
+                    (*itr)->RemoveAllAuras();
+                    (*itr)->DeleteThreatList();
+                    (*itr)->CombatStop();
+                    (*itr)->GetMotionMaster()->MovePoint(1, -149.0f, -295.0f, -7.6f);
+                    (*itr)->ForcedDespawn(7000);
+                } 
             }
-            slave = FindCreature(17964, 20, m_creature);
-            if (slave)
+        }
+    }
+
+    void EnterCombat(Unit* attacker)
+    {
+        me->Yell(YELL_AGGRO,0,0);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!me->isInCombat())
+            if(yelltimer < diff)
             {
-                slave->ToCreature()->ForcedDespawn();
-                slave->ToCreature()->RemoveCorpse();
+                me->Yell(RAND(YELL_OOC1,YELL_OOC2,YELL_OOC3,YELL_OOC4,YELL_OOC5,YELL_OOC6),0,0);
+                yelltimer = urand(60000,120000);
             }
-            dispensetimer = 3000;
+            else
+                yelltimer -=diff;
+
+        if(!UpdateVictim())
+            return;
+
+        if(hamstringtimer < diff)
+        {
+            AddSpellToCast(SPELL_DISARM);
+            hamstringtimer = 9000;
         }
         else
-        dispensetimer -= diff;
-    }
-    void AttackStart() {}
+            hamstringtimer -= diff;
 
+        if(headcracktimer < diff)
+        {
+            AddSpellToCast(SPELL_GEYSER);
+            headcracktimer = urand(20000,25000);
+        }
+        else
+            headcracktimer -= diff;
+
+        if (HealthBelowPct(20.0f) && !frenzy)
+        {
+            ForceSpellCast(me, SPELL_FRENZY, INTERRUPT_AND_CAST_INSTANTLY);
+            frenzy = true;
+        }
+
+        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady(diff);
+    }
 };
 
-CreatureAI* GetAI_npc_slave_pens_dispenser(Creature *_creature)
+CreatureAI* GetAI_npc_coilfang_slavemaster(Creature *_creature)
 {
-    return new npc_slave_pens_dispenserAI (_creature);
+    return new npc_coilfang_slavemasterAI (_creature);
 }
+
 
 void AddSC_slave_pens_trash()
 {
@@ -138,7 +211,7 @@ void AddSC_slave_pens_trash()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="npc_slave_pens_dispenser";
-    newscript->GetAI = &GetAI_npc_slave_pens_dispenser;
+    newscript->Name="npc_coilfang_slavemaster";
+    newscript->GetAI = &GetAI_npc_coilfang_slavemaster;
     newscript->RegisterSelf();
 }
