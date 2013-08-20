@@ -332,7 +332,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     if (!ok)
                         Cell::VisitWorldObjects(this, checker, radius);
                 }
-                else                                        // environmental trap
+                else if (isSpawnedByDefault())                                        // environmental trap
                 {
                     // affect only players
                     Player* p_ok = NULL;
