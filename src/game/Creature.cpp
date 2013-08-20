@@ -577,7 +577,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
             {
-                uint32 distToHome = sWorld.getConfig(CONFIG_EVADE_HOMEDIST);
+                uint32 distToHome = sWorld.getConfig(CONFIG_EVADE_HOMEDIST) * 3;
                 if (!IsWithinDistInMap(&homeLocation, distToHome))
                     AI()->EnterEvadeMode();
             }
