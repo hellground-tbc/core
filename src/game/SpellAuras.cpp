@@ -6073,6 +6073,8 @@ void Aura::HandleHaste(bool apply, bool Real)
 
 void Aura::HandleAuraModRangedHaste(bool apply, bool Real)
 {
+    if (m_spellProto->Id == 44972 && apply) // thor'idal
+        m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_RANGED_AMMO_HASTE);
     m_target->ApplyAttackTimePercentMod(RANGED_ATTACK, GetModifierValue(), apply);
 }
 
@@ -6080,6 +6082,9 @@ void Aura::HandleRangedAmmoHaste(bool apply, bool Real)
 {
     if (m_target->GetTypeId() != TYPEID_PLAYER)
         return;
+
+    if (apply)
+        m_target->RemoveAurasDueToSpell(44972); // thor'idal
 
     m_target->ApplyAttackTimePercentMod(RANGED_ATTACK,GetModifierValue(), apply);
 }
