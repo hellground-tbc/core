@@ -5477,6 +5477,21 @@ void Aura::HandleAuraModResistance(bool apply, bool Real)
     {
         m_target->ModifyAuraState(AURA_STATE_FAERIE_FIRE,apply);
     }
+
+	if (apply)
+        switch (m_spellProto->Id){
+            case 1490: // Curse of the Elements 1-4
+            case 11721:
+            case 11722:
+            case 27228:
+            case 704: // Curse of Recklesness 1-5
+            case 7658:
+            case 7659:
+            case 11717:
+            case 27226:
+                m_target->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+                break;
+    }
 }
 
 void Aura::HandleAuraModBaseResistancePCT(bool apply, bool Real)
