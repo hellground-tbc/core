@@ -9435,12 +9435,20 @@ void Unit::ClearInCombat()
         if (Unit *owner = GetOwner())
         {
             for (int i = 0; i < MAX_MOVE_TYPE; ++i)
-                SetSpeed(UnitMoveType(i), owner->GetSpeedRate(UnitMoveType(i)), true);
+            {
+                float owner_speed = owner->GetSpeedRate(UnitMoveType(i));
+                int32 owner_slow = owner->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
+                int32 owner_slow_non_stack = owner->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_SPEED_NOT_STACK);
+                owner_slow = owner_slow < owner_slow_non_stack ? owner_slow : owner_slow_non_stack;
+                if (owner_slow)
+                    owner_speed *=100.0f/(100.0f + owner_slow); // now we have owners speed without slow
+                SetSpeed(UnitMoveType(i), owner_speed*1.15f, true);
+                return;
+            }
         }
     }
     else if (!isCharmed())
         return;
-
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
