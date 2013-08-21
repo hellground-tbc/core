@@ -3478,7 +3478,29 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
     else
     {
         if (modelid > 0)
-            m_target->SetDisplayId(m_target->GetNativeDisplayId());
+        {
+            Unit::AuraList const& otherTransforms = m_target->GetAurasByType(SPELL_AURA_TRANSFORM);
+            if (otherTransforms.empty())
+            {
+                m_target->SetDisplayId(m_target->GetNativeDisplayId());
+                m_target->setTransForm(0);
+            }
+            else
+            {
+                // look for other transform auras
+                Aura* handledAura = *otherTransforms.begin();
+                for (Unit::AuraList::const_iterator i = otherTransforms.begin();i != otherTransforms.end(); ++i)
+                {
+                    // negative auras are preferred
+                    if (!SpellMgr::IsPositiveSpell((*i)->GetSpellProto()->Id))
+                    {
+                        handledAura = *i;
+                        break;
+                    }
+                }
+                handledAura->ApplyModifier(true, true);
+            }
+        }
 
         m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, FORM_NONE);
         m_target->ForceValuesUpdateAtIndex(UNIT_FIELD_BYTES_2);
