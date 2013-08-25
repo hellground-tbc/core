@@ -375,17 +375,17 @@ struct instance_blackrock_depths : public ScriptedInstance
             return DughalGUID;
         case DATA_ANGERREL:
             return TombBossGUIDs[5];
-		case DATA_DOPEREL:
+        case DATA_DOPEREL:
             return TombBossGUIDs[0];
-		case DATA_HATEREL:
+        case DATA_HATEREL:
             return TombBossGUIDs[1];
-		case DATA_VILEREL:
+        case DATA_VILEREL:
             return TombBossGUIDs[2];
-		case DATA_SEETHREL:
+        case DATA_SEETHREL:
             return TombBossGUIDs[3];
-		case DATA_GLOOMREL:
+        case DATA_GLOOMREL:
             return TombBossGUIDs[4];
-		case DATA_DOOMREL:
+        case DATA_DOOMREL:
             return DoomrelGUID;
         }
         return 0;

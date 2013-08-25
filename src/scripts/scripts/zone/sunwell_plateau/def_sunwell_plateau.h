@@ -13,7 +13,7 @@
 #define DATA_EREDAR_TWINS_EVENT     5
 #define DATA_MURU_EVENT             6
 #define DATA_KILJAEDEN_EVENT        7
-#define DATA_TRASH_GAUNTLET_EVENT	8
+#define DATA_TRASH_GAUNTLET_EVENT   8
 
 /*** Creatures ***/
 #define DATA_KALECGOS_DRAGON        9

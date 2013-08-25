@@ -46,6 +46,7 @@ namespace AccountMgr
 
     uint32 GetId(std::string username);
     uint64 GetPermissions(uint32 acc_id);
+    bool HasPermissions(uint32 accId, uint64 perms);
     bool GetName(uint32 acc_id, std::string &name);
 
     bool normilizeString(std::string& utf8str);

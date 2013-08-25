@@ -147,6 +147,11 @@ uint64 AccountMgr::GetPermissions(uint32 acc_id)
     return 0;
 }
 
+bool AccountMgr::HasPermissions(uint32 accId, uint64 perms)
+{
+    return GetPermissions(accId) & perms;
+}
+
 bool AccountMgr::GetName(uint32 acc_id, std::string &name)
 {
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username FROM account WHERE account_id = '%u'", acc_id);

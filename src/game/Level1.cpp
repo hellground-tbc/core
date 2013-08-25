@@ -665,9 +665,8 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     }
     uint64 tarGUID = sObjectMgr.GetPlayerGUIDByName(targm.c_str());
     uint64 accid = sObjectMgr.GetPlayerAccountIdByGUID(tarGUID);
-    uint64 targetPermissions = AccountMgr::GetPermissions(accid);
 
-    if (!tarGUID || !(targetPermissions & PERM_GMT))
+    if (!tarGUID || !AccountMgr::HasPermissions(accid, PERM_GMT))
     {
         SendSysMessage(LANG_COMMAND_TICKETASSIGNERROR_A);
         return true;

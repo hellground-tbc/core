@@ -179,7 +179,7 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         uint32 RecordVerboseTimeDiff(bool reset);
 
         uint64 GetPermissions() const { return m_permissions; }
-		bool HasPermissions(uint64 perms) const { return m_permissions & perms; }
+        bool HasPermissions(uint64 perms) const { return m_permissions & perms; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
         char const* GetPlayerName() const;

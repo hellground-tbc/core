@@ -724,7 +724,7 @@ CreatureAI* GetAI_mob_sunblade_vindicator(Creature *_Creature)
 
 *****************/
 
-#define GAUNTLET_PATH	2501
+#define GAUNTLET_PATH    2501
 
 enum ShadowswordAssassin
 {

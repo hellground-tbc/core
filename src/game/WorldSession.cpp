@@ -406,7 +406,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             overtime = true;
     }
 
-    if (overtime && !(GetPermissions() & PERM_GMT))
+    if (overtime && !HasPermissions(PERM_GMT))
     {
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
@@ -425,7 +425,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     bool logverbose = false;
     if (verbose == 1) // log only if overtime
-        if (overtime && !(GetPermissions() & PERM_GMT) && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
+        if (overtime && !HasPermissions(PERM_GMT) && sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD) >= OVERTIME_LOG)
             logverbose = true;
 
     if (verbose == 2) // log if session update is logged as slow
@@ -783,9 +783,9 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
 //            m_Warden = (WardenBase*)new WardenMac();
             sLog.outLog(LOG_WARDEN, "Client %u got OSX client operating system (%i)", GetAccountId(), OperatingSystem);
             break;
-		case CLIENT_OS_CHAT:
-			m_Warden = (WardenBase*)new WardenChat();
-			break;
+        case CLIENT_OS_CHAT:
+            m_Warden = (WardenBase*)new WardenChat();
+            break;
         default:
             sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
             if (sWorld.getConfig(CONFIG_WARDEN_KICK))

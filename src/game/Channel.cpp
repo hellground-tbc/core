@@ -97,7 +97,7 @@ void Channel::Join(uint64 p, const char *pass)
     if (plr)
     {
         if (HasFlag(CHANNEL_FLAG_LFG) &&
-            sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && !(plr->GetSession()->GetPermissions() & PERM_GMT) &&
+            sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && !plr->GetSession()->HasPermissions(PERM_GMT) &&
             plr->m_lookingForGroup.Empty())
         {
             MakeNotInLfg(&data);
@@ -111,7 +111,7 @@ void Channel::Join(uint64 p, const char *pass)
         plr->JoinedChannel(this);
     }
 
-    if (m_announce && (!plr || !(plr->GetSession()->GetPermissions() & PERM_GMT) || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
+    if (m_announce && (!plr || !plr->GetSession()->HasPermissions(PERM_GMT) || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
     {
         MakeJoined(&data, p);
         SendToAll(&data);
@@ -165,7 +165,7 @@ void Channel::Leave(uint64 p, bool send)
         bool changeowner = players[p].IsOwner();
 
         players.erase(p);
-        if (m_announce && (!plr || !(plr->GetSession()->GetPermissions() & PERM_GMT) || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
+        if (m_announce && (!plr || !plr->GetSession()->HasPermissions(PERM_GMT) || !sWorld.getConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
         {
             WorldPacket data;
             MakeLeft(&data, p);
@@ -350,7 +350,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 
         // allow make moderator from another team only if both is GMs
         // at this moment this only way to show channel post for GM from another team
-        if ((!(plr->GetSession()->GetPermissions() & PERM_GMT) || !(newp->GetSession()->GetPermissions() & PERM_GMT)) &&
+        if ((!plr->GetSession()->HasPermissions(PERM_GMT) || !newp->GetSession()->HasPermissions(PERM_GMT)) &&
             plr->GetTeam() != newp->GetTeam() && !sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         {
             WorldPacket data;
@@ -460,7 +460,7 @@ void Channel::List(Player* player)
         size_t pos = data.wpos();
         data << uint32(0);                                  // size of list, placeholder
 
-        bool gmInWhoList = sWorld.getConfig(CONFIG_GM_IN_WHO_LIST) || player->GetSession()->GetPermissions() & PERM_GMT;
+        bool gmInWhoList = sWorld.getConfig(CONFIG_GM_IN_WHO_LIST) || player->GetSession()->HasPermissions(PERM_GMT);
 
         uint32 count  = 0;
         for (PlayerList::iterator i = players.begin(); i != players.end(); ++i)
@@ -471,7 +471,7 @@ void Channel::List(Player* player)
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
-            if (!(user->GetSession()->GetPermissions() & PERM_GMT) || gmInWhoList)
+            if (!user->GetSession()->HasPermissions(PERM_GMT) || gmInWhoList)
             {
                 data << uint64(i->first);
                 data << uint8(i->second.flags);             // flags seems to be changed...
@@ -1024,7 +1024,7 @@ void Channel::ChangeOwner()
     for (PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
     {
         Player * tmpPlr = ObjectAccessor::GetPlayer(itr->second.player);
-        if (tmpPlr && !(tmpPlr->GetSession()->GetPermissions() & PERM_GMT))
+        if (tmpPlr && !tmpPlr->GetSession()->HasPermissions(PERM_GMT))
         {
             newOwner = itr->second.player;
             break;

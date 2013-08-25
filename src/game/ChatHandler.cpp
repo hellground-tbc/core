@@ -129,7 +129,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
     }
 
     // mass mute for players check
-    if (!(GetPermissions() & PERM_GMT) && sWorld.GetMassMuteTime() && sWorld.GetMassMuteTime() > time(NULL))
+    if (!HasPermissions(PERM_GMT) && sWorld.GetMassMuteTime() && sWorld.GetMassMuteTime() > time(NULL))
     {
         if (sWorld.GetMassMuteReason())
             ChatHandler(_player).PSendSysMessage("Mass mute reason: %s", sWorld.GetMassMuteReason());
@@ -261,13 +261,22 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             if (ChatHandler(this).ContainsNotAllowedSigns(msg))
                 return;
 
-            if (type == CHAT_MSG_SAY)
-                GetPlayer()->Say(msg, lang);
-            else if (type == CHAT_MSG_EMOTE)
-                GetPlayer()->TextEmote(msg);
-            else if (type == CHAT_MSG_YELL)
-                GetPlayer()->Yell(msg, lang);
-        } break;
+            switch (type)
+            {
+                case CHAT_MSG_SAY:
+                    GetPlayer()->Say(msg, lang);
+                    break;
+                case CHAT_MSG_EMOTE:
+                    GetPlayer()->TextEmote(msg);
+                    break;
+                case CHAT_MSG_YELL:
+                    GetPlayer()->Yell(msg, lang);
+                    break;
+                default:
+                    break;
+            }
+        } 
+        break;
 
         case CHAT_MSG_WHISPER:
         {
@@ -290,9 +299,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             }
 
             Player *player = sObjectMgr.GetPlayer(to.c_str());
-            uint64 tPermissions = GetPermissions();
-            uint64 pPermissions = player ? player->GetSession()->GetPermissions() : 0;
-            if (!player || (!(tPermissions & PERM_GMT) && !(pPermissions & PERM_GMT) && !player->isAcceptWhispers()))
+            if (!player || (!HasPermissions(PERM_GMT) && !player->GetSession()->HasPermissions(PERM_GMT) && !player->isAcceptWhispers()))
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
                 data<<to;
@@ -300,7 +307,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
                 return;
             }
 
-            if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && !(tPermissions & PERM_GMT) && !(pPermissions & PERM_GMT))
+            if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && !HasPermissions(PERM_GMT) && !player->GetSession()->HasPermissions(PERM_GMT))
             {
                 uint32 sidea = GetPlayer()->GetTeam();
                 uint32 sideb = player->GetTeam();
@@ -314,7 +321,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             }
 
             GetPlayer()->Whisper(msg, lang,player->GetGUID());
-        } break;
+        } 
+        break;
 
         case CHAT_MSG_PARTY:
         {

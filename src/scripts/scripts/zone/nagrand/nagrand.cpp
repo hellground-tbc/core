@@ -1253,7 +1253,7 @@ bool go_maghar_prison(Player* player, GameObject* go)
                 scriptedAI->StartRun(player);
             }
 
-			return false;
+            return false;
         }
     }
     return true;
@@ -1335,7 +1335,7 @@ struct npc_warmaul_pyreAI : public ScriptedAI
         me->SummonCreature(NPC_SABOTEUR, Z[1].x, Z[1].y, Z[1].z, 3.8f, TEMPSUMMON_CORPSE_DESPAWN, 60000);
     }
 
-	void DoSummon()
+    void DoSummon()
     {
         ++CorpseCount;
 

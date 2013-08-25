@@ -1921,7 +1921,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
         if (!m_session || m_session->GetPermissions() >= permissions)
         {
-            if (sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL) & m_session->GetPermissions())
+            if (m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
                 email = fields[2].GetCppString();
 
             last_ip = fields[3].GetCppString();

@@ -341,7 +341,7 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
                      }
 
                      checktimer = 2000;
-						
+                        
                 }
                 else
                     checktimer -= diff;
@@ -388,9 +388,9 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
                         else
                             EnterEvadeMode();
                     }
-						
+                        
                     checktimer = 2000;
-						
+                        
                 }
                 else
                     checktimer -= diff;

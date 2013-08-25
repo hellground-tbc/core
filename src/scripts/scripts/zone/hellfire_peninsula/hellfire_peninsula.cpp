@@ -402,7 +402,7 @@ struct npc_demoniac_scryerAI : public ScriptedAI
     std::list<uint64> PlayersWithQuestList;
 
     void Reset()
-	{
+    {
         IfIsComplete = false;
         SpawnDemonTimer = 15000;
         SpawnOrcTimer = 30000;
@@ -425,7 +425,7 @@ struct npc_demoniac_scryerAI : public ScriptedAI
             if(player->GetQuestStatus(QUEST_DEMONIAC) == QUEST_STATUS_INCOMPLETE)
                 PlayersWithQuestList.push_back(player->GetGUID());
         }
-	}
+    }
 
     void AttackedBy(Unit* pEnemy) {}
     void AttackStart(Unit* pEnemy) {}
@@ -1441,7 +1441,7 @@ static Move M[]=
 struct npc_darkness_releasedAI : public ScriptedAI
 {
     npc_darkness_releasedAI(Creature* creature) : ScriptedAI(creature) 
-	{
+    {
         ChTimer = 5000;
         AtTimer = 10000;
         DoCast(me, SPELL_AURA_ME);
@@ -1860,13 +1860,13 @@ struct npc_pathaleon_imageAI : public ScriptedAI
     uint32 Steps;
 
     void Reset()
-	{
+    {
         SumTimer = 5000;
         StepsTimer = 0;
         Steps = 0;
         Event = true;
         SummonTrigger = false;
-	}
+    }
 
     void DoSpawnGoliathon()
     {
@@ -2027,7 +2027,7 @@ struct npc_vieraAI : public npc_escortAI
 
     void JustSummoned(Creature* summoned)
     {
-		summoned->GetMotionMaster()->MoveFollow(me, PET_FOLLOW_DIST,  summoned->GetFollowAngle());
+        summoned->GetMotionMaster()->MoveFollow(me, PET_FOLLOW_DIST,  summoned->GetFollowAngle());
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
@@ -2035,16 +2035,16 @@ struct npc_vieraAI : public npc_escortAI
         if(spell->Id == 30077)
         {
             DoScriptText(SAY_VIERA2, me, 0);
-			SetEscortPaused(false);
+            SetEscortPaused(false);
         }
     }
 
     void UpdateEscortAI(const uint32 diff)
     {
         if (EndsTimer <= diff)
-		{
+        {
             SetEscortPaused(false);
-		}
+        }
         else EndsTimer -= diff;
     }
 };
@@ -2149,7 +2149,7 @@ struct npc_east_hovelAI : public ScriptedAI
     {
         if(spell->Id == SPELL_FIRE)
         {
-			if(Summon)
+            if(Summon)
             {
                 me->SummonGameObject(GO_FIRE, -934.393005, 1934.01001, 82.031601, 3.35103, 0, 0, 0, 0, 15);
                 me->SummonGameObject(GO_FIRE, -927.877991, 1927.44995, 81.048897, 5.25344, 0, 0, 0, 0, 15);
@@ -2193,7 +2193,7 @@ struct npc_west_hovelAI : public ScriptedAI
     {
         if(spell->Id == SPELL_FIRE)
         {
-			if(Summon)
+            if(Summon)
             {
                 me->SummonGameObject(GO_FIRE, -1145.410034, 2064.830078, 80.782600, 5.044, 0, 0, 0, 0, 15);
                 me->SummonGameObject(GO_FIRE, -1156.839966, 2060.870117, 79.176399, 3.83972, 0, 0, 0, 0, 15);
@@ -2236,7 +2236,7 @@ struct npc_stableAI : public ScriptedAI
     {
         if(spell->Id == SPELL_FIRE)
         {
-			if(Summon)
+            if(Summon)
             {
                 me->SummonGameObject(GO_FIRE, -1067.280029, 1998.949951, 76.286301, 5.86431, 0, 0, 0, 0, 15);
                 me->SummonGameObject(GO_FIRE, -1052.189941, 2012.099976, 80.946198, 5.95157, 0, 0, 0, 0, 15);
@@ -2280,7 +2280,7 @@ struct npc_barracksAI : public ScriptedAI
     {
         if(spell->Id == SPELL_FIRE)
         {
-			if(Summon)
+            if(Summon)
             {
                 me->SummonGameObject(GO_FIRE, -1176.709961, 1972.189941, 107.182999, 5.18363, 0, 0, 0, 0, 15);
                 me->SummonGameObject(GO_FIRE, -1120.219971, 1929.890015, 92.360901, 0.89011, 0, 0, 0, 0, 15);
@@ -2443,7 +2443,7 @@ void AddSC_hellfire_peninsula()
     newscript->GetAI = &GetAI_npc_deranged_helboar;
     newscript->RegisterSelf();
 
-	newscript = new Script;
+    newscript = new Script;
     newscript->Name = "npc_east_hovel";
     newscript->GetAI = &GetAI_npc_east_hovel;
     newscript->RegisterSelf();

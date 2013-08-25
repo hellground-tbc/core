@@ -127,7 +127,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
 
                     if (Creature* Thrall = me->GetMap()->GetCreature(ThrallinGUID))
                         Thrall->SummonCreature(SKARLOC_MOUNT,2047.90f, 254.85f, 62.822f, me->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 5000);
-							
+                            
                     me->SetWalk(true);
                     me->GetMotionMaster()->MovePoint(0, 2056.80f, 240.81f, 63.538f);
 

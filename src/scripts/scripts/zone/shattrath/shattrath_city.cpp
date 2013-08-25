@@ -413,7 +413,7 @@ struct npc_kservantAI : public npc_escortAI
                         }
                         break;
                     }
-					case 24:
+                    case 24:
                     {
                         switch(TalkCount)
                         {

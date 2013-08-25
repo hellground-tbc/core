@@ -40,8 +40,8 @@ EndScriptData */
 #define SPELL_BURNINGADRENALINE     23620
 #define SPELL_CLEAVE                20684                   //Chain cleave is most likely named something different and contains a dummy effect
 
-#define QUEST_NEFARIUS_CORRUPTION	8730
-#define QUEST_THE_CHARGE_OF_THE_DRAGONFLIGHTS	8555
+#define QUEST_NEFARIUS_CORRUPTION    8730
+#define QUEST_THE_CHARGE_OF_THE_DRAGONFLIGHTS    8555
 
 struct boss_vaelAI : public ScriptedAI
 {

@@ -5500,7 +5500,7 @@ void Aura::HandleAuraModResistance(bool apply, bool Real)
         m_target->ModifyAuraState(AURA_STATE_FAERIE_FIRE,apply);
     }
 
-	if (apply)
+    if (apply)
         switch (m_spellProto->Id){
             case 1490: // Curse of the Elements 1-4
             case 11721:

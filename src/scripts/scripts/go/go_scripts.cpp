@@ -452,7 +452,7 @@ bool GOUse_go_ethereum_transponder_zeta(Player* pPlayer, GameObject* pGO)
 {
     pGO->UseDoorOrButton(60);
     pPlayer->SummonCreature(NPC_AMEER, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+1, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000);
-	
+    
     return true;
 }
 
@@ -466,7 +466,7 @@ bool GOUse_go_ethereal_teleport_pad(Player* pPlayer, GameObject* pGO)
 {
     pGO->UseDoorOrButton(60);
     pPlayer->SummonCreature(NPC_MARID, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+1, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000);
-	
+    
     return true;
 }
 

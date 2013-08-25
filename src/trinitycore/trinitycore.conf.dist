@@ -1034,20 +1034,20 @@ FFA.DisallowGroup = 0
 #        Distance from player to listen text that creature (or other world object) yell
 #        Default: 300
 #
-#	 AutoActive.WaypointMovement.Continents
-#	 AutoActive.WaypointMovement.Instances
-#		 Set to 0 if you don't want to creatures using waypoint movemet become automaticly active
-#		 Default: 1
+#     AutoActive.WaypointMovement.Continents
+#     AutoActive.WaypointMovement.Instances
+#         Set to 0 if you don't want to creatures using waypoint movemet become automaticly active
+#         Default: 1
 #
-#	 AutoActive.Combat.Continents
-#	 AutoActive.Combat.Instances
-#		 Set to 0 if you don't want to creatures in combat to become automaticly active
-#		 Default: 1
+#     AutoActive.Combat.Continents
+#     AutoActive.Combat.Instances
+#         Set to 0 if you don't want to creatures in combat to become automaticly active
+#         Default: 1
 #
-#	 AutoActive.Combat.PlayersOnly
-#		 Set to 1 if you wan't to creatures in combat to become automaticly active only when they have player on target
-#		 Have no effect when both AutoActive.Combat.Continents and AutoActive.Combat.Instances are set to 0
-#		 Default: 0
+#     AutoActive.Combat.PlayersOnly
+#         Set to 1 if you wan't to creatures in combat to become automaticly active only when they have player on target
+#         Have no effect when both AutoActive.Combat.Continents and AutoActive.Combat.Instances are set to 0
+#         Default: 0
 #
 #
 #    MonsterSight
@@ -1261,9 +1261,9 @@ GM.TrustedLevel   = 3
 #        Visibility grey distance for dynobjects/gameobjects/corpses/creature bodies
 #        Default: 10 (yards)
 #
-#	 Visibility.Distance.ActiveObjectUpdate.Continents
-#	 Visibility.Distance.ActiveObjectUpdate.Instances
-#		Range in which objects around active objects (not players) will be updated
+#     Visibility.Distance.ActiveObjectUpdate.Continents
+#     Visibility.Distance.ActiveObjectUpdate.Instances
+#        Range in which objects around active objects (not players) will be updated
 #
 #
 ###################################################################################################################
@@ -1774,9 +1774,9 @@ VMSS.MapFreezeDetectTime = 1000
 #        Default: 60
 #
 #    Warden.Enabled
-#		 Enable warden anticheat
-#		 Default: 1 (Enabled)
-#				  0 (Disabled)
+#         Enable warden anticheat
+#         Default: 1 (Enabled)
+#                  0 (Disabled)
 #
 #    Warden.Kick
 #        Kick player on failed check

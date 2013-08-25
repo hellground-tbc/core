@@ -54,7 +54,7 @@ struct npc_00x09hlAI : public npc_escortAI
 {
     npc_00x09hlAI(Creature* pCreature) : npc_escortAI(pCreature) { }
 
-	void Reset() { }
+    void Reset() { }
 
     void EnterCombat(Unit* pWho)
     {

@@ -1921,7 +1921,7 @@ struct npc_captured_vanguardAI : public npc_escortAI
 
         if (!me->getVictim())
             return;
-		
+        
         if (GlaiveTimer < diff)
         {
             DoCast(me->getVictim(), SPELL_GLAIVE);
@@ -2494,7 +2494,7 @@ bool GossipHello_npc_saeed(Player* player, Creature* creature)
     if (((npc_saeedAI*)creature->AI())->HasEscortState(STATE_ESCORT_PAUSED))
         player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
     player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
-			
+            
     return true;
 }
 
@@ -2738,7 +2738,7 @@ struct npc_king_salhadaarAI : public ScriptedAI
     uint32 Count;
     uint32 FluxTimer;
     uint32 StasisTimer;
-	
+    
     void Reset()
     {
 
@@ -2777,7 +2777,7 @@ struct npc_king_salhadaarAI : public ScriptedAI
         //DoScriptText(YELL_INTRO, me);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        me->setFaction(FACTION_HOSTILE);		  
+        me->setFaction(FACTION_HOSTILE);          
         me->RemoveAllAuras();
         DoCast(me, SPELL_OVERSPARK);
     }

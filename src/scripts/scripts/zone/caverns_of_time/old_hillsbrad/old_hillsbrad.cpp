@@ -281,7 +281,7 @@ struct npc_thrall_old_hillsbradAI : public npc_escortAI
     {
         LowHp = false;
         Event = false;
-		
+        
         MountGUID = 0;
         ArmorerGUID = 0;
         ImageGUID = 0;

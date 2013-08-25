@@ -227,7 +227,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     }
 
     // test the receiver's Faction...
-    if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL) && pl->GetTeam() != rc_team && !(GetPermissions() & PERM_GMT))
+    if (!sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL) && pl->GetTeam() != rc_team && !HasPermissions(PERM_GMT))
     {
         pl->SendMailResult(0, 0, MAIL_ERR_NOT_YOUR_TEAM);
         return;
@@ -335,7 +335,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 
         if (money > 0)
         {
-            if (GetPermissions() & PERM_GMT && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
+            if (HasPermissions(PERM_GMT) && sWorld.getConfig(CONFIG_GM_LOG_TRADE))
             {
                 sLog.outCommand(GetAccountId(),"GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
                     GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
@@ -359,7 +359,7 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
     uint32 deliver_delay = needItemDelay ? sWorld.getConfig(CONFIG_MAIL_DELIVERY_DELAY) : 0;
 
     // If GM sends mail to player - deliver_delay must be zero
-    if (deliver_delay && GetPermissions() & PERM_GMT && sWorld.getConfig(CONFIG_GM_MAIL))
+    if (deliver_delay && HasPermissions(PERM_GMT) && sWorld.getConfig(CONFIG_GM_MAIL))
         deliver_delay = 0;
 
     // will delete item or place to receiver mail list

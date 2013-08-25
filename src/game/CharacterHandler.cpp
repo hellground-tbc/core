@@ -196,7 +196,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
     WorldPacket data(SMSG_CHAR_CREATE, 1);                  // returned with diff.values in all cases
 
-    if (!(GetPermissions() & PERM_GMT))
+    if (!HasPermissions(PERM_GMT))
     {
         if (uint32 mask = sWorld.getConfig(CONFIG_CHARACTERS_CREATING_DISABLED))
         {
@@ -265,7 +265,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         return;
     }
 
-    if (!(GetPermissions() & PERM_GMT) && sObjectMgr.IsReservedName(name))
+    if (!HasPermissions(PERM_GMT) && sObjectMgr.IsReservedName(name))
     {
         data << uint8(CHAR_NAME_RESERVED);
         SendPacket(&data);
@@ -308,7 +308,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         }
     }
 
-    bool AllowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || GetPermissions() & PERM_GMT;
+    bool AllowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || HasPermissions(PERM_GMT);
     uint32 skipCinematics = sWorld.getConfig(CONFIG_SKIP_CINEMATICS);
 
     bool have_same_race = false;
@@ -895,7 +895,7 @@ void WorldSession::HandleChangePlayerNameOpcode(WorldPacket& recv_data)
     }
 
     // check name limitations
-    if (!(GetPermissions() & PERM_GMT) && sObjectMgr.IsReservedName(newname))
+    if (!HasPermissions(PERM_GMT) && sObjectMgr.IsReservedName(newname))
     {
         WorldPacket data(SMSG_CHAR_RENAME, 1);
         data << uint8(CHAR_NAME_RESERVED);

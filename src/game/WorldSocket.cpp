@@ -920,7 +920,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     // Initialize Warden system only if it is enabled by config
     if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
-		m_Session->InitWarden(&K, operatingSystem);
+        m_Session->InitWarden(&K, operatingSystem);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
     ACE_OS::sleep(ACE_Time_Value(0, 10000));
@@ -968,7 +968,7 @@ int WorldSocket::HandlePing(WorldPacket& recvPacket)
             {
                 ACE_GUARD_RETURN(LockType, Guard, m_SessionLock, -1);
 
-                if (m_Session && !(m_Session->GetPermissions() & PERM_GMT))
+                if (m_Session && !m_Session->HasPermissions(PERM_GMT))
                 {
                     sLog.outLog(LOG_DEFAULT, "ERROR: WorldSocket::HandlePing: Player kicked for "
                                     "overspeeded pings address = %s",

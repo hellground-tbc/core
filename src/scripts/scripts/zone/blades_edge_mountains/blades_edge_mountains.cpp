@@ -1360,7 +1360,7 @@ struct npc_orb_attracterAI : public Scripted_NoMovementAI
         me->SetReactState(REACT_PASSIVE);
         attractTimer.Reset(1500);
         me->ForcedDespawn(10000);
-	}
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -2438,7 +2438,7 @@ struct npc_bashir_landingAI : public ScriptedAI
             CollectorGUID = summoned->GetGUID();
             summoned->SetReactState(REACT_PASSIVE);
         }
-		
+        
         if (summoned->GetEntry() == NPC_DISRUPTORT)
         {
             attackers.push_back(summoned->GetGUID());

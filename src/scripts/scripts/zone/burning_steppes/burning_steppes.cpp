@@ -162,7 +162,7 @@ bool GOUse_go_proudtuskremains(Player *player, GameObject* _GO)
 // Spells
 #define SPELL_DRACO_INCARCINATRIX_900   16007
 #define SPELL_CREATE_BROODLING_ESSENCE  16027
-#define SPELL_FIREBALL					13375
+#define SPELL_FIREBALL                    13375
 
 struct mob_broodlingessenceAI : public ScriptedAI
 {
@@ -174,8 +174,8 @@ struct mob_broodlingessenceAI : public ScriptedAI
 
     void Reset()
     {
-		Fireball_Timer = 0;
-		onSpellEffect = false;
+        Fireball_Timer = 0;
+        onSpellEffect = false;
     }
 
     void EnterCombat(Unit *who){}
@@ -183,18 +183,18 @@ struct mob_broodlingessenceAI : public ScriptedAI
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
         if(spell->Id == SPELL_DRACO_INCARCINATRIX_900)
-		{
+        {
             onSpellEffect = true;
-		}
-	}
+        }
+    }
 
     void JustDied(Unit* killer)
     {
         if(onSpellEffect)
-		{
+        {
             me->CastSpell(me, SPELL_CREATE_BROODLING_ESSENCE, true);
-			me->RemoveCorpse();
-		}
+            me->RemoveCorpse();
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -206,7 +206,7 @@ struct mob_broodlingessenceAI : public ScriptedAI
         //Fireball_Timer
         if (Fireball_Timer < diff)
         {
-			DoCast(m_creature->getVictim(),SPELL_FIREBALL);
+            DoCast(m_creature->getVictim(),SPELL_FIREBALL);
             Fireball_Timer = 10000;
         }
         else

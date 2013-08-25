@@ -282,7 +282,7 @@ void World::AddSession_ (WorldSession* s)
     if (decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && !(s->GetPermissions () & PERM_GMT))
+    if (pLimit > 0 && Sessions >= pLimit && !s->HasPermissions(PERM_GMT))
     {
         if (!sObjectMgr.IsUnqueuedAccount(s->GetAccountId()) && !HasRecentlyDisconnected(s))
         {
@@ -2038,7 +2038,7 @@ void World::SendGlobalGMMessage(WorldPacket *packet, WorldSession *self, uint32 
             itr->second->GetPlayer() &&
             itr->second->GetPlayer()->IsInWorld() &&
             itr->second != self &&
-            itr->second->GetPermissions() & PERM_GMT &&
+            itr->second->HasPermissions(PERM_GMT) &&
             (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
         {
             itr->second->SendPacket(packet);
@@ -2205,7 +2205,7 @@ void World::SendGMText(int32 string_id, ...)
             data_list = &data_cache[cache_idx];
 
         for (int i = 0; i < data_list->size(); ++i)
-            if (itr->second->GetPermissions() & sWorld.getConfig(CONFIG_MIN_GM_TEXT_LVL))
+            if (itr->second->HasPermissions(sWorld.getConfig(CONFIG_MIN_GM_TEXT_LVL)))
                 itr->second->SendPacket((*data_list)[i]);
     }
 
@@ -2274,7 +2274,7 @@ void World::KickAllWithoutPermissions(uint64 perms)
 {
     // session not removed at kick and will removed in next update tick
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if (itr->second->GetPermissions() & perms)
+        if (itr->second->HasPermissions(perms))
             itr->second->KickPlayer();
 }
 

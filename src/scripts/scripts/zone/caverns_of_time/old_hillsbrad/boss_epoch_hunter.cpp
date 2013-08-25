@@ -312,7 +312,7 @@ struct boss_epoch_hunterAI : public ScriptedAI
                             }
                         }
                     }
-					
+                    
                     if (!alive)
                     {
                         NextWave();

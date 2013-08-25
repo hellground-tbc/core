@@ -49,7 +49,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand accountAnnounceCommandTable[] =
     {
-        { "battleground",   PERM_PLAYER,		false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
+        { "battleground",   PERM_PLAYER,        false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
         { "bg",             PERM_PLAYER,        false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
         { "broadcast",      PERM_PLAYER,        false, &ChatHandler::HandleAccountAnnounceBroadcastCommand, "", NULL },
         { "guild",          PERM_PLAYER,        false, &ChatHandler::HandleAccountGuildAnnToggleCommand,    "", NULL },
@@ -569,7 +569,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "grid",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectGridCommand,      "", NULL },
         { "move",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectMoveCommand,      "", NULL },
         { "near",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectNearCommand,      "", NULL },
-        { "reset",          PERM_GMT,		false,  &ChatHandler::HandleGameObjectResetCommand,      "", NULL },
+        { "reset",          PERM_GMT,        false,  &ChatHandler::HandleGameObjectResetCommand,      "", NULL },
         { "target",         PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectTargetCommand,    "", NULL },
         { "turn",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectTurnCommand,      "", NULL },
         { NULL,             0,              false,  NULL,                                           "", NULL }
@@ -801,7 +801,7 @@ const char *ChatHandler::GetTrinityString(int32 entry) const
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
     // check security level only for simple  command (without child commands)
-    return m_session->GetPermissions() & cmd.RequiredPermissions;
+    return m_session->HasPermissions(cmd.RequiredPermissions);
 }
 
 bool ChatHandler::hasStringAbbr(const char* name, const char* part)
@@ -1028,7 +1028,7 @@ int ChatHandler::ParseCommands(const char* text)
 
     if (!ExecuteCommandInTable(getCommandTable(), text, fullcmd))
     {
-        if (m_session && !(m_session->GetPermissions() & PERM_GMT))
+        if (m_session && !m_session->HasPermissions(PERM_GMT))
             return 0;
         SendSysMessage(LANG_NO_CMD);
     }
