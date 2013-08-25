@@ -50,7 +50,7 @@ struct instance_zulaman : public ScriptedInstance
     uint64 HexLordEntranceGateGUID;
     uint64 HexLordExitGateGUID;
     uint64 ZulJinDoorGUID;
-    
+
 
     uint64 HarrisonGUID;
     uint64 AkilzonGUID;
@@ -72,7 +72,7 @@ struct instance_zulaman : public ScriptedInstance
 
     void Initialize()
     {
-        StrangeGongGUID = 0;      
+        StrangeGongGUID = 0;
 
         MassiveGateGUID = 0;
         AkilzonDoorGUID = 0;
@@ -80,7 +80,7 @@ struct instance_zulaman : public ScriptedInstance
         HalazziExitDoorGUID = 0;
         HexLordEntranceGateGUID= 0;
         HexLordExitGateGUID = 0;
-        ZulJinDoorGUID= 0;        
+        ZulJinDoorGUID= 0;
 
         AkilzonGUID = 0;
         HarrisonGUID = 0;
@@ -185,15 +185,7 @@ struct instance_zulaman : public ScriptedInstance
         default: break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState(creature);
     }
 
     void OnObjectCreate(GameObject *go)
@@ -201,19 +193,19 @@ struct instance_zulaman : public ScriptedInstance
         switch(go->GetEntry())
         {
         case 187359: StrangeGongGUID = go->GetGUID(); break;
-        case 186728: 
+        case 186728:
             MassiveGateGUID = go->GetGUID();
             if (Encounters[0] != NOT_STARTED)
                 go->SetGoState(GO_STATE_ACTIVE);  //opened
             else
                 go->SetGoState(GO_STATE_READY);
             break;
-        case 186303: 
-            HalazziExitDoorGUID = go->GetGUID(); 
+        case 186303:
+            HalazziExitDoorGUID = go->GetGUID();
             if(GetData(DATA_HALAZZIEVENT) == DONE)
                 go->SetGoState(GO_STATE_ACTIVE);
             break;
-        case 186304: 
+        case 186304:
             HalazziEntranceDoorGUID  = go->GetGUID();
             go->SetGoState(GO_STATE_ACTIVE);
             break;
@@ -227,20 +219,20 @@ struct instance_zulaman : public ScriptedInstance
             AkilzonDoorGUID = go->GetGUID();
             go->SetGoState(GO_STATE_ACTIVE);
             break;
-        case 186859: 
+        case 186859:
             ZulJinDoorGUID  = go->GetGUID();
             go->SetGoState(GO_STATE_ACTIVE);
             break;
-        case 187021: 
-        case 186648: 
-        case 186672: 
+        case 187021:
+        case 186648:
+        case 186672:
         case 186667:
         {
             uint8 i = GetHostageIndex(go->GetEntry());
             RewardsGUID[i] = go->GetGUID();
-            
+
             if(Hostages[i] & HOSTAGE_CHEST_UNLOCKED)
-                go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); 
+                go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
             else if(Hostages[i] & HOSTAGE_CHEST_LOOTED)
                 go->Delete();
             break;
@@ -368,7 +360,7 @@ struct instance_zulaman : public ScriptedInstance
             HandleGameObject(AkilzonDoorGUID, data != IN_PROGRESS);
             if (Encounters[2] != DONE)
             {
-                Encounters[2] = data;        
+                Encounters[2] = data;
                 if(data == DONE)
                 {
                     if(QuestMinute)
@@ -410,7 +402,7 @@ struct instance_zulaman : public ScriptedInstance
                 if(data == DONE)
                     BossJustKilled(4);
             }
-            
+
             if(data == NOT_STARTED)
                 CheckInstanceStatus();
             break;

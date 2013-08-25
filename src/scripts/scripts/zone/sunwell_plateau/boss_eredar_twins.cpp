@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Eredar_Twins
-SD%Complete: 80
-SDComment: make gobj 187366 casting SPELL_BLAZE_BURN, make order with xxx_Touched spells
+SD%Complete: 95
+SDComment: final debugging
 EndScriptData */
 
 #include "precompiled.h"
@@ -59,6 +59,8 @@ enum Quotes
 enum Spells
 {
     //Lady Sacrolash spells
+    SPELL_DUAL_WIELD        =   29651,
+    SPELL_SHADOWFORM        =   45455,
     SPELL_DARK_TOUCHED      =   45347,
     SPELL_SHADOW_BLADES     =   45248, //10 secs
     SPELL_DARK_STRIKE       =   45271,
@@ -75,6 +77,7 @@ enum Spells
     SPELL_DARK_FLAME        =   45345,
 
     //Grand Warlock Alythess spells
+    SPELL_FIREFORM          =   45457,
     SPELL_PYROGENICS        =   45230, //15secs
     SPELL_FLAME_TOUCHED     =   45348,
     SPELL_CONFLAGRATION     =   45342, //30-35 secs
@@ -107,27 +110,39 @@ struct boss_sacrolashAI : public ScriptedAI
     InstanceData *pInstance;
 
     uint32 ShadowbladesTimer;
-    uint32 ShadownovaTimer;
+    uint32 SpecialTimer;
     uint32 ConfoundingblowTimer;
     uint32 ShadowimageTimer;
-    uint32 ConflagrationTimer;
     uint32 EnrageTimer;
 
     void Reset()
     {
         ShadowbladesTimer = 10000;
-        ShadownovaTimer = 30000;
+        SpecialTimer = 30000;
         ConfoundingblowTimer = 25000;
-        ShadowimageTimer = 20000;
-        ConflagrationTimer = 30000;
+        ShadowimageTimer = 14000;
         EnrageTimer = 360000;
+        DoCast(me, SPELL_SHADOWFORM);
+        DoCast(me, SPELL_DUAL_WIELD);
 
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_SACROLASH, NOT_STARTED);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
+        {
+            if(Unit* Alythess = me->GetUnit(pInstance->GetData64(DATA_ALYTHESS)))
+                Alythess->ToCreature()->Respawn();
+            pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
+        }
+
+        ScriptedAI::EnterEvadeMode();
     }
 
     void EnterCombat(Unit *who)
@@ -140,6 +155,41 @@ struct boss_sacrolashAI : public ScriptedAI
     {
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             ScriptedAI::MoveInLineOfSight(who);
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
+    {
+        if(target->GetTypeId() == TYPEID_PLAYER && damage)
+        {
+            if(school_mask == SPELL_SCHOOL_MASK_SHADOW)
+            {
+                SpellEntry* DarkTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DARK_TOUCHED);
+                if(target->HasAura(SPELL_FLAME_TOUCHED))
+                {
+                    target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(DarkTouched))
+                {
+                    target->CastSpell(target, SPELL_DARK_TOUCHED, true);
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(DarkTouched, 1000);
+                }
+            }
+            if(school_mask == SPELL_SCHOOL_MASK_FIRE)
+            {
+                SpellEntry* FlameTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_FLAME_TOUCHED);
+                if(target->HasAura(SPELL_DARK_TOUCHED))
+                {
+                    target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(FlameTouched))
+                {
+                    target->CastSpell(target, SPELL_FLAME_TOUCHED, true);;
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(FlameTouched, 1000);
+                }
+            }
+        }
     }
 
     void KilledUnit(Unit *victim)
@@ -156,7 +206,7 @@ struct boss_sacrolashAI : public ScriptedAI
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, DONE);
         }
         else
-            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            me->SetLootRecipient(NULL);
 
         pInstance->SetData(DATA_SACROLASH, DONE);
     }
@@ -167,36 +217,44 @@ struct boss_sacrolashAI : public ScriptedAI
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_ALYTHESS_DEAD);
     }
 
+    // searches for one of 5 top threat targets from sisters' threat list, but not her main target
+    Unit* GetNovaTarget()
+    {
+        if(Creature* Alythess = me->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
+        {
+            Unit* target = Alythess->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,4), 300.0f, true, Alythess->getVictimGUID());
+            if(target && target->isAlive())
+                return target;
+        }
+        return NULL;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (!UpdateVictim())
             return;
 
-        if (pInstance->GetData(DATA_ALYTHESS) == DONE)
+        if (SpecialTimer < diff)
         {
-            if (ConflagrationTimer < diff)
+            if (pInstance->GetData(DATA_ALYTHESS) == DONE)
             {
-                AddSpellToCast(SPELL_CONFLAGRATION, CAST_RANDOM);
-                ConflagrationTimer = urand(30000, 35000);
+                AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM_WITHOUT_TANK, EMOTE_CONFLAGRATION, false, true);
+                SpecialTimer = urand(14000, 16000);
             }
-            else 
-                ConflagrationTimer -= diff;
-        }
-        
-        if (ShadownovaTimer < diff)
-        {
-            AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM, EMOTE_SHADOW_NOVA);
-            if (pInstance->GetData(DATA_ALYTHESS) != DONE)
+            else
+            {
+                if(Unit* target = GetNovaTarget())
+                    AddSpellToCastWithScriptText(target, SPELL_SHADOW_NOVA, EMOTE_SHADOW_NOVA, false, true);
                 DoScriptText(YELL_SHADOW_NOVA, me);
-
-            ShadownovaTimer = urand(30000,35000);
+                SpecialTimer = urand(30000,35000);
+            }
         }
         else
-            ShadownovaTimer -= diff;
+            SpecialTimer -= diff;
 
         if (ConfoundingblowTimer < diff)
         {
-            AddSpellToCast(SPELL_CONFOUNDING_BLOW, CAST_RANDOM);
+            AddSpellToCast(SPELL_CONFOUNDING_BLOW, CAST_TANK);
             ConfoundingblowTimer = urand(20000, 25000);
         }
         else
@@ -205,8 +263,7 @@ struct boss_sacrolashAI : public ScriptedAI
         if (ShadowimageTimer < diff)
         {
             for (int i = 0; i < 3; i++)
-                DoSpawnCreature(MOB_SHADOW_IMAGE,0,0,0,0,TEMPSUMMON_TIMED_DESPAWN, 15000);
-
+                DoSpawnCreature(MOB_SHADOW_IMAGE, 0, 0 , 0, frand(0, 2*M_PI), TEMPSUMMON_TIMED_DESPAWN, 15000);
             ShadowimageTimer = 20000;
         }
         else
@@ -253,33 +310,44 @@ struct boss_alythessAI : public Scripted_NoMovementAI
     uint32 IntroStepCounter;
     uint32 IntroYellTimer;
 
-    uint32 ConflagrationTimer;
+    uint32 SpecialTimer;
     uint32 PyrogenicsTimer;
-    uint32 ShadownovaTimer;
     uint32 FlamesearTimer;
     uint32 EnrageTimer;
 
     void Reset()
     {
-        ConflagrationTimer = 45000;
+        SpecialTimer = urand(15000, 19000);
         PyrogenicsTimer = 15000;
-        ShadownovaTimer = 40000;
         EnrageTimer = 360000;
-        FlamesearTimer = 15000;
-        IntroYellTimer = 10000;
+        FlamesearTimer = urand(10000, 15000);
+        IntroYellTimer = 500;
         IntroStepCounter = 10;
 
         IntroDone = false;
         TrashWaveDone = false;
 
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO == DONE))
+        DoCast(me, SPELL_FIREFORM);
+        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         else
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         pInstance->SetData(DATA_ALYTHESS, NOT_STARTED);
 
-        SetAutocast(SPELL_BLAZE, 3000, false);
+        SetAutocast(SPELL_BLAZE, 2700, true);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (pInstance->GetData(DATA_SACROLASH) == DONE)
+        {
+            if(Unit* Sacrolash = me->GetUnit(pInstance->GetData64(DATA_SACROLASH)))
+               Sacrolash->ToCreature()->Respawn();
+            pInstance->SetData(DATA_SACROLASH, NOT_STARTED);
+        }
+
+        ScriptedAI::EnterEvadeMode();
     }
 
     void EnterCombat(Unit *who)
@@ -288,27 +356,54 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         pInstance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
     }
 
-    void MoveInLineOfSight(Unit *who)
+    void SetData(uint32 a, uint32 b)
     {
-        if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !TrashWaveDone &&
-            !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 100))
-        {
-            if(Creature* Vanquisher = GetClosestCreatureWithEntry(me, 25486, 40, true))
-            {
-                Vanquisher->Yell("Intruders! Do not let them into the Sanctum!", 0, who->GetGUID());
-                //Vanquisher->GetMotionMaster()->MovePath(PATH_TRASH_WAVE1, false);
-            }
-            TrashWaveDone = true;
-        }
-        // to be redone
-        if (pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE && pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED && !me->IsFriendlyTo(who) && me->IsWithinDistInMap(who, 45))
+        if(a == 1 && b == 1 && pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == NOT_STARTED)
         {
             IntroStepCounter = 0;
             pInstance->SetData(DATA_EREDAR_TWINS_INTRO, IN_PROGRESS);
         }
+    }
 
+    void MoveInLineOfSight(Unit *who)
+    {
         if (pInstance->GetData(DATA_EREDAR_TWINS_INTRO) == DONE)
             Scripted_NoMovementAI::MoveInLineOfSight(who);
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
+    {
+        if(target->GetTypeId() == TYPEID_PLAYER && damage)
+        {
+            if(school_mask == SPELL_SCHOOL_MASK_SHADOW)
+            {
+                SpellEntry* DarkTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DARK_TOUCHED);
+                if(target->HasAura(SPELL_FLAME_TOUCHED))
+                {
+                    target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(DarkTouched))
+                {
+                    target->CastSpell(target, SPELL_DARK_TOUCHED, true);
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(DarkTouched, 1000);
+                }
+            }
+            if(school_mask == SPELL_SCHOOL_MASK_FIRE)
+            {
+                SpellEntry* FlameTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_FLAME_TOUCHED);
+                if(target->HasAura(SPELL_DARK_TOUCHED))
+                {
+                    target->RemoveAurasDueToSpell(SPELL_DARK_TOUCHED);
+                    target->CastSpell(target, SPELL_DARK_FLAME, true);
+                }
+                if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(FlameTouched))
+                {
+                    target->CastSpell(target, SPELL_FLAME_TOUCHED, true);;
+                    target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(FlameTouched, 1000);
+                }
+            }
+        }
     }
 
     void KilledUnit(Unit *victim)
@@ -325,7 +420,7 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             pInstance->SetData(DATA_EREDAR_TWINS_EVENT, DONE);
         }
         else
-            me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+            me->SetLootRecipient(NULL);
 
         pInstance->SetData(DATA_ALYTHESS, DONE);
     }
@@ -378,6 +473,19 @@ struct boss_alythessAI : public Scripted_NoMovementAI
             AddSpellToCastWithScriptText(SPELL_EMPOWER, CAST_SELF, YELL_SISTER_SACROLASH_DEAD);
     }
 
+    // searches for one of 5 top threat targets from sisters' threat list, but not her main target
+    Unit* GetConflagTarget()
+    {
+        if(Creature* Sacrolash = me->GetCreature(pInstance->GetData64(DATA_SACROLASH)))
+        {
+            
+            Unit* target = Sacrolash->AI()->SelectUnit(SELECT_TARGET_TOPAGGRO, urand(0,4), 300.0f, true, Sacrolash->getVictimGUID());
+            if(target && target->isAlive())
+                return target;
+        }
+        return NULL;
+    }
+
     void UpdateAI(const uint32 diff)
     {
         if (IntroStepCounter < 10)
@@ -393,33 +501,28 @@ struct boss_alythessAI : public Scripted_NoMovementAI
         if (!UpdateVictim())
             return;
 
-        if (pInstance->GetData(DATA_SACROLASH) == DONE)
+        if (SpecialTimer < diff)
         {
-            if (ShadownovaTimer < diff)
+            if (pInstance->GetData(DATA_SACROLASH) == DONE)
             {
-                AddSpellToCast(SPELL_SHADOW_NOVA, CAST_RANDOM);
-                ShadownovaTimer = urand(30000, 35000);
+                AddSpellToCastWithScriptText(SPELL_SHADOW_NOVA, CAST_RANDOM_WITHOUT_TANK, EMOTE_SHADOW_NOVA, false, true);
+                SpecialTimer = urand(14000, 16000);
             }
-            else 
-                ShadownovaTimer -= diff;
-        }
-        
-        if (ConflagrationTimer < diff)
-        {
-            AddSpellToCastWithScriptText(SPELL_CONFLAGRATION, CAST_RANDOM, EMOTE_CONFLAGRATION);
-
-            if (pInstance->GetData(DATA_SACROLASH) != DONE)
+            else
+            {
+                if(Unit* target = GetConflagTarget())
+                    AddSpellToCastWithScriptText(target , SPELL_CONFLAGRATION, EMOTE_CONFLAGRATION, false, true);
                 DoScriptText(YELL_CANFLAGRATION, me);
-
-            ConflagrationTimer = urand(30000, 35000);
+                SpecialTimer = urand(30000,35000);
+            }
         }
         else
-            ConflagrationTimer -= diff;
+            SpecialTimer -= diff;
 
         if (FlamesearTimer < diff)
         {
             AddSpellToCast(SPELL_FLAME_SEAR, CAST_SELF);
-            FlamesearTimer = 15000;
+            FlamesearTimer = 10000;
         }
         else
             FlamesearTimer -=diff;
@@ -452,14 +555,15 @@ CreatureAI* GetAI_boss_alythess(Creature *_Creature)
 
 struct mob_shadow_imageAI : public ScriptedAI
 {
-    mob_shadow_imageAI(Creature *c) : ScriptedAI(c) {}
+    mob_shadow_imageAI(Creature *c) : ScriptedAI(c) { pInstance = c->GetInstanceData(); }
 
     uint32 ShadowfuryTimer;
     uint32 DarkstrikeTimer;
+    InstanceData *pInstance;
 
     void Reset()
     {
-        ShadowfuryTimer = urand(5000, 20000);
+        ShadowfuryTimer = 1500;
         DarkstrikeTimer = 3000;
     }
 
@@ -477,8 +581,30 @@ struct mob_shadow_imageAI : public ScriptedAI
         ForceSpellCast(SPELL_IMAGE_VISUAL, CAST_SELF, INTERRUPT_AND_CAST_INSTANTLY);
         DoZoneInCombat();
 
-        if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-            AttackStart(pTarget);
+        //if (Unit *pTarget = SelectUnit(SELECT_TARGET_FARTHEST, urand(0, 4), 400, true))
+        if(Creature* Alythess = me->GetCreature(pInstance->GetData64(DATA_ALYTHESS)))
+        {
+            if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, Alythess->getVictimGUID(), 10.0f))
+                AttackStart(pTarget);
+        }
+    }
+
+    void DamageMade(Unit* target, uint32 &damage, bool direct_damage, uint8 school_mask)
+    {
+        if(target->GetTypeId() == TYPEID_PLAYER && damage && school_mask == SPELL_SCHOOL_MASK_SHADOW)
+        {
+            SpellEntry* DarkTouched = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DARK_TOUCHED);
+            if(target->HasAura(SPELL_FLAME_TOUCHED))
+            {
+                target->RemoveAurasDueToSpell(SPELL_FLAME_TOUCHED);
+                target->CastSpell(target, SPELL_DARK_FLAME, true);
+            }
+            if(!target->HasAura(SPELL_DARK_FLAME) && !target->ToPlayer()->GetCooldownMgr().HasSpellIdCooldown(DarkTouched))
+            {
+                target->CastSpell(target, SPELL_DARK_TOUCHED, true);
+                target->ToPlayer()->GetCooldownMgr().AddSpellIdCooldown(DarkTouched, 1000);
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -488,8 +614,12 @@ struct mob_shadow_imageAI : public ScriptedAI
 
         if (ShadowfuryTimer < diff)
         {
-            AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
-            ShadowfuryTimer = 10000;
+            if (me->IsWithinMeleeRange(me->getVictim()) && roll_chance_f(15))
+            {
+                AddSpellToCast(SPELL_SHADOW_FURY, CAST_NULL);
+                ShadowfuryTimer = 5000;
+            }
+            ShadowfuryTimer = 1500;
         }
         else
             ShadowfuryTimer -= diff;
@@ -535,13 +665,3 @@ void AddSC_boss_eredar_twins()
     newscript->GetAI = &GetAI_mob_shadow_image;
     newscript->RegisterSelf();
 }
-
-/* SQLe do wrzucenia
-
--- formation for sacrolash and alythess
-REPLACE INTO creature_formations VALUES
-(53687, 53668, 0, 0, 2),
-(53687, 53687, 0, 0, 2);
-
-
-*/

@@ -22,6 +22,7 @@
 enum eData
 {
     BOSS_TUTEN_KASH,
+    DATA_BELNISTRASZ,
     DATA_GONG_WAVES
 };
 
@@ -32,14 +33,18 @@ enum eData64
 
 enum eGameObject
 {
-    GO_GONG                                        = 148917
+    GO_GONG                                        = 148917,
+    GO_IDOL_MOUTH                                  = 151973,
+    GO_IDOL_OVEN                                   = 151951,
+    GO_IDOL_CUP                                    = 151952,
 };
 
 enum eCreature
 {
     CREATURE_TOMB_FIEND                         = 7349,
     CREATURE_TOMB_REAVER                        = 7351,
-    CREATURE_TUTEN_KASH                         = 7355
+    CREATURE_TUTEN_KASH                         = 7355,
+    CREATURE_BELNISTRASZ                        = 8516,
 };
 
 #endif

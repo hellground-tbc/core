@@ -1528,6 +1528,21 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\karazhan\karazhan_trash.cpp">
       <Filter>Scripts\zone\Karazhan</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_spire\instance_blackrock_spire.cpp">
+      <Filter>Scripts\zone\Blackrock Spire</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\mana_tombs.cpp">
+      <Filter>Scripts\zone\Aunchindoun\Mana Tombs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\instance_zul_farrak.cpp">
+      <Filter>Scripts\zone\Zul%27Farrak</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\slave_pens\slave_pens_trash.cpp">
+      <Filter>Scripts\zone\Coilfang Resevoir\Slave Pens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\instance_hellfire_ramparts.cpp">
+      <Filter>Scripts\zone\Hellfire Citadel\Hellfire Ramparts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\scripts\scripts\creature\simple_ai.h">
@@ -1662,6 +1677,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\scripts\include\follower_ai.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\scripts\scripts\zone\blackrock_spire\def_blackrock_spire.h">
+      <Filter>Scripts\zone\Blackrock Spire</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\scripts\scripts\zone\zulfarrak\def_zul_farrak.h">
+      <Filter>Scripts\zone\Zul%27Farrak</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

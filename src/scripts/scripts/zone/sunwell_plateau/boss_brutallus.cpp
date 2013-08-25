@@ -117,16 +117,19 @@ struct boss_brutallusAI : public ScriptedAI
         Enraged = false;
 
         ForceSpellCast(me, SPELL_DUAL_WIELD, INTERRUPT_AND_CAST_INSTANTLY);
-        if (pInstance)
-            pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
+        pInstance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
         me->CombatStop();
     }
 
     void EnterCombat(Unit* /*pWho*/)
     {
-        if (pInstance && pInstance->GetData(DATA_KALECGOS_EVENT) == IN_PROGRESS)
+        if (pInstance->GetData(DATA_KALECGOS_EVENT) == IN_PROGRESS)
+        {
+            EnterEvadeMode();
             return;
-        if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
+        }
+
+        if (pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE)
         {
             DoScriptText(YELL_AGGRO, me);
             BurnTimer = 20000;  // just in case?
@@ -136,9 +139,9 @@ struct boss_brutallusAI : public ScriptedAI
 
     void KilledUnit(Unit* /*victim*/)
     {
-        if (pInstance && pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE && me->isAlive())
+        if (pInstance->GetData(DATA_BRUTALLUS_INTRO_EVENT) == DONE && me->isAlive())
         {
-            if(roll_chance_f(40.0))
+            if (roll_chance_f(40.0))
                 DoScriptText(RAND(YELL_KILL1, YELL_KILL2, YELL_KILL3), me);
         }
     }
@@ -151,7 +154,7 @@ struct boss_brutallusAI : public ScriptedAI
 
     void DamageMade(Unit* target, uint32 &damage, bool /*direct_damage*/)
     {
-        if(target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 24895)
+        if (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 24895)
             damage *= 40;
     }
 
@@ -167,15 +170,15 @@ struct boss_brutallusAI : public ScriptedAI
                 DoScriptText(YELL_MADR_ICE_BARRIER, pMadrigosa);
                 pMadrigosa->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                for(uint8 i = 0; i < 8;++i)
+                for (uint8 i = 0; i < 8;++i)
                     pMadrigosa->SetSpeed(UnitMoveType(i), 2.5);
+
                 pMadrigosa->GetMotionMaster()->MovePoint(1, MADRI_FLY_X, MADRI_FLY_Y, MADRI_FLY_Z);
                 IntroPhaseTimer = 6500;
                 ++IntroPhase;
                 break;
             case 1:
-                if(pInstance)
-                    pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, IN_PROGRESS);
+                pInstance->SetData(DATA_BRUTALLUS_INTRO_EVENT, IN_PROGRESS);
                 pMadrigosa->SetLevitate(false);
                 pMadrigosa->SetWalk(true);
                 pMadrigosa->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
@@ -493,8 +496,8 @@ struct npc_death_cloudAI : public ScriptedAI
                     }
                     else if (!me->IsWithinDist(pMadrigosa, 10.0f))
                     {
+                        me->GetNearPoint(x, y, z, 0.0f, 10.0f, me->GetAngle(pMadrigosa));
                         z = me->GetPositionZ();
-                        me->GetNearPoint2D(x, y, 10, me->GetAngle(pMadrigosa));
                         me->UpdateAllowedPositionZ(x, y, z);
                         me->GetMap()->CreatureRelocation(me, x, y, z, 0);
                         Creature* Trigger = me->SummonTrigger(x, y, z, 0, SummonTimer*4);

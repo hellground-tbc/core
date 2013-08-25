@@ -304,6 +304,11 @@ struct boss_kalecgos_kjAI : public ScriptedAI
     ScriptedInstance* pInstance;
     uint32 FelmystOutroTimer;
 
+    void Reset()
+    {
+        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) == DONE)
+            me->SetVisibility(VISIBILITY_OFF);
+    }
 
     void MovementInform(uint32 Type, uint32 Id)
     {
@@ -316,7 +321,7 @@ struct boss_kalecgos_kjAI : public ScriptedAI
                     FelmystOutroTimer = 10000;
                     break;
                 case 60: // on starting phase 2
-                    me->ForcedDespawn();
+                    me->DisappearAndDie();
                     break;
                 default:
                     break;
@@ -468,6 +473,8 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
 
     void Reset()
     {
+        // just for now
+        me->SetVisibility(VISIBILITY_OFF);
         // TODO: Fix timers
         Timer[TIMER_KALEC_JOIN]       = 26000;
 
@@ -559,6 +566,12 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
 
     void EnterCombat(Unit* who)
     {
+        // temporary
+        if(pInstance->GetData(DATA_MURU_EVENT) != DONE)
+        {
+            EnterEvadeMode();
+            return;
+        }
         DoZoneInCombat();
         DoScriptText(SAY_KJ_EMERGE, m_creature);
 
@@ -864,6 +877,7 @@ struct mob_hand_of_the_deceiverAI : public ScriptedAI
 
     void Reset()
     {
+        DoCast(m_creature, SPELL_SHADOW_CHANNELING);
         // TODO: Timers!
         ShadowBoltVolleyTimer = 8000 + rand()%6000; // So they don't all cast it in the same moment.
         FelfirePortalTimer = 20000;
@@ -901,8 +915,9 @@ struct mob_hand_of_the_deceiverAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        /*
         if(!m_creature->isInCombat())
-            DoCast(m_creature, SPELL_SHADOW_CHANNELING);
+            DoCast(m_creature, SPELL_SHADOW_CHANNELING);*/
 
         if(!UpdateVictim())
             return;

@@ -132,9 +132,9 @@ struct boss_coren_direbrewAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_coren_direbrew(Creature *_Creature)
+CreatureAI* GetAI_boss_coren_direbrew(Creature *creature)
 {
-    return new boss_coren_direbrewAI (_Creature);
+    return new boss_coren_direbrewAI (creature);
 }
 
 
@@ -184,9 +184,9 @@ struct direbrew_starter_triggerAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_direbrew_starter_trigger(Creature *_Creature)
+CreatureAI* GetAI_direbrew_starter_trigger(Creature *creature)
 {
-    return new direbrew_starter_triggerAI (_Creature);
+    return new direbrew_starter_triggerAI (creature);
 }
 
 void AddSC_boss_coren_direbrew()

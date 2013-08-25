@@ -109,6 +109,7 @@ class ChatHandler
         bool HandleAccountBonesHideCommand(const char* args);
         bool HandleAccountXPToggleCommand(const char* args);
         bool HandleAccountBattleGroundAnnCommand(const char* args);
+        bool HandleAccountAnnounceBroadcastCommand(const char* args);
 
         bool HandleBanAccountCommand(const char* args);
         bool HandleBanCharacterCommand(const char* args);
@@ -181,6 +182,7 @@ class ChatHandler
         bool HandleGameObjectGridCommand(const char* args);
         bool HandleGameObjectMoveCommand(const char* args);
         bool HandleGameObjectNearCommand(const char* args);
+        bool HandleGameObjectResetCommand(const char* args);
         bool HandleGameObjectStateCommand(const char* args);
         bool HandleGameObjectTargetCommand(const char* args);
         bool HandleGameObjectTurnCommand(const char* args);
@@ -282,6 +284,7 @@ class ChatHandler
         bool HandleNpcChangeEntryCommand(const char *args);
         bool HandleNpcDeleteCommand(const char* args);
         bool HandleNpcFactionIdCommand(const char* args);
+        bool HandleNpcFieldFlagCommand(const char* args);
         bool HandleNpcFlagCommand(const char* args);
         bool HandleNpcFollowCommand(const char* args);
         bool HandleNpcInfoCommand(const char* args);
@@ -416,6 +419,7 @@ class ChatHandler
         bool HandleServerShutDownCommand(const char* args);
         bool HandleServerRollShutDownCommand(const char* args);
         bool HandleServerShutDownCancelCommand(const char* args);
+        bool HandleServerPVPCommand(const char* args);
 
         bool HandleTeleCommand(const char * args);
         bool HandleTeleAddCommand(const char * args);

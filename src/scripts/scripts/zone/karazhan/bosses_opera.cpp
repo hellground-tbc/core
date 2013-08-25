@@ -1588,7 +1588,7 @@ struct npc_barnesAI : public ScriptedAI
 
         operaAdds.DespawnAll();
 
-        if(pInstance)
+        if (pInstance && pInstance->GetData(DATA_OPERA_EVENT) != DONE)
         {
             Event = pInstance->GetData(DATA_OPERA_PERFORMANCE);
 

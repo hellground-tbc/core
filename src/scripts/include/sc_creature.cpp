@@ -27,6 +27,18 @@ void SummonList::DoAction(uint32 entry, uint32 info)
              summon->AI()->DoAction(info);
     }
 }
+
+void SummonList::Cast(uint32 entry, uint32 spell, Unit* target)
+{
+    for (iterator i = begin(); i != end(); )
+    {
+         Creature *summon = Unit::GetCreature(*m_creature, *i);
+         i++;
+         if(summon && (!entry || summon->GetEntry() == entry))
+             summon->CastSpell(target, spell, true);
+    }
+}
+
 void SummonList::Despawn(Creature *summon)
 {
     uint64 guid = summon->GetGUID();
@@ -332,14 +344,22 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
         if (!temp.spellId)
             return;
 
-        if (temp.scriptTextEntry)
-            DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
-
         if (temp.isDestCast)
         {
             m_creature->CastSpell(temp.castDest[0], temp.castDest[1], temp.castDest[2], temp.spellId, temp.triggered);
             casted = true;
             return;
+        }
+
+        if (temp.scriptTextEntry)
+        {
+            if (temp.targetGUID && temp.setAsTarget)
+            {
+                if (Unit* target = m_creature->GetUnit(temp.targetGUID))
+                    DoScriptText(temp.scriptTextEntry, m_creature, target);
+            }
+            else
+                DoScriptText(temp.scriptTextEntry, m_creature, m_creature->getVictim());
         }
 
         if (temp.targetGUID)
@@ -506,14 +526,14 @@ void ScriptedAI::AddCustomSpellToCast(uint32 spellId, castTargetMode targetMode,
     spellList.push_back(temp);
 }
 
-void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode targetMode, int32 scriptTextEntry, bool triggered)
+void ScriptedAI::AddSpellToCastWithScriptText(uint32 spellId, castTargetMode targetMode, int32 scriptTextEntry, bool triggered, bool visualTarget)
 {
     Unit *pTarget = SelectCastTarget(spellId, targetMode);
     if (!pTarget && targetMode != CAST_NULL)
         return;
 
     uint64 targetGUID = pTarget ? pTarget->GetGUID() : 0;
-    SpellToCast temp(targetGUID, spellId, triggered, scriptTextEntry, false);
+    SpellToCast temp(targetGUID, spellId, triggered, scriptTextEntry, visualTarget);
 
     spellList.push_back(temp);
 }
@@ -720,11 +740,11 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* pTarget, int32 uiSchool, int32 u
 {
     //No target so we can't cast
     if (!pTarget)
-        return false;
+        return NULL;
 
     //Silenced so we can't cast
     if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
-        return false;
+        return NULL;
 
     //Using the extended script system we first create a list of viable spells
     SpellEntry const* apSpell[CREATURE_MAX_SPELLS];

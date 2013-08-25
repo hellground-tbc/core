@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Gatewatcher_Gyrokill
-SD%Complete: 0
-SDComment: Place Holder
+SD%Complete: 90
+SDComment:
 SDCategory: Tempest Keep, The Mechanar
 EndScriptData */
 
@@ -42,7 +42,7 @@ struct boss_gatewatcher_gyro_killAI : public ScriptedAI
     boss_gatewatcher_gyro_killAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -68,17 +68,17 @@ struct boss_gatewatcher_gyro_killAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_GYROKILL_EVENT, IN_PROGRESS);
 
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
     }
 
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (!pInstance)
             return;
@@ -96,15 +96,15 @@ struct boss_gatewatcher_gyro_killAI : public ScriptedAI
         //Shadow Power
         if(Shadow_Power_Timer < diff)
         {
-            DoCast(m_creature,HeroicMode ? H_SPELL_SHADOW_POWER : SPELL_SHADOW_POWER);
+            DoCast(me,HeroicMode ? H_SPELL_SHADOW_POWER : SPELL_SHADOW_POWER);
             Shadow_Power_Timer = 20000 + rand()%8000;
         }else Shadow_Power_Timer -= diff;
 
         //Saw Blade
         if(Saw_Blade_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),HeroicMode ? H_SPELL_SAW_BLADE : SPELL_SAW_BLADE);
-            DoScriptText(RAND(SAY_SAW_ATTACK1, SAY_SAW_ATTACK2), m_creature);
+            DoCast(me->getVictim(),HeroicMode ? H_SPELL_SAW_BLADE : SPELL_SAW_BLADE);
+            DoScriptText(RAND(SAY_SAW_ATTACK1, SAY_SAW_ATTACK2), me);
 
             Saw_Blade_Timer = 30000;
         }else Saw_Blade_Timer -= diff;
@@ -112,7 +112,7 @@ struct boss_gatewatcher_gyro_killAI : public ScriptedAI
         //Stream of Machine Fluid
         if(Stream_of_Machine_Fluid_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_STREAM_OF_MACHINE_FLUID);
+            DoCast(me->getVictim(),SPELL_STREAM_OF_MACHINE_FLUID);
             Stream_of_Machine_Fluid_Timer = 35000 + rand()%15000;
         }else Stream_of_Machine_Fluid_Timer -= diff;
 

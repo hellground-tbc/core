@@ -77,6 +77,13 @@ void HomeMovementGenerator<Creature>::Finalize(Creature& owner)
 
         owner.AI()->JustReachedHome();
 
-        owner.AddEvent(new RestoreReactState(owner), sWorld.getConfig(CONFIG_CREATURE_RESTORE_STATE));
+        BasicEvent* event = new RestoreReactState(owner);
+        if (owner.GetEvents()->HasEventOfType(event))
+        {
+            delete event;
+            return;
+        }
+
+        owner.AddEvent(event, sWorld.getConfig(CONFIG_CREATURE_RESTORE_STATE));
     }
 }

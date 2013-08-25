@@ -51,12 +51,14 @@ struct boss_maleki_the_pallidAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+         if (pInstance)
+             pInstance->SetData(TYPE_PALLID,IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         if (pInstance)
-            pInstance->SetData(TYPE_PALLID,IN_PROGRESS);
+            pInstance->SetData(TYPE_PALLID,SPECIAL);
     }
 
     void UpdateAI(const uint32 diff)

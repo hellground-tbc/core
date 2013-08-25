@@ -934,6 +934,8 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         uint32 getClassMask() const { return 1 << (getClass()-1); }
         uint8 getGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 2); }
 
+        virtual float GetXPMod() const { return 1.0f; }
+
         float GetStat(Stats stat) const { return float(GetUInt32Value(UNIT_FIELD_STAT0+stat)); }
         void SetStat(Stats stat, int32 val) { SetStatInt32Value(UNIT_FIELD_STAT0+stat, val); }
         uint32 GetArmor() const { return GetResistance(SPELL_SCHOOL_NORMAL) ; }
@@ -978,7 +980,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         bool IsInRaidWith(Unit const* unit) const;
         void GetPartyMember(std::list<Unit*> &units, float dist);
         void GetRaidMember(std::list<Unit*> &units, float dist);
-        Unit* GetNextRandomRaidMember(float radius);
+        Unit* GetNextRandomRaidMember(float radius, bool PlayerOnly = false);
         bool IsContestedGuard() const
         {
             if (FactionTemplateEntry const* entry = getFactionTemplateEntry())
@@ -1095,6 +1097,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         uint32 GetAurasAmountByMiscValue(AuraType auraType, uint32 misc);
         bool hasNegativeAuraWithInterruptFlag(uint32 flag);
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
+        bool HasAuraByCasterWithFamilyFlags(uint64 pCaster, uint32 familyName,  uint64 familyFlags, const Aura * except = NULL) const;
         bool HasAura(uint32 spellId, uint32 effIndex) const
         {
             return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end();
@@ -1157,6 +1160,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         virtual void MoveOutOfRange(Player &) {};
 
         bool isAlive() const { return (m_deathState == ALIVE); };
+        bool isDying() const { return (m_deathState == JUST_DIED); };
         bool isDead() const { return (m_deathState == DEAD || m_deathState == CORPSE); };
         DeathState getDeathState() { return m_deathState; };
         virtual void setDeathState(DeathState s);           // overwrited in Creature/Player/Pet
@@ -1243,13 +1247,14 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void RemoveAurasDueToSpellByCancel(uint32 spellId);
         void RemoveAurasAtChanneledTarget(SpellEntry const* spellInfo, Unit * caster);
         void RemoveNotOwnSingleTargetAuras();
+        void RemoveAurasWithFamilyFlagsAndTypeByCaster(uint32 familyName,  uint64 familyFlags, AuraType aurType, uint64 casterGUID);
 
         void RemoveSpellsCausingAura(AuraType auraType);
         void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithAttribute(uint32 flags, bool notPassiveOnly = false);
-        void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0);
+        void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool PositiveOnly = false);
         void RemoveAurasWithDispelType(DispelType type);
         void RemoveAurasDueToRaidTeleport();
         void RemoveAllAurasButPermanent();    // WARLOCK PET unbuff after resummon with current PET
@@ -1287,6 +1292,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 
         void SetCurrentCastedSpell(Spell * pSpell);
         virtual void ProhibitSpellScholl(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) { }
+
         void InterruptSpell(uint32 spellType, bool withDelayed = true, bool withInstant = true);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
 
@@ -1393,6 +1399,8 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void _SetAINotifyScheduled(bool on) { _AINotifyScheduled = on;}
 
         Position _notifiedPosition;
+
+        bool WorthHonor;
 
     private:
         bool _AINotifyScheduled;
@@ -1602,7 +1610,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         Player* GetGMToSendCombatStats() const { return m_GMToSendCombatStats ? GetPlayer(m_GMToSendCombatStats) : NULL; }
         void SetGMToSendCombatStats(uint64 guid) { m_GMToSendCombatStats = guid; }
         void SendCombatStats(const char* str, Unit *pVictim, ...) const;
-        
+
         bool RollPRD(float baseChance, float extraChance, uint32 spellId);
 
         // Movement info
@@ -1704,7 +1712,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 
         uint64 m_GMToSendCombatStats;
         UNORDERED_MAP<uint32, uint32> m_PRDMap;
-        
+
         void UpdateSplineMovement(uint32 t_diff);
         TimeTrackerSmall m_movesplineTimer;
 };

@@ -381,6 +381,10 @@ struct boss_teron_gorefiendAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(EVENT_TERONGOREFIEND, DONE);
 
+        const Map::PlayerList& players = me->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
+            i->getSource()->RemoveAurasDueToSpell(SPELL_SHADOW_OF_DEATH);
+
         DoScriptText(SAY_DEATH, m_creature);
     }
 

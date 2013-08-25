@@ -57,12 +57,14 @@ struct boss_nerubenkanAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
+        if (pInstance)
+            pInstance->SetData(TYPE_NERUB,IN_PROGRESS);
     }
 
     void JustDied(Unit* Killer)
     {
         if (pInstance)
-            pInstance->SetData(TYPE_NERUB,IN_PROGRESS);
+            pInstance->SetData(TYPE_NERUB,SPECIAL);
     }
 
     void RaiseUndeadScarab(Unit* victim)

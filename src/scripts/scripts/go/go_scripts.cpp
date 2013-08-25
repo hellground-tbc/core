@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: GO_Scripts
 SD%Complete: 100
-SDComment: Quest support: 4285,4287,4288(crystal pylons), 4296. Field_Repair_Bot->Teaches spell 22704. Barov_journal->Teaches spell 26089
+SDComment: Quest support: 4285,4287,4288(crystal pylons), 4296. Field_Repair_Bot->Teaches spell 22704. Barov_journal->Teaches spell 26089, 8620
 SDCategory: Game Objects
 EndScriptData */
 
@@ -42,6 +42,7 @@ go_field_repair_bot_74A
 go_teleporter
 go_hive_pod
 go_ethereum_transponder_zeta
+go_draconic_for_dummies
 EndContentData */
 
 #include "precompiled.h"
@@ -220,12 +221,11 @@ bool GOUse_go_sacred_fire_of_life(Player* pPlayer, GameObject* pGO)
 ## go_crystalforge
 ######*/
 
-#define GOSSIP_ITEM_BEAST_1 "[PH] Create 1 x Flask of Beast"
-#define GOSSIP_ITEM_BEAST_5 "[PH] Create 5 x Flask of Beast"
-
-#define GOSSIP_ITEM_SORCERER_1 "[PH] Create 1 x Flask of Sorcerer"
-#define GOSSIP_ITEM_SORCERER_5 "[PH] Create 5 x Flask of Sorcerer"
-
+#define ITEM_APEXIS_SHARD 32569
+#define GOSSIP_ITEM_BEAST_1 "Purchase 1 Unstable Flask of the Beast for the cost of 10 Apexis Shards"
+#define GOSSIP_ITEM_BEAST_5 "Purchase 5 Unstable Flask of the Beast for the cost of 50 Apexis Shards"
+#define GOSSIP_ITEM_SORCERER_1 "Purchase 1 Unstable Flask of the Sorcerer for the cost of 10 Apexis Shards"
+#define GOSSIP_ITEM_SORCERER_5 "Purchase 5 Unstable Flask of the Sorcerer for the cost of 50 Apexis Shards"
 
 enum FELFORGE
 {
@@ -262,17 +262,23 @@ bool GOGossipSelect_go_crystalforge(Player* pPlayer, GameObject* pGO, uint32 Sen
     switch(action)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
+            if (pPlayer->HasItemCount(ITEM_APEXIS_SHARD, 10))
+            {
+                pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
                                ? uint32(SPELL_CREATE_1_FLASK_OF_BEAST)
                                : uint32(SPELL_CREATE_1_FLASK_OF_SORCERER)
                                , false);
-        break;
+            }
+            break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
+            if (pPlayer->HasItemCount(ITEM_APEXIS_SHARD, 50))
+            {
+                pPlayer->CastSpell(pPlayer,(pGO->GetEntry() == 185919)
                                ? uint32(SPELL_CREATE_5_FLASK_OF_BEAST)
                                : uint32(SPELL_CREATE_5_FLASK_OF_SORCERER),
                                false);
-        break;
+            }
+            break;
     }
 
     pPlayer->CLOSE_GOSSIP_MENU();
@@ -464,95 +470,259 @@ bool GOUse_go_ethereal_teleport_pad(Player* pPlayer, GameObject* pGO)
     return true;
 }
 
+/*######
+## go_fel_crystal_prism
+######*/
+
+#define GOSSIP_ITEM_1 "Insert 35 Apexis Shards!"
+
+enum
+{
+    NPC_BRAXXUS        = 23353,
+    NPC_INCINERATOR    = 23354,
+    NPC_GALVANOTH      = 22281,
+    NPC_ZARCSIN        = 23355,
+
+    ITEM_APEX_SHARD    = 32569
+};
+
+bool GOUse_go_fel_crystal_prism(Player* pPlayer, GameObject* pGO)
+{
+    if (pPlayer->HasItemCount(ITEM_APEX_SHARD,  35) && pPlayer->GetQuestStatus(11079) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+    pPlayer->SEND_GOSSIP_MENU(pGO->GetGOInfo()->questgiver.gossipID, pGO->GetGUID());
+    return true;
+}
+
+bool GOGossipSelect_go_fel_crystal_prism(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+{
+    switch (urand(0,3))
+    {
+        case 0:
+            pGO->SummonCreature(NPC_BRAXXUS, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+        case 1: 
+            pGO->SummonCreature(NPC_INCINERATOR, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+        case 2:
+            pGO->SummonCreature(NPC_GALVANOTH, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+        case 3:
+            pGO->SummonCreature(NPC_ZARCSIN, pGO->GetPositionX()+(rand()%4), pGO->GetPositionY()-(rand()%4), pGO->GetPositionZ()-(rand()%4), pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+            break;
+    }
+
+    pPlayer->DestroyItemCount(ITEM_APEX_SHARD, 35, true);
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
+/*######
+## go_rule_skies
+######*/
+
+enum
+{
+    NPC_RIVENDARK    = 23061,
+    NPC_OBSIDIA      = 23282,
+    NPC_FURYWING     = 23261,
+    NPC_INSIDION     = 23281
+};
+
+bool GOUse_go_rule_skies(Player* pPlayer, GameObject* pGO)
+{
+    if (pPlayer->HasItemCount(32569, 35))
+    {
+        pPlayer->DestroyItemCount(32569, 35, true);
+        switch(pGO->GetEntry())
+        {
+            case 185936:
+                pGO->SummonCreature(NPC_RIVENDARK, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 185932:
+                pGO->SummonCreature(NPC_OBSIDIA, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 185937:
+                pGO->SummonCreature(NPC_FURYWING, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+            case 185938:
+                pGO->SummonCreature(NPC_INSIDION, pGO->GetPositionX(), pGO->GetPositionY(), pGO->GetPositionZ()+10.0f, pGO->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+                break;
+        }
+        pGO->SetLootState(GO_JUST_DEACTIVATED);
+    }
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
+/*######
+## go_draconic_for_dummies
+######*/
+
+#define GOSSIP_BOOK_HELLO       "<Take this book for the good of Azeroth!>"
+#define QUEST_THE_ONLY_PRESCRIPTION     8620
+#define GOB_DRACONIC_BOOK_STORMWIND     180665
+#define GOB_DRACONIC_BOOK_UNDERCITY     180666
+#define GOB_DRACONIC_BOOK_BLACKWING_LAIR 180667
+#define ITEM_DRACONIC_BOOK_STORMWIND     21107
+#define ITEM_DRACONIC_BOOK_UNDERCITY     21106
+#define ITEM_DRACONIC_BOOK_BLACKWING_LAIR 21109
+
+bool GOUse_go_draconic_for_dummies(Player* pPlayer, GameObject* pGO)
+{
+    if (pPlayer->GetQuestStatus(QUEST_THE_ONLY_PRESCRIPTION) == QUEST_STATUS_INCOMPLETE)
+    {
+        switch (pGO->GetEntry())
+        {
+            case GOB_DRACONIC_BOOK_STORMWIND:
+                if (!pPlayer->HasItemCount(ITEM_DRACONIC_BOOK_STORMWIND,1))
+                    break;
+                else 
+                    return true;
+            case GOB_DRACONIC_BOOK_UNDERCITY:
+                if (!pPlayer->HasItemCount(ITEM_DRACONIC_BOOK_UNDERCITY,1))
+                    break;
+                else 
+                    return true;
+            case GOB_DRACONIC_BOOK_BLACKWING_LAIR:
+                if (!pPlayer->HasItemCount(ITEM_DRACONIC_BOOK_BLACKWING_LAIR,1))
+                    break;
+                else 
+                    return true;
+            default:
+                return true;
+        }
+        pPlayer->ADD_GOSSIP_ITEM(NULL, GOSSIP_BOOK_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(50010, pGO->GetGUID());
+    }
+    return true;
+}
+
+bool GOGossipSelect_go_draconic_for_dummies(Player* pPlayer, GameObject* pGO, uint32 Sender, uint32 action)
+{
+    switch(action)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+        {
+            uint32 ItemId;
+            switch (pGO->GetEntry())
+            {
+                case GOB_DRACONIC_BOOK_STORMWIND:
+                    ItemId = ITEM_DRACONIC_BOOK_STORMWIND;
+                    break;
+                case GOB_DRACONIC_BOOK_UNDERCITY:
+                    ItemId = ITEM_DRACONIC_BOOK_UNDERCITY;
+                    break;
+                case GOB_DRACONIC_BOOK_BLACKWING_LAIR:
+                    ItemId = ITEM_DRACONIC_BOOK_BLACKWING_LAIR;
+                    break;
+                default:
+                    return true;
+            }
+            ItemPosCountVec dest;
+            uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ItemId, 1);
+            if (msg == EQUIP_ERR_OK)
+            {
+                Item* item = pPlayer->StoreNewItem(dest, ItemId, true);
+                pPlayer->SendNewItem(item,1,true,false,true);
+            }
+            break;
+        }            
+    }
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
 void AddSC_go_scripts()
 {
     Script *newscript;
 
     newscript = new Script;
     newscript->Name="go_northern_crystal_pylon";
-    newscript->pGOUse =           &GOUse_go_northern_crystal_pylon;
+    newscript->pGOUse = &GOUse_go_northern_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_eastern_crystal_pylon";
-    newscript->pGOUse =           &GOUse_go_eastern_crystal_pylon;
+    newscript->pGOUse = &GOUse_go_eastern_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_western_crystal_pylon";
-    newscript->pGOUse =           &GOUse_go_western_crystal_pylon;
+    newscript->pGOUse = &GOUse_go_western_crystal_pylon;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_barov_journal";
-    newscript->pGOUse =           &GOUse_go_barov_journal;
+    newscript->pGOUse = &GOUse_go_barov_journal;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_field_repair_bot_74A";
-    newscript->pGOUse =           &GOUse_go_field_repair_bot_74A;
+    newscript->pGOUse = &GOUse_go_field_repair_bot_74A;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_orb_of_command";
-    newscript->pGOUse =           &GOUse_go_orb_of_command;
+    newscript->pGOUse = &GOUse_go_orb_of_command;
     newscript->pGossipSelectGO =  &GOGossipSelect_go_orb_of_command;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_tablet_of_madness";
-    newscript->pGOUse =           &GOUse_go_tablet_of_madness;
+    newscript->pGOUse = &GOUse_go_tablet_of_madness;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_tablet_of_the_seven";
-    newscript->pGOUse =           &GOUse_go_tablet_of_the_seven;
+    newscript->pGOUse = &GOUse_go_tablet_of_the_seven;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name="go_jump_a_tron";
-    newscript->pGOUse =           &GOUse_go_jump_a_tron;
+    newscript->pGOUse = &GOUse_go_jump_a_tron;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_sacred_fire_of_life";
-    newscript->pGOUse =           &GOUse_go_sacred_fire_of_life;
+    newscript->pGOUse = &GOUse_go_sacred_fire_of_life;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_crystalforge";
-    newscript->pGOUse =           &GOUse_go_crystalforge;
+    newscript->pGOUse = &GOUse_go_crystalforge;
     newscript->pGossipSelectGO =  &GOGossipSelect_go_crystalforge;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_matrix_punchograph";
-    newscript->pGOUse =           &GOUse_go_matrix_punchograph;
+    newscript->pGOUse = &GOUse_go_matrix_punchograph;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_cat_figurine";
-    newscript->pGOUse =           &GOUse_go_cat_figurine;
+    newscript->pGOUse = &GOUse_go_cat_figurine;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_blood_filled_orb";
-    newscript->pGOUse =           &GOUse_go_blood_filled_orb;
+    newscript->pGOUse = &GOUse_go_blood_filled_orb;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_ethereum_stasis";
-    newscript->pGOUse =           &GOUse_go_ethereum_stasis;
+    newscript->pGOUse = &GOUse_go_ethereum_stasis;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_resonite_cask";
-    newscript->pGOUse =           &GOUse_go_resonite_cask;
+    newscript->pGOUse = &GOUse_go_resonite_cask;
     newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "go_darkmoon_cannon";
-    newscript->pGOUse =           &GOUse_go_darkmoon_cannon;
+    newscript->pGOUse = &GOUse_go_darkmoon_cannon;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -573,6 +743,23 @@ void AddSC_go_scripts()
     newscript = new Script;
     newscript->Name = "go_ethereal_teleport_pad";
     newscript->pGOUse = &GOUse_go_ethereal_teleport_pad;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_fel_crystal_prism";
+    newscript->pGOUse = &GOUse_go_fel_crystal_prism;
+    newscript->pGossipSelectGO = &GOGossipSelect_go_fel_crystal_prism;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_rule_skies";
+    newscript->pGOUse = &GOUse_go_rule_skies;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "go_draconic_for_dummies";
+    newscript->pGOUse = &GOUse_go_draconic_for_dummies;
+    newscript->pGossipSelectGO =  &GOGossipSelect_go_draconic_for_dummies;
     newscript->RegisterSelf();
 }
 

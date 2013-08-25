@@ -57,6 +57,13 @@ endif()
 #   )
 # endif()
 
+if(NOT WIN32)
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    if (GCC_VERSION VERSION_LESS 4.7)
+        message(FATAL_ERROR "Your GCC have to be >= 4.7")
+    endif()
+endif()
+
 # Output description of this script
 message(
   "\nThis script builds the HellGround project server.
@@ -70,6 +77,7 @@ message(
     USE_STD_MALLOC  : Use standard malloc instead of TBB
     LARGE_CELL      : Use large cell size
     ADD_COMPILE_F   : Add additional compile flags (default)
+    ADD_OPTI_F      : Add additional compile optimization flags
     ADD_MATH_F      : Add additional compile math flags
     ADD_GPROF_F     : Add additional compile gprof flag
     MAP_UPDATE_DIFF_INFO: Used for gathering info about execution time for specific parts of Map::Update
@@ -219,8 +227,6 @@ if(UNIX)
   find_package(Readline REQUIRED)
   find_package(MySQL REQUIRED)
   find_package(ZLIB REQUIRED)
-  set(Boost_USE_MULTITHREADED  ON)
-  find_package(Boost 1.34.0 COMPONENTS regex REQUIRED)
 endif()
 
 # Add uninstall script and target
@@ -293,10 +299,11 @@ endif(LARGE_CELL)
 message("")
 
 if(PLATFORM MATCHES X86)
-set(ADDITIONAL_COMPILE_FLAGS "-std=c++0x -ggdb -O2 -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m32 -pipe -DFD_SETSIZE=4096 -frename-registers")
+  set(ADDITIONAL_COMPILE_FLAGS "-std=c++0x -ggdb -O2 -msse3  -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m32 -pipe -DFD_SETSIZE=4096")
 else()
-set(ADDITIONAL_COMPILE_FLAGS "-std=c++0x -ggdb -O2 -msse3 -fomit-frame-pointer -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096 -frename-registers")
+  set(ADDITIONAL_COMPILE_FLAGS "-std=c++0x -ggdb -O2 -msse3  -fno-delete-null-pointer-checks -ftracer -fno-strict-aliasing -funroll-loops -m64 -pipe -DFD_SETSIZE=4096")
 endif()
+set(ADDITIONAL_OPTIMIZE_FLAGS "-fomit-frame-pointer -frename-registers")
 set(ADDITIONAL_MATH_FLAGS " -ffast-math -fno-math-errno -funsafe-math-optimizations")
 set(ADDITIONAL_GPROF_FLAGS " -pg")
 
@@ -406,6 +413,10 @@ endif()
 
 if(ADD_COMPILE_F)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_COMPILE_FLAGS}")
+endif()
+
+if(ADD_OPTI_F)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ADDITIONAL_OPTIMIZE_FLAGS}")
 endif()
 
 if(ADD_MATH_F)

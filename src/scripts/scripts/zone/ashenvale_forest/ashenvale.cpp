@@ -130,7 +130,7 @@ struct npc_torekAI : public npc_escortAI
 
 bool QuestAccept_npc_torek(Player* pPlayer, Creature* pCreature, Quest const* quest)
 {
-    if (quest->GetQuestId() == QUEST_TOREK_ASSULT)
+    if (pPlayer && quest->GetQuestId() == QUEST_TOREK_ASSULT)
     {
         //TODO: find companions, make them follow Torek, at any time (possibly done by mangos/database in future?)
         DoScriptText(SAY_READY, pCreature, pPlayer);
@@ -536,7 +536,7 @@ bool GOUse_go_naga_brazier(Player* pPlayer, GameObject* pGo)
 bool ItemUse_item_Totemic_Beacon(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
     float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 3.0f, frand(0, 2*M_PI));
+    player->GetNearPoint(x,y,z, 0.0f, 3.0f, frand(0, 2*M_PI));
     player->SummonCreature(NPC_EARTHEN_RING_GUIDE, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 120000);
     return false;
 }
@@ -578,47 +578,50 @@ struct npc_Heretic_EmisaryAI : public ScriptedAI
     {
         if (!me->getVictim())
         {
-            if (TalkTimer < diff && EventStarted)
+            if (EventStarted)
             {
-                Player * Player_;
-                Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
-
-                if (Briatha && Briatha->isAlive()) 
+                if (TalkTimer < diff)
                 {
-                    switch(Phase)
+                    Player * Player_;
+                    Creature * Briatha = GetClosestCreatureWithEntry(me, NPC_ICECALLERBRIATHA, 20);
+
+                    if (Briatha && Briatha->isAlive()) 
                     {
-                    case 0:
-                        Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 1:
-                        me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 2:
-                        Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 3:
-                        me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_UNIVERSAL, 0);
-                        Phase++;
-                        break;
-                    case 4:
-                        Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
-                        Phase = 0;
-                        if(Player_ = (Player*)(me->GetUnit(player)))
-                            if(Player_->HasAura(46337, 0))
-                                Player_->AreaExploredOrEventHappens(11891);
-                        EventStarted = false;
-                        break;
+                        switch(Phase)
+                        {
+                        case 0:
+                            Briatha->Say("These stones should be the last of them. Our coordination with Neptulon's forces will be impeccable.", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 1:
+                            me->Say("Yess. The Tidehunter will be pleased at this development. The Firelord's hold will weaken.", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 2:
+                            Briatha->Say("And your own preparations? Will the Frost Lord have a path to the portal?", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 3:
+                            me->Say("Skar'this has informed us well. We have worked our way into the slave pens and await your cryomancerss.", LANG_UNIVERSAL, 0);
+                            Phase++;
+                            break;
+                        case 4:
+                            Briatha->Say("The ritual in Coilfang will bring Ahune through once he is fully prepared, and the resulting clash between Firelord and Frostlord will rend the foundations of this world. Our ultimate goals are in reach at last...", LANG_UNIVERSAL, 0);
+                            Phase = 0;
+                            if(Player_ = (Player*)(me->GetUnit(player)))
+                                if(Player_->HasAura(46337, 0))
+                                    Player_->AreaExploredOrEventHappens(11891);
+                            EventStarted = false;
+                            break;
+                        }
+                        TalkTimer = 5000;
                     }
-                    TalkTimer = 5000;
+                    else
+                        EventStarted = false;
                 }
-                else
-                    EventStarted = false;
-            }
             else
                 TalkTimer -= diff;
+            }
 
             return;
         }

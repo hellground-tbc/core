@@ -8,7 +8,6 @@
 #define TYPE_HYDROMANCER_THESPIA        1
 #define TYPE_MEKGINEER_STEAMRIGGER      2
 #define TYPE_WARLORD_KALITHRESH         3
-#define TYPE_DISTILLER                  4
 
 #define DATA_MEKGINEERSTEAMRIGGER       5
 #define DATA_KALITRESH                  6

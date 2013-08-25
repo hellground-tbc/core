@@ -46,7 +46,7 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
     boss_nethermancer_sepethreaAI(Creature *c) : ScriptedAI(c), summons(me)
     {
         pInstance = c->GetInstanceData();
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -76,19 +76,20 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
     {
         pInstance->SetData(DATA_NETHERMANCER_EVENT, IN_PROGRESS);
 
-        DoScriptText(SAY_AGGRO, m_creature);
+        DoScriptText(SAY_AGGRO, me);
         AddSpellToCastWithScriptText(HeroicMode ? H_SPELL_SUMMON_RAGIN_FLAMES : SPELL_SUMMON_RAGIN_FLAMES, CAST_SELF, SAY_SUMMON);
     }
 
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
         pInstance->SetData(DATA_NETHERMANCER_EVENT, DONE);
+        pInstance->SetData(DATA_BRIDGE_EVENT, DONE);
         summons.DespawnAll();
     }
 
@@ -101,7 +102,7 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
     void DamageMade(Unit * target, uint32 & damage, bool direct)
     {
         if (direct)
-            m_creature->CastSpell(target, SPELL_FROST_ATTACK, true);
+            me->CastSpell(target, SPELL_FROST_ATTACK, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -165,7 +166,7 @@ struct mob_ragin_flamesAI : public ScriptedAI
     mob_ragin_flamesAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -179,9 +180,9 @@ struct mob_ragin_flamesAI : public ScriptedAI
     {
         infernoTimer = 10000;
 
-        m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
-        m_creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
-        m_creature->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
+        me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
+        me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
+        me->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
 
         SetAutocast(SPELL_FIRE_TAIL, 500, false, CAST_SELF);
     }
@@ -192,7 +193,7 @@ struct mob_ragin_flamesAI : public ScriptedAI
         {
             Unit * prevTarUnit = me->GetMap()->GetUnit(currentTarget);
             if (prevTarUnit)
-                m_creature->AddThreat(prevTarUnit, -5000000.0f);
+                me->AddThreat(prevTarUnit, -5000000.0f);
 
             currentTarget = target->GetGUID();
             me->AI()->AttackStart(target);

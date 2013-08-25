@@ -70,6 +70,7 @@ class RealmList
         RealmMap::const_iterator begin() const { return m_realms.begin(); }
         RealmMap::const_iterator end() const { return m_realms.end(); }
         uint32 size() const { return m_realms.size(); }
+        std::string ChatboxOsName;
     private:
         void UpdateRealms(bool init);
         void UpdateRealm(uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, RealmFlags realmflags, uint8 timezone, uint64 requiredPermissionMask, float popu, const std::string& builds);

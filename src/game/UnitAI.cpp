@@ -49,7 +49,7 @@ void UnitAI::DoMeleeAttackIfReady()
     // set selection back to attacked victim if not selected (after spell casting)
     if(me->GetTypeId() == TYPEID_UNIT)
     {
-        if(((Creature*)me)->GetSelection() != me->getVictimGUID())
+        if(((Creature*)me)->GetSelection() != me->getVictimGUID() && !((Creature*)me)->hasIgnoreVictimSelection())
             ((Creature*)me)->SetSelection(me->getVictimGUID());
     }
 
@@ -444,7 +444,7 @@ bool UnitAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
     if (!Triggered && me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
         return false;
 
-    if (!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->GetGlobalCooldownMgr().HasGlobalCooldown(Spell))
+    if (!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->GetCooldownMgr().HasGlobalCooldown(Spell))
         return false;
 
     if (!Triggered && me->GetTypeId() == TYPEID_PLAYER && ((Player*)me)->HasSpellCooldown(Spell->Id))

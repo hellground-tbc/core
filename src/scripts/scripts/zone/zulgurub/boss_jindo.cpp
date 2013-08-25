@@ -27,17 +27,13 @@ EndScriptData */
 #define SAY_AGGRO                       -1309014
 
 #define SPELL_BRAINWASHTOTEM            24262
-#define SPELL_POWERFULLHEALINGWARD      24309               //We will not use this spell. We will summon a totem by script cause the spell totems will not cast.
+#define SPELL_POWERFULLHEALINGWARD      24309
 #define SPELL_HEX                       24053
 #define SPELL_DELUSIONSOFJINDO          24306
-#define SPELL_SHADEOFJINDO              24308               //We will not use this spell. We will summon a shade by script.
-
-//Healing Ward Spell
-#define SPELL_HEAL                      38588               //Totems are not working right. Right heal spell ID is 24311 but this spell is not casting...
 
 //Shade of Jindo Spell
 #define SPELL_SHADOWSHOCK               19460
-#define SPELL_INVISIBLE                 24699
+#define SPELL_INVISIBLE                 24307
 
 struct boss_jindoAI : public ScriptedAI
 {
@@ -96,8 +92,7 @@ struct boss_jindoAI : public ScriptedAI
         //HealingWard_Timer
         if (HealingWard_Timer < diff)
         {
-            //DoCast(m_creature, SPELL_POWERFULLHEALINGWARD);
-            HealingWard = m_creature->SummonCreature(14987, m_creature->GetPositionX()+3, m_creature->GetPositionY()-2, m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+            DoCast(m_creature, SPELL_POWERFULLHEALINGWARD);
             HealingWard_Timer = 14000 + rand()%6000;
         }
         else
@@ -180,46 +175,6 @@ struct boss_jindoAI : public ScriptedAI
     }
 };
 
-//Healing Ward
-struct mob_healing_wardAI : public ScriptedAI
-{
-    mob_healing_wardAI(Creature *c) : ScriptedAI(c)
-    {
-         pInstance = (c->GetInstanceData());
-    }
-
-    uint32 Heal_Timer;
-
-    ScriptedInstance *pInstance;
-
-    void Reset()
-    {
-        Heal_Timer = 2000;
-    }
-
-    void EnterCombat(Unit *who)
-    {
-    }
-
-    void UpdateAI (const uint32 diff)
-    {
-        //Heal_Timer
-        if(Heal_Timer < diff)
-        {
-            if(pInstance)
-            {
-                Unit *pJindo = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_JINDO));
-                if(pJindo && pJindo->isAlive())
-                    DoCast(pJindo, SPELL_HEAL);
-            }
-            Heal_Timer = 3000;
-        }
-        else
-            Heal_Timer -= diff;
-
-        DoMeleeAttackIfReady();
-    }
-};
 
 //Shade of Jindo
 struct mob_shade_of_jindoAI : public ScriptedAI
@@ -264,11 +219,6 @@ CreatureAI* GetAI_boss_jindo(Creature *_Creature)
     return new boss_jindoAI (_Creature);
 }
 
-CreatureAI* GetAI_mob_healing_ward(Creature *_Creature)
-{
-    return new mob_healing_wardAI (_Creature);
-}
-
 CreatureAI* GetAI_mob_shade_of_jindo(Creature *_Creature)
 {
     return new mob_shade_of_jindoAI (_Creature);
@@ -281,11 +231,6 @@ void AddSC_boss_jindo()
     newscript = new Script;
     newscript->Name="boss_jindo";
     newscript->GetAI = &GetAI_boss_jindo;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="mob_healing_ward";
-    newscript->GetAI = &GetAI_mob_healing_ward;
     newscript->RegisterSelf();
 
     newscript = new Script;

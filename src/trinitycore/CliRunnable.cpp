@@ -329,11 +329,18 @@ bool ChatHandler::HandleAccountSpecialLogCommand(const char* args)
             else
                 session->AddAccountFlag(ACC_SPECIAL_LOG);
         }
+        else
+        {
+            if (accFlags & ACC_SPECIAL_LOG)
+                WorldSession::SaveAccountFlags(account_id, accFlags &= ~ACC_SPECIAL_LOG);
+            else
+                WorldSession::SaveAccountFlags(account_id, accFlags |= ACC_SPECIAL_LOG);
+        }
 
         if (accFlags & ACC_SPECIAL_LOG)
-            PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
-        else
             PSendSysMessage("SpecialLog have been enabled for account: %u.", account_id);
+        else
+            PSendSysMessage("SpecialLog have been disabled for account: %u.", account_id);
     }
     else
     {
@@ -367,11 +374,18 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
             else
                 session->AddAccountFlag(ACC_WHISPER_LOG);
         }
+        else
+        {
+            if (accFlags & ACC_WHISPER_LOG)
+                WorldSession::SaveAccountFlags(account_id, accFlags &= ~ACC_WHISPER_LOG);
+            else
+                WorldSession::SaveAccountFlags(account_id, accFlags |= ACC_WHISPER_LOG);
+        }
 
         if (accFlags & ACC_WHISPER_LOG)
-            PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
-        else
             PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
+        else
+            PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
     }
     else
     {

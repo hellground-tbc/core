@@ -45,6 +45,9 @@
 #define DATA_BRUTALLUS_TRIGGER      30
 #define DATA_EREDAR_TWINS_INTRO     31
 
+#define DATA_MURU_TESTING_COUNTER   50
+#define DATA_MURU_TESTING           51
+
 #define SISTER_DEATH                1
 
 #endif

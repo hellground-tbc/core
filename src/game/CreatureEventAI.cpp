@@ -496,7 +496,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                 caster = target;
 
             //Allowed to cast only if not casting (unless we interrupt ourself) or if spell is triggered
-            bool canCast = !caster->IsNonMeleeSpellCasted(false) || (action.cast.castFlags & (CAST_TRIGGERED | CAST_INTURRUPT_PREVIOUS));
+            bool canCast = !caster->hasUnitState(UNIT_STAT_LOST_CONTROL) && (!caster->IsNonMeleeSpellCasted(false) || (action.cast.castFlags & (CAST_TRIGGERED | CAST_INTURRUPT_PREVIOUS)));
 
             // If cast flag CAST_AURA_NOT_PRESENT is active, check if target already has aura on them
             if (action.cast.castFlags & CAST_AURA_NOT_PRESENT)
@@ -607,9 +607,6 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         }
         case ACTION_T_SUMMON:
         {
-            if (HasEventAISummonedUnits())
-                break;
-
             Unit* target = GetTargetByType(action.summon.target, pActionInvoker);
 
             Creature* pCreature = NULL;
@@ -693,7 +690,8 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
                     if (Unit* victim = m_creature->getVictim())
                         m_creature->SendMeleeAttackStop(victim);
 
-                m_creature->GetMotionMaster()->MoveIdle();
+                if (!m_creature->hasUnitState(UNIT_STAT_LOST_CONTROL))
+                    m_creature->GetMotionMaster()->MoveIdle();
             }
             break;
         case ACTION_T_COMBAT_STOP:
@@ -771,9 +769,6 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         case ACTION_T_SUMMON_ID:
         {
-            if (HasEventAISummonedUnits())
-                break;
-
             Unit* target = GetTargetByType(action.summon_id.target, pActionInvoker);
 
             CreatureEventAI_Summon_Map::const_iterator i = sCreatureEAIMgr.GetCreatureEventAISummonMap().find(action.summon_id.spawnId);
@@ -874,7 +869,7 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         case ACTION_T_MOVE_RANDOM_POINT: //dosen't work in combat
         {
             float x,y,z;
-            me->GetClosePoint(x, y, z, me->GetObjectSize() / 3, action.raw.param1);
+            me->GetNearPoint(x, y, z, me->GetObjectSize() / 3, action.raw.param1);
             me->GetMotionMaster()->MovePoint(0,x,y,z);
             break;
         }
@@ -1129,8 +1124,6 @@ void CreatureEventAI::AttackStart(Unit *who)
     {
         if (CombatMovementEnabled)
             m_creature->GetMotionMaster()->MoveChase(who, AttackDistance, AttackAngle);
-        else
-            m_creature->GetMotionMaster()->MoveIdle();
     }
 }
 

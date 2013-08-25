@@ -414,7 +414,7 @@ DBDiffLog.LogTime = 10
 #                 "" - Empty name for disable
 #
 #    MailLogFile
-#        Log file of sending in game mails
+#        Log file of sending in game mails (don't store informations about items/money - for this use TradeLogFile !)
 #        Default: "sendmail.log"
 #                 "" - Empty name for disable
 #
@@ -453,6 +453,16 @@ DBDiffLog.LogTime = 10
 #        Default: "parser.prsr"
 #                 "" - Empty name for disable
 #
+#    ExpLogFile
+#        Log file for exp gain
+#        Default: "exp.log"
+#                 "" - Empty name for disable
+#
+#    TradeLogFile
+#        Log file for trading items/money via trade/mail option
+#        Default: "exp.log"
+#                 "" - Empty name for disable
+#
 ###################################################################################################################
 
 LogSQL = 1
@@ -488,6 +498,7 @@ CrashLogFile = "crash.log"
 DBDiffFile = "querydiff.log"
 
 StatusParserFile = "parser.prsr"
+ExpLogFile = "exp.log"
 
 ###################################################################################################################
 # SERVER SETTINGS
@@ -687,6 +698,11 @@ StatusParserFile = "parser.prsr"
 #        Default: 1 (true)
 #                 0 (false)
 #
+#    Rabbit.Day
+#        Set to Rabbit Day (date in unix time), only the day and month are considered, the year is not important
+#        Default: 0 (off)
+#        Suggested: 954547200 (April 1st, 2000)
+#
 #    Instance.IgnoreLevel
 #        Ignore level requirement to enter instance
 #        Default: 0 (false)
@@ -717,6 +733,16 @@ StatusParserFile = "parser.prsr"
 #        if player_level < quest_min_level - HighLevelQuestsHideDiff then quest "!" mark not show for quest giver
 #        Default: 7
 #                -1 (show all available quests marks)
+#
+#    DailyQuest.Blizzlike
+#        Enable blizzlike random selection of a daily quest. If false - all daily quests will be available to complete once a day.
+#        Take effect after next daily quest reset (06.00 AM)
+#        Default: 1
+#
+#    DailyQuest.MaxPerDay
+#        The maximum number of daily quests, that can be completed in one day.
+#        However, client will be show error messages, as if standart 25 daily quest would be available.
+#        Default: 25
 #
 #    MaxPrimaryTradeSkill
 #        Max count that player can learn the primary trade skill.
@@ -833,12 +859,15 @@ Battleground.InvitationType = 1
 BattleGround.PremadeGroupWaitForMatch = 300000
 Battleground.PrematureReward = 1
 CastUnstuck = 1
+Rabbit.Day = 0
 Instance.IgnoreLevel = 0
 Instance.IgnoreRaid = 0
 Instance.ResetTimeHour = 4
 Instance.UnloadDelay = 1800000
 Quests.LowLevelHideDiff = 4
 Quests.HighLevelHideDiff = 7
+DailyQuest.Blizzlike = 1
+DailyQuest.MaxPerDay = 25
 MaxPrimaryTradeSkill = 2
 MinPetitionSigns = 9
 MaxGroupXPDistance = 74
@@ -908,6 +937,10 @@ RealmBans = 0
 #        Default: 0 (enable)
 #                 1 (disable pvp)
 #
+#    FFA.DisallowGroup
+#        Disallow players to create groups while in FFA area
+#        Default: 0
+#
 ###################################################################################################################
 
 AllowTwoSide.Accounts = 0
@@ -923,14 +956,10 @@ AllowTwoSide.Trade = 0
 TalentsInspecting = 1
 DisableDuel = 0
 DisablePVP = 0
+FFA.DisallowGroup = 0
 
 ###################################################################################################################
 # CREATURE SETTINGS
-#
-#    ThreatRadius
-#        Radius for creature to evade after being pulled away from combat start point
-#        If ThreatRadius is less than creature aggro radius then aggro radius will be used
-#        Default: 60 yards
 #
 #    Rate.Creature.Aggro
 #        Aggro radius percent or off.
@@ -1031,7 +1060,9 @@ DisablePVP = 0
 #
 ###################################################################################################################
 
-ThreatRadius = 60
+Creature.Evade.DistanceToHome = 40
+Creature.Evade.DistanceToTarget = 45
+
 Rate.Creature.Aggro = 1
 CreatureFamilyAssistanceRadius = 10
 CreatureFamilyAssistanceDelay = 1500

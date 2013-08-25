@@ -292,6 +292,7 @@ struct boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
                     if(Creature *Essence = Unit::GetCreature(*me, EssenceGUID))
                     {
                         Essence->Kill(Essence, false);
+                        Essence->SetLootRecipient(NULL);
                         Essence->RemoveCorpse();
                     }
                 }

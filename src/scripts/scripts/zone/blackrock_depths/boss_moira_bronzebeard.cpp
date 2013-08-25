@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: Boss_Moira_Bronzbeard
-SD%Complete: 90
+SD%Complete: 92
 SDComment: Healing of Emperor NYI
 SDCategory: Blackrock Depths
 EndScriptData */
@@ -38,13 +38,10 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
     uint32 MindBlast_Timer;
     uint32 ShadowWordPain_Timer;
     uint32 Smite_Timer;
-    Unit* PlayerHolder;
-    Unit* Target;
     bool Heal;
 
     void Reset()
     {
-        Target = NULL;
         Heal_Timer = 12000;                                 //These times are probably wrong
         MindBlast_Timer = 16000;
         ShadowWordPain_Timer = 2000;
@@ -64,7 +61,7 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
         //MindBlast_Timer
         if (MindBlast_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MINDBLAST);
+            DoCast(me->getVictim(),SPELL_MINDBLAST);
             MindBlast_Timer = 14000;
         }
         else
@@ -73,7 +70,7 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
         //ShadowWordPain_Timer
         if (ShadowWordPain_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SHADOWWORDPAIN);
+            DoCast(me->getVictim(),SPELL_SHADOWWORDPAIN);
             ShadowWordPain_Timer = 18000;
         }
         else
@@ -82,17 +79,18 @@ struct boss_moira_bronzebeardAI : public ScriptedAI
         //Smite_Timer
         if (Smite_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SMITE);
+            DoCast(me->getVictim(),SPELL_SMITE);
             Smite_Timer = 10000;
         }
         else
             Smite_Timer -= diff;
 
+        DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_moira_bronzebeard(Creature *_Creature)
+CreatureAI* GetAI_boss_moira_bronzebeard(Creature *creature)
 {
-    return new boss_moira_bronzebeardAI (_Creature);
+    return new boss_moira_bronzebeardAI (creature);
 }
 
 void AddSC_boss_moira_bronzebeard()

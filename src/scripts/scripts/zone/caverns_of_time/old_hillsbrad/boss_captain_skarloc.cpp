@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Captain_Skarloc
-SD%Complete: 75
-SDComment: Missing adds, missing waypoints to move up to Thrall once spawned + speech before enter combat.
+SD%Complete: 99
+SDComment:
 SDCategory: Caverns of Time, Old Hillsbrad Foothills
 EndScriptData */
 
@@ -38,71 +38,203 @@ EndScriptData */
 #define SPELL_DEVOTION_AURA         8258
 #define SPELL_CONSECRATION          38385
 
-#define C_WARDEN  17833
-#define C_VETERAN 17860
+#define NPC_THRALL                  17876
+#define C_WARDEN                    17833
+#define C_VETERAN                   17860
+#define SKARLOC_MOUNT               18798
+#define SKARLOC_MOUNT_MODEL         18223
 
 struct boss_captain_skarlocAI : public ScriptedAI
 {
-    boss_captain_skarlocAI(Creature *c) : ScriptedAI(c)
+    boss_captain_skarlocAI(Creature *creature) : ScriptedAI(creature)
     {
-        pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        pInstance = (creature->GetInstanceData());
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
 
     bool HeroicMode;
+    bool Intro;
 
+    uint8 Next;
+    uint32 IntroTimer;
     uint32 Holy_Light_Timer;
     uint32 Cleanse_Timer;
     uint32 HammerOfJustice_Timer;
     uint32 HolyShield_Timer;
     uint32 DevotionAura_Timer;
     uint32 Consecration_Timer;
+    uint64 Add1GUID;
+    uint64 Add2GUID;
+    uint64 ThrallinGUID;
 
     void Reset()
     {
+        Intro = true;
+        Next = 0;
+        Add1GUID = 0;
+        Add2GUID = 0;
+        IntroTimer = 20000;
         Holy_Light_Timer = 30000;
         Cleanse_Timer = 10000;
         HammerOfJustice_Timer = 60000;
         HolyShield_Timer = 240000;
         DevotionAura_Timer = 3000;
         Consecration_Timer = 8000;
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->Mount(SKARLOC_MOUNT_MODEL);
+        SummonGuards();
+        me->GetMotionMaster()->MovePoint(0, 2047.90f, 254.85f, 62.822f);
+
+        Map* tmpMap = me->GetMap();
+
+        if (!tmpMap)
+            return;
+
+        if (Creature* Thrall = tmpMap->GetCreature(tmpMap->GetCreatureGUID(NPC_THRALL)))
+            ThrallinGUID = Thrall->GetGUID();
+    }
+
+    void SummonGuards()
+    {
+        if (Creature *tAdd1 = DoSpawnCreature( C_WARDEN, -2, -2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000))
+        {
+            Add1GUID = tAdd1->GetGUID();
+            tAdd1->SetReactState(REACT_PASSIVE);
+            tAdd1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            tAdd1->GetMotionMaster()->MovePoint(0, 2044.12f, 253.47f, 62.748f);
+        }
+
+        if (Creature *tAdd2 = DoSpawnCreature( C_VETERAN, 2, 2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000))
+        {
+            Add2GUID = tAdd2->GetGUID();
+            tAdd2->SetReactState(REACT_PASSIVE);
+            tAdd2->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            tAdd2->GetMotionMaster()->MovePoint(0, 2049.22f, 258.16f, 62.754f);
+        }
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type == POINT_MOTION_TYPE)
+        {
+            switch (Next)
+            {
+                case 0:
+                    me->Unmount();
+
+                    if (Creature* Thrall = me->GetMap()->GetCreature(ThrallinGUID))
+                        Thrall->SummonCreature(SKARLOC_MOUNT,2047.90f, 254.85f, 62.822f, me->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 5000);
+							
+                    me->SetWalk(true);
+                    me->GetMotionMaster()->MovePoint(0, 2056.80f, 240.81f, 63.538f);
+
+                    if (Creature* tAdd1 = me->GetCreature(Add1GUID))
+                    {
+                        tAdd1->SetWalk(true);
+                        tAdd1->GetMotionMaster()->MovePoint(0, 2052.94f, 239.37f, 63.219f);
+                    }
+
+                    if (Creature* tAdd2 = me->GetCreature(Add2GUID))
+                    {
+                        tAdd2->SetWalk(true);
+                        tAdd2->GetMotionMaster()->MovePoint(0, 2058.66f, 243.99f, 63.59f);
+                    }
+
+                    ++Next;
+                    break;
+                case 1:
+                    DoScriptText(SAY_ENTER, me);
+                    ++Next;
+                    break;
+            }
+        }
+    }
+
+    void IntroEnd()
+    {
+        me->SetReactState(REACT_AGGRESSIVE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetWalk(false);
+
+        if (Creature* Thrall = me->GetMap()->GetCreature(ThrallinGUID))
+        {
+            me->AI()->AttackStart(Thrall);
+
+            if (Creature* tAdd1 = me->GetCreature(Add1GUID))
+            {
+                tAdd1->SetReactState(REACT_AGGRESSIVE);
+                tAdd1->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                tAdd1->SetWalk(false);
+                tAdd1->AI()->AttackStart(Thrall);
+            }
+
+            if (Creature* tAdd2 = me->GetCreature(Add2GUID))
+            {
+                tAdd2->SetReactState(REACT_AGGRESSIVE);
+                tAdd2->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                tAdd2->SetWalk(false);
+                tAdd2->AI()->AttackStart(Thrall);
+            }
+        }
     }
 
     void EnterCombat(Unit *who)
     {
-        if(Creature *tAdd1 = DoSpawnCreature( C_WARDEN, 2, 2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000))
-            tAdd1->AI()->AttackStart(who);
 
-        if(Creature *tAdd2 = DoSpawnCreature( C_VETERAN, -2, -2, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000))
-            tAdd2->AI()->AttackStart(who);
-
-        //This is not correct. Should taunt Thrall before engage in combat
-        DoScriptText(SAY_TAUNT1, m_creature);
-        DoScriptText(SAY_TAUNT2, m_creature);
+        DoScriptText(SAY_TAUNT1, me);
+        DoScriptText(SAY_TAUNT2, me);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->InterruptNonMeleeSpells(true);
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop(true);
+
+        Map* tmpMap = me->GetMap();
+
+        if (!tmpMap)
+            return;
+
+        if (Creature* mount = tmpMap->GetCreature(tmpMap->GetCreatureGUID(SKARLOC_MOUNT)))
+            mount->ForcedDespawn();
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance->GetData(TYPE_THRALL_EVENT) == IN_PROGRESS)
             pInstance->SetData(TYPE_THRALL_PART1, DONE);
 
         if (pInstance->GetData(DATA_SKARLOC_DEATH) == DONE)
-            m_creature->SetLootRecipient(NULL);
+            me->SetLootRecipient(NULL);
         else
             pInstance->SetData(DATA_SKARLOC_DEATH, DONE);
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (Intro)
+        {
+            if (IntroTimer < diff)
+            {
+                IntroEnd();
+                Intro = false;
+            }
+            else
+                IntroTimer -= diff;
+        }
+
         //Return since we have no target
         if (!UpdateVictim() )
             return;
@@ -110,7 +242,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
         //Holy_Light
         if (Holy_Light_Timer < diff)
         {
-            DoCast(m_creature, SPELL_HOLY_LIGHT);
+            DoCast(me, SPELL_HOLY_LIGHT);
             Holy_Light_Timer = 30000;
         }
         else
@@ -119,7 +251,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
         //Cleanse
         if(Cleanse_Timer  < diff)
         {
-            DoCast(m_creature, SPELL_CLEANSE);
+            DoCast(me, SPELL_CLEANSE);
             Cleanse_Timer = 10000;
         }
         else
@@ -128,7 +260,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
         //Hammer of Justice
         if (HammerOfJustice_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_HAMMER_OF_JUSTICE);
+            DoCast(me->getVictim(), SPELL_HAMMER_OF_JUSTICE);
             HammerOfJustice_Timer = 60000;
         }
         else
@@ -137,7 +269,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
         //Holy Shield
         if(HolyShield_Timer < diff)
         {
-            DoCast(m_creature, SPELL_HOLY_SHIELD);
+            DoCast(me, SPELL_HOLY_SHIELD);
             HolyShield_Timer = 240000;
         }
         else
@@ -146,7 +278,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
         //Devotion_Aura
         if (DevotionAura_Timer < diff)
         {
-            DoCast(m_creature, SPELL_DEVOTION_AURA);
+            DoCast(me, SPELL_DEVOTION_AURA);
             DevotionAura_Timer = 60000;
         }
         else
@@ -155,7 +287,7 @@ struct boss_captain_skarlocAI : public ScriptedAI
         if(HeroicMode)
         if(Consecration_Timer < diff)
         {
-            DoCast(m_creature, SPELL_CONSECRATION);
+            DoCast(me, SPELL_CONSECRATION);
             Consecration_Timer = 8000;
         }
         else
@@ -165,9 +297,9 @@ struct boss_captain_skarlocAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_captain_skarloc(Creature *_Creature)
+CreatureAI* GetAI_boss_captain_skarloc(Creature *creature)
 {
-    return new boss_captain_skarlocAI (_Creature);
+    return new boss_captain_skarlocAI (creature);
 }
 
 void AddSC_boss_captain_skarloc()

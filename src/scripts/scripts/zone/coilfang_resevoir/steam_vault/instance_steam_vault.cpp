@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_steam_vault.h"
 
-#define ENCOUNTERS 4
+#define ENCOUNTERS 3
 
 #define MAIN_CHAMBERS_DOOR      183049
 #define ACCESS_PANEL_HYDRO      184125
@@ -157,9 +157,6 @@ struct instance_steam_vault : public ScriptedInstance
 
                 Encounter[2] = data;
                 break;
-            case TYPE_DISTILLER:
-                Encounter[3] = data;
-                break;
         }
 
         if(data == DONE || data == SPECIAL)
@@ -176,8 +173,6 @@ struct instance_steam_vault : public ScriptedInstance
                 return Encounter[1];
             case TYPE_WARLORD_KALITHRESH:
                 return Encounter[2];
-            case TYPE_DISTILLER:
-                return Encounter[3];
         }
         return 0;
     }
@@ -205,8 +200,7 @@ struct instance_steam_vault : public ScriptedInstance
         std::ostringstream stream;
         stream << Encounter[0] << " ";
         stream << Encounter[1] << " ";
-        stream << Encounter[2] << " ";
-        stream << Encounter[3];
+        stream << Encounter[2];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -222,7 +216,7 @@ struct instance_steam_vault : public ScriptedInstance
         }
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
-        stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3];
+        stream >> Encounter[0] >> Encounter[1] >> Encounter[2];
         for(uint8 i = 0; i < ENCOUNTERS-1; ++i)
             if(Encounter[i] == IN_PROGRESS)
                 Encounter[i] = NOT_STARTED;

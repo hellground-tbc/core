@@ -695,7 +695,7 @@ struct npc_corki_capitiveAI : public ScriptedAI
 
     void Reset()
     {
-        PlayerGUID = NULL;
+        PlayerGUID = 0;
         me->SetWalk(false);
     }
 
@@ -707,7 +707,7 @@ struct npc_corki_capitiveAI : public ScriptedAI
             {
                 return;
             }
-            else PlayerGUID = NULL;
+            else PlayerGUID = 0;
 
             switch (urand(0,4))
             {
@@ -1083,15 +1083,12 @@ struct npc_maghar_prisonerAI : public ScriptedAI
 {
     npc_maghar_prisonerAI(Creature *creature) : ScriptedAI(creature) {}
 
-    uint32 DieTimer;
     uint64 PlayerGUID;
 
     void Reset()
     {
-        DieTimer = 0;
         PlayerGUID = 0;
         me->SetWalk(false);
-        me->SetVisibility(VISIBILITY_ON); //???
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -1102,7 +1099,7 @@ struct npc_maghar_prisonerAI : public ScriptedAI
             {
                 return;
             }
-            else PlayerGUID = NULL;
+            else PlayerGUID = 0;
 
             switch (urand(0,3))
             {
@@ -1213,21 +1210,7 @@ struct npc_maghar_prisonerAI : public ScriptedAI
     {
         if (MotionType == POINT_MOTION_TYPE)
         {
-            //me->ForcedDespawn();
-            me->SetVisibility(VISIBILITY_OFF); //???
-            me->GetMotionMaster()->MoveTargetedHome(); //???
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-	{
-        if(DieTimer)
-        {
-            if(DieTimer <= diff)
-            {
-                me->ForcedDespawn();
-            }
-            else DieTimer -= diff;
+            me->ForcedDespawn();
         }
     }
 };
@@ -1268,7 +1251,6 @@ bool go_maghar_prison(Player* player, GameObject* go)
             if (npc_maghar_prisonerAI* scriptedAI = CAST_AI(npc_maghar_prisonerAI, Prisoner->AI()))
             {
                 scriptedAI->StartRun(player);
-                scriptedAI->DieTimer = 20000;
             }
 
 			return false;

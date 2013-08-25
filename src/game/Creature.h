@@ -145,7 +145,8 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_HASTE_IMMUNE        = 0x00400000,       // 4194304
     CREATURE_FLAG_EXTRA_CANT_MISS           = 0x00800000,       // 8388608 creature melee attacks cant miss
     CREATURE_FLAG_EXTRA_NOT_REGEN_MANA      = 0x01000000,       // 16777216 creature has mana pool, but do not regenerates it when OOC
-    CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH    = 0x02000000        // 33554432 rare case that creature should not regen health when OOC
+    CREATURE_FLAG_EXTRA_NOT_REGEN_HEALTH    = 0x02000000,       // 33554432 rare case that creature should not regen health when OOC
+    CREATURE_FLAG_EXTRA_1PCT_TAUNT_RESIST   = 0x04000000        // 67108864 creature have only 1% chance to resist taunt like spell
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -175,6 +176,7 @@ struct CreatureInfo
     uint32  minmana;
     uint32  maxmana;
     uint32  armor;
+    float   xpMod;
     uint32  faction_A;
     uint32  faction_H;
     uint32  npcflag;
@@ -521,7 +523,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
 
         void _AddCreatureSpellCooldown(uint32 spell_id, time_t end_time);
-        void _AddCreatureCategoryCooldown(uint32 category, time_t apply_time);
+        void _AddCreatureCategoryCooldown(uint32 category, time_t end_time);
         void AddCreatureSpellCooldown(uint32 spellid);
         bool HasSpellCooldown(uint32 spell_id) const;
         bool HasCategoryCooldown(uint32 spell_id) const;
@@ -701,6 +703,16 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 
         Unit *SelectVictim();
 
+        void SetIngoreVictimSelection(bool ignoreSelection)
+        {
+            if (ignoreSelection)
+                SetSelection(0);
+            else if (getVictim())
+                SetSelection(getVictimGUID());
+            m_ignoreSelection = ignoreSelection;
+        }
+        bool hasIgnoreVictimSelection() { return m_ignoreSelection; }
+
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
         bool IsReputationGainDisabled() { return DisableReputationGain; }
         bool IsDamageEnoughForLootingAndReward() { return m_PlayerDamageReq == 0; }
@@ -721,6 +733,8 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         bool IsTempSummon() { return m_tempSummon; }
 
         void UpdateDeathTimer(uint32 timer) { if(m_deathTimer < timer) m_deathTimer = timer; }
+
+        virtual float GetXPMod() const override { return m_xpMod; }
 
     protected:
         bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
@@ -753,6 +767,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         ReactStates m_reactState;                           // for AI, not charmInfo
         void RegenerateMana();
         void RegenerateHealth();
+
         MovementGeneratorType m_defaultMovementType;
         Cell m_currentCell;                                 // store current cell where creature listed
         uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
@@ -784,7 +799,10 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
         uint32 m_aiReinitializeCheckTimer;
 
         float m_aggroRange;
-
+        bool m_ignoreSelection;
+    public:
+        float m_xpMod;
+    private:
         //Formation var
         CreatureGroup *m_formation;
 

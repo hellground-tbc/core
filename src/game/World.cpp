@@ -623,6 +623,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_BATTLEGROUND_ANNOUNCE_START] = sConfig.GetIntDefault("BattleGround.AnnounceStart", 0);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_INFO] = sConfig.GetIntDefault("BattleGround.QueueInfo", 0);
+    m_configs[CONFIG_BATTLEGROUND_TIMER_INFO] = sConfig.GetBoolDefault("BattleGround.TimerInfo");
 
     m_configs[CONFIG_INTERVAL_MAPUPDATE] = sConfig.GetIntDefault("MapUpdateInterval", 100);
     if (m_configs[CONFIG_INTERVAL_MAPUPDATE] < MIN_MAP_UPDATE_DELAY)
@@ -804,6 +805,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH] = sConfig.GetIntDefault("BattleGround.PremadeGroupWaitForMatch", 10 * MINUTE * IN_MILISECONDS);
 
     m_configs[CONFIG_CAST_UNSTUCK] = sConfig.GetBoolDefault("CastUnstuck", true);
+    m_configs[CONFIG_RABBIT_DAY] = sConfig.GetIntDefault("Rabbit.Day", 0);
+
     m_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = sConfig.GetIntDefault("Instance.ResetTimeHour", 4);
     m_configs[CONFIG_INSTANCE_UNLOAD_DELAY] = sConfig.GetIntDefault("Instance.UnloadDelay", 1800000);
 
@@ -943,6 +946,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_TALENTS_INSPECTING] = sConfig.GetBoolDefault("TalentsInspecting", true);
     m_configs[CONFIG_DISABLE_DUEL] = sConfig.GetBoolDefault("DisableDuel", false);
     m_configs[CONFIG_DISABLE_PVP] = sConfig.GetBoolDefault("DisablePVP", false);
+    m_configs[CONFIG_FFA_DISALLOWGROUP] = sConfig.GetBoolDefault("FFA.DisallowGroup", false);
     m_configs[CONFIG_CHAT_FAKE_MESSAGE_PREVENTING] = sConfig.GetBoolDefault("ChatFakeMessagePreventing", false);
 
     m_configs[CONFIG_CORPSE_DECAY_NORMAL] = sConfig.GetIntDefault("Corpse.Decay.NORMAL", 60);
@@ -957,7 +961,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEATH_BONES_WORLD]       = sConfig.GetBoolDefault("Death.Bones.World", true);
     m_configs[CONFIG_DEATH_BONES_BG_OR_ARENA] = sConfig.GetBoolDefault("Death.Bones.BattlegroundOrArena", true);
 
-    m_configs[CONFIG_THREAT_RADIUS] = sConfig.GetIntDefault("ThreatRadius", 60);
+    m_configs[CONFIG_EVADE_HOMEDIST] = sConfig.GetIntDefault("Creature.Evade.DistanceToHome", 50);
+    m_configs[CONFIG_EVADE_TARGETDIST] = sConfig.GetIntDefault("Creature.Evade.DistanceToTarget", 45);
 
     // always use declined names in the russian client
     m_configs[CONFIG_DECLINED_NAMES_USED] =
@@ -972,6 +977,10 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS] = sConfig.GetBoolDefault("Arena.AutoDistributePoints", false);
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS] = sConfig.GetIntDefault("Arena.AutoDistributeInterval", 7);
     m_configs[CONFIG_ARENA_LOG_EXTENDED_INFO] = sConfig.GetBoolDefault("ArenaLogExtendedInfo", false);
+
+    m_configs[CONFIG_ENABLE_ARENA_STEP_BY_STEP_MATCHING] = sConfig.GetBoolDefault("ArenaStepByStep.Enable",false);
+    m_configs[CONFIG_ARENA_STEP_BY_STEP_TIME] = sConfig.GetIntDefault("ArenaStepByStep.Time",60000);
+    m_configs[CONFIG_ARENA_STEP_BY_STEP_VALUE] = sConfig.GetIntDefault("ArenaStepByStep.Value",100);
 
     m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfig.GetIntDefault("BattleGround.PrematureFinishTimer", 0);
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfig.GetIntDefault("InstantLogout", PERM_GMT);
@@ -1126,6 +1135,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_COREBALANCER_INTERVAL] = sConfig.GetIntDefault("CoreBalancer.BalanceInterval", 300000);
     m_configs[CONFIG_COREBALANCER_VISIBILITY_PENALTY] = sConfig.GetIntDefault("CoreBalancer.VisibilityPenalty", 25);
 
+    m_configs[CONFIG_DAILY_BLIZZLIKE] = sConfig.GetBoolDefault("DailyQuest.Blizzlike", true);
+    m_configs[CONFIG_DAILY_MAX_PER_DAY] = sConfig.GetIntDefault("DailyQuest.MaxPerDay", 25);
+
     m_configs[CONFIG_CREATURE_RESTORE_STATE] = sConfig.GetIntDefault("Creature.RestoreStateTimer", 5000);
 }
 
@@ -1179,6 +1191,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
+
+    sLog.outString("Loading Terrain specific data...");
+    sTerrainMgr.LoadTerrainSpecifics();
 
     sLog.outString("Loading Script Names...");
     sScriptMgr.LoadScriptNames();
@@ -1460,9 +1475,6 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading CreatureEventAI Scripts...");
     sCreatureEAIMgr.LoadCreatureEventAI_Scripts();
-
-    sLog.outString("Loading Terrain specific data...");
-    sTerrainMgr.LoadTerrainSpecifics();
 
     sLog.outString("Initializing Scripts...");
     sScriptMgr.LoadScriptLibrary(HELLGROUND_SCRIPT_NAME);
@@ -1792,7 +1804,7 @@ void World::Update(uint32 diff)
             std::advance(itr, rand() % m_Autobroadcasts.size());
             msg = *itr;
 
-            sWorld.SendWorldText(LANG_AUTO_ANN, msg.c_str());
+            sWorld.SendWorldText(LANG_AUTO_ANN, ACC_DISABLED_BROADCAST, msg.c_str());
         }
 
         diffRecorder.RecordTimeFor("Send Autobroadcast");
@@ -2035,13 +2047,13 @@ void World::SendGlobalGMMessage(WorldPacket *packet, WorldSession *self, uint32 
 }
 
 /// Send a System Message to all players (except self if mentioned)
-void World::SendWorldText(int32 string_id, ...)
+void World::SendWorldText(int32 string_id, uint32 preventFlags, ...)
 {
     std::vector<std::vector<WorldPacket*> > data_cache;     // 0 = default, i => i-1 locale index
 
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
     {
-        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
+        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() || itr->second->IsAccountFlagged(AccountFlags(preventFlags)))
             continue;
 
         uint32 loc_idx = itr->second->GetSessionDbLocaleIndex();
@@ -2632,8 +2644,16 @@ void World::SelectRandomHeroicDungeonDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(HeroicEventStart, HeroicEventEnd);
     while (random == currentId)
@@ -2662,8 +2682,16 @@ void World::SelectRandomDungeonDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(DungeonEventStart, DungeonEventEnd);
     while (random == currentId)
@@ -2692,8 +2720,16 @@ void World::SelectRandomCookingDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(CookingEventStart, CookingEventEnd);
     while (random == currentId)
@@ -2717,14 +2753,21 @@ void World::SelectRandomFishingDaily()
     uint8 currentId = 0;
     for (uint8 eventId = FishingEventStart; eventId <= FishingEventEnd; ++eventId)
     {
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
-
         if (sGameEventMgr.IsActiveEvent(eventId))
         {
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId, true);
         }
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(FishingEventStart, FishingEventEnd);
     while (random == currentId)
@@ -2753,8 +2796,16 @@ void World::SelectRandomPvPDaily()
             currentId = eventId;
             sGameEventMgr.StopEvent(eventId);
         }
-        GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        if (sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 5184000 WHERE entry = %u", eventId);
+        else{
+            GameDataDatabase.PExecute("UPDATE game_event SET occurence = 1400 WHERE entry = %u", eventId);
+            sGameEventMgr.StartEvent(eventId, true);
+        }
     }
+
+    if (!sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return;
 
     uint8 random = urand(PvPEventStart, PvPEventEnd);;
     while (random == currentId)

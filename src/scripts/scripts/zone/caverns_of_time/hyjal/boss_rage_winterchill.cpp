@@ -4,7 +4,7 @@
 #include "hyjal_trash.h"
 
 #define SPELL_FROST_ARMOR     31256
-#define SPELL_DEATH_AND_DECAY 39658
+#define SPELL_DEATH_AND_DECAY 31258
 
 #define SPELL_FROST_NOVA      31250
 #define SPELL_ICEBOLT         31249
@@ -38,10 +38,6 @@ struct boss_rage_winterchillAI : public hyjal_trashAI
         pInstance = (c->GetInstanceData());
         go = false;
         pos = 0;
-
-        SpellEntry *decaySpell = (SpellEntry*)GetSpellStore()->LookupEntry(SPELL_DEATH_AND_DECAY);
-        if(decaySpell)
-            decaySpell->AttributesEx |= SPELL_ATTR_EX_CHANNELED_1;
     }
 
     uint32 FrostArmorTimer;

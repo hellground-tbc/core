@@ -138,14 +138,6 @@ struct boss_high_astromancer_solarianAI : public ScriptedAI
         Summons.DespawnAll();
     }
 
-    void StartEvent()
-    {
-        DoScriptText(SAY_AGGRO, m_creature);
-
-        if(pInstance)
-            pInstance->SetData(DATA_HIGHASTROMANCERSOLARIANEVENT, IN_PROGRESS);
-    }
-
     void KilledUnit(Unit *victim)
     {
         DoScriptText(RAND(SAY_KILL1, SAY_KILL2, SAY_KILL3), m_creature);
@@ -163,7 +155,11 @@ struct boss_high_astromancer_solarianAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        StartEvent();
+        DoScriptText(SAY_AGGRO, m_creature);
+        DoZoneInCombat();
+
+        if(pInstance)
+            pInstance->SetData(DATA_HIGHASTROMANCERSOLARIANEVENT, IN_PROGRESS);
     }
 
     void SummonMinion(uint32 entry, float x, float y, float z)

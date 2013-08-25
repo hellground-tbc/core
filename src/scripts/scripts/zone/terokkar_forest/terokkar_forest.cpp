@@ -594,8 +594,12 @@ float skyguardWPStart[3][2] = {
     { -3807, 3496 }
 };
 
-float skyguardWPMiddle[3] = {
-    -3785, 3507, 315
+#define SKYGUARD_WP_MIDDLE_MAX 4
+float skyguardWPMiddle[4][3] = {
+    {-3785, 3507, 315},
+    {-3798, 3500, 316},
+    {-3798, 3515, 308},
+    {-3786, 3515, 314}
 };
 
 float skyguardWPs[6][2] = {
@@ -766,8 +770,10 @@ struct mob_terokkAI : public ScriptedAI
 
             if(SkyguardFlare_Timer < diff)
             {
-                if(Creature *skyguard = Creature::GetCreature(*me, SkyguardGUIDs[skyguardTurn++]))
-                    skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_MIDDLE, skyguardWPMiddle[0], skyguardWPMiddle[1], skyguardWPMiddle[2]);
+                if(Creature *skyguard = Creature::GetCreature(*me, SkyguardGUIDs[skyguardTurn++])){
+                    uint32 i = rand() % SKYGUARD_WP_MIDDLE_MAX;
+                    skyguard->GetMotionMaster()->MovePoint(SKYGUARD_WP_MIDDLE, skyguardWPMiddle[i][0], skyguardWPMiddle[i][1], skyguardWPMiddle[i][2]);
+                }
                 skyguardTurn %= 3;
                 SkyguardFlare_Timer = 20000;
             }
@@ -796,8 +802,8 @@ struct npc_skyguard_aceAI : public ScriptedAI
 
     uint64 TargetGUID;
     uint32 TargetLifetime;
-    uint32 AncientFlame_Timer;
-    uint32 Move_Timer;
+    int32 AncientFlame_Timer;
+    int32 Move_Timer;
     int NextWP;
 
     void Reset()
@@ -847,7 +853,7 @@ struct npc_skyguard_aceAI : public ScriptedAI
             creature->GetPosition(x, y, z);
             z = groundAltitiude;
             creature->Relocate(x, y, z);
-            creature->CastSpell(creature, SPELL_SKYGUARD_FLARE_TARGET, true);
+            creature->CastSpell(creature, SPELL_SKYGUARD_FLARE_TARGET, false);
             TargetGUID = creature->GetGUID();
             TargetLifetime = 20500;
             AncientFlame_Timer = 5500;
@@ -876,11 +882,14 @@ struct npc_skyguard_aceAI : public ScriptedAI
         {
             if(Move_Timer < diff)
             {
-                me->GetMotionMaster()->MovePoint(NextWP, skyguardWPs[NextWP][0], skyguardWPs[NextWP][1], skyguardAltitude);
+                if (me->GetMotionMaster()->empty())
+                    me->GetMotionMaster()->MovePoint(NextWP, skyguardWPs[NextWP][0], skyguardWPs[NextWP][1], skyguardAltitude);
                 Move_Timer = -1;
             }
-            else
+            else{
                 Move_Timer -= diff;
+                Move_Timer = Move_Timer < 0 ? 0 : Move_Timer;
+            }
         }
 
         if(AncientFlame_Timer >= 0)
@@ -1762,10 +1771,10 @@ struct npc_razorthorn_ravagerAI : public ScriptedAI
                 me->GetMotionMaster()->MoveFollow(me->GetCharmer(),PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
                 if(GameObject* go = FindGameObject(GAMEOBJECT_RAZORTHORN_DIRT_MOUND, 15, me))
                 {
-                    if(me->GetCharmer()->GetTypeId() == TYPEID_PLAYER)
+                    if(me->GetCharmer() && me->GetCharmer()->GetTypeId() == TYPEID_PLAYER)
                     {
                         MoundList.push_front(go->GetGUID());
-                        //go->DestroyForPlayer(((Player*)me->GetCharmer()));
+                        go->DestroyForPlayer(((Player*)me->GetCharmer()));
                         checked = false;
                     }
                 }
@@ -1844,7 +1853,7 @@ struct quest_the_vengeful_harbringerAI : public ScriptedAI
 
         if (Creature * Boss = Portal_Trigger->SummonCreature(21638, Portal_Trigger->GetPositionX(), Portal_Trigger->GetPositionY(), Portal_Trigger->GetPositionZ(), Portal_Trigger->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000))
         {
-            Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+            Event_Trigger_B->GetNearPoint(x, y, z, 5.0f);
             Boss->GetMotionMaster()->MovePoint(1,x,y,z);
         }
     }
@@ -1870,7 +1879,7 @@ struct quest_the_vengeful_harbringerAI : public ScriptedAI
             if (!Trash1 || !Trash2 || !Trash3)
                 return;
 
-            Event_Trigger_B->GetClosePoint(x, y, z, 5.0f);
+            Event_Trigger_B->GetNearPoint(x, y, z, 5.0f);
 
             Trash1->GetMotionMaster()->MovePoint(1, x, y, z);
             Trash2->GetMotionMaster()->MovePoint(1, x +5.0f, y, z);
@@ -2311,26 +2320,20 @@ static WP W[]=
 {
     {-2464.39f, 5398.43f, 2.12f},
     {-2485.65f, 5382.77f, 0.11f},
-    {-2464.22f, 5402.19f, 2.16f},
     {-2542.65f, 5482.23f, 8.25f},
     {-2520.57f, 5447.79f, 0.12f},
-    {-2545.31f, 5484.29f, 8.34f},
     {-2582.34f, 5425.01f, 26.85f},
     {-2561.75f, 5439.09f, 27.16f},
-    {-2579.22f, 5430.93f, 28.04f},
     {-2528.63f, 5387.37f, 27.65f},
-    {-2550.72f, 5404.97f, 20.00f},
-    {-2526.76f, 5384.53f, 28.09f}
+    {-2550.72f, 5404.97f, 20.00f}
 };
 
 struct npc_captive_childAI : public npc_escortAI
 {
     npc_captive_childAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
-    void Reset()
-    {
-        me->SetVisibility(VISIBILITY_ON); //???
-    }
+    void Reset() {}
+
     //if you add more children .add GUID here.
     uint32 WaypointID()
     {
@@ -2370,25 +2373,21 @@ struct npc_captive_childAI : public npc_escortAI
             case 1:
                 AddWaypoint(0, W[0].x+(rand()%4), W[0].y-(rand()%4), W[0].z, 3000);
                 AddWaypoint(1, W[1].x, W[1].y, W[1].z);
-                AddWaypoint(2, W[2].x, W[2].y, W[2].z);
                 Start(false, true, player->GetGUID());
                 break;
             case 2:
-                AddWaypoint(0, W[3].x+(rand()%4), W[3].y-(rand()%4), W[3].z, 3000);
-                AddWaypoint(1, W[4].x, W[4].y, W[4].z);
-                AddWaypoint(2, W[5].x, W[5].y, W[5].z);
+                AddWaypoint(0, W[2].x+(rand()%4), W[2].y-(rand()%4), W[2].z, 3000);
+                AddWaypoint(1, W[3].x, W[3].y, W[3].z);
                 Start(false, true, player->GetGUID());
                 break;
             case 3:
-                AddWaypoint(0, W[6].x+(rand()%4), W[6].y-(rand()%4), W[6].z, 3000);
-                AddWaypoint(1, W[7].x, W[7].y, W[7].z);
-                AddWaypoint(2, W[8].x, W[8].y, W[8].z);
+                AddWaypoint(0, W[4].x+(rand()%4), W[4].y-(rand()%4), W[4].z, 3000);
+                AddWaypoint(1, W[5].x, W[5].y, W[5].z);
                 Start(false, true, player->GetGUID());
                 break;
             case 4:
-                AddWaypoint(0, W[9].x+(rand()%4), W[9].y-(rand()%4), W[9].z, 3000);
-                AddWaypoint(1, W[10].x, W[10].y, W[10].z);
-                AddWaypoint(2, W[11].x, W[11].y, W[11].z);
+                AddWaypoint(0, W[6].x+(rand()%4), W[6].y-(rand()%4), W[6].z, 3000);
+                AddWaypoint(1, W[7].x, W[7].y, W[7].z);
                 Start(false, true, player->GetGUID());
                 break;
         }
@@ -2420,9 +2419,6 @@ struct npc_captive_childAI : public npc_escortAI
                 }
                 break;
             case 1:
-                me->SetVisibility(VISIBILITY_OFF); //??? strange bug and we need wp2(home).
-                break;
-            case 2:
                 me->ForcedDespawn();
                 break;
         }

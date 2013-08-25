@@ -125,7 +125,7 @@ struct npc_willixAI : public npc_escortAI
 
 bool QuestAccept_npc_willix(Player* player, Creature* creature, Quest const* quest)
 {
-    if (quest->GetQuestId() == QUEST_WILLIX_THE_IMPORTER)
+    if (player && quest->GetQuestId() == QUEST_WILLIX_THE_IMPORTER)
     {
         CAST_AI(npc_escortAI, (creature->AI()))->Start(true, false, player->GetGUID());
         DoScriptText(SAY_READY, creature, player);

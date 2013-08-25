@@ -355,7 +355,6 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
 
     uint32 iEntry = _Item->GetEntry();
     uint32 cEntry[MAX_TARGETS] = { 0, 0, 0, 0 };
-    bool removeCorpse = false;
 
     uint8 targetState = T_ALIVE & T_DEAD;
 
@@ -371,7 +370,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 32321: cEntry[0] = 22979; break; // Sparrowhawk Net
         case 32825: cEntry[0] = 22357; break; // Soul Cannon
         case 34255: cEntry[0] = 24922; break; // Razorthorn Flayer Gland
-        case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; removeCorpse = true; break; // Warmaul Ogre Banner
+        case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; break; // Warmaul Ogre Banner
         case 22473: cEntry[0] = 15941; cEntry[1] = 15945; break; // Disciplinary Rod
         case 34368: cEntry[0] = 24972; targetState = T_DEAD; break; // Attuned Crystal Cores
         case 29513: cEntry[0] = 19354; break; // Staff of the Dreghood Elders
@@ -421,9 +420,9 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
                 }
                 case T_DEAD:
                 {
-                    if(!uTarget->isAlive())
+                    if(uTarget->getDeathState() == CORPSE)
                         return false;
-                    else
+                    else if (uTarget->getDeathState() != DEAD)
                     {
                         WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
                         data << uint32(_Item->GetEntry());                      // itemId
@@ -432,6 +431,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
                         player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);
                         return true;
                     }
+                    // if deathstate == dead corpse should be invisible and untargettable, so invalid target
                 }
             }
         }

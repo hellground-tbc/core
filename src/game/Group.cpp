@@ -289,7 +289,10 @@ uint32 Group::RemoveInvite(Player *player)
 void Group::RemoveAllInvites()
 {
     for (InvitesList::iterator itr=m_invitees.begin(); itr!=m_invitees.end(); ++itr)
-        (*itr)->SetGroupInvite(NULL);
+    {
+        if ((*itr)->GetTypeId() == TYPEID_PLAYER)
+            (*itr)->SetGroupInvite(NULL);
+    }
 
     m_invitees.clear();
 }
@@ -1552,6 +1555,7 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
 {
     // check for min / max count
     uint32 memberscount = GetMembersCount();
+    uint32 onlinememberscount = 0;
     if (memberscount < MinPlayerCount)
         return BG_JOIN_ERR_GROUP_NOT_ENOUGH;
     if (memberscount > MaxPlayerCount)
@@ -1574,11 +1578,12 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
         // offline member? don't let join
         if (!member)
             return BG_JOIN_ERR_OFFLINE_MEMBER;
+        onlinememberscount++;
         // don't allow cross-faction join as group
         if (member->GetTeam() != team)
             return BG_JOIN_ERR_MIXED_FACTION;
         // not in the same battleground level bracket, don't let join
-        if (member->GetBattleGroundBracketIdFromLevel(bgTypeId) != bracket_id)
+        if (member->GetBattleGroundBracketIdFromLevel(bgTypeId) != bracket_id || member->getLevel() < 10)
             return BG_JOIN_ERR_MIXED_LEVELS;
         // don't let join rated matches if the arena team id doesn't match
         if (isRated && member->GetArenaTeamId(arenaSlot) != arenaTeamId)
@@ -1593,6 +1598,8 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
         if (!member->HasFreeBattleGroundQueueId())
             return BG_JOIN_ERR_ALL_QUEUES_USED;
     }
+    if (memberscount != onlinememberscount)
+        return BG_JOIN_ERR_OFFLINE_MEMBER;
     return BG_JOIN_ERR_OK;
 }
 

@@ -449,9 +449,9 @@ void Master::_OnSignal(int s)
         case SIGABRT:
         {
             ACE_thread_t const threadId = ACE_OS::thr_self();
+            ACE_Stack_Trace stackTrace;
             if (MapUpdateInfo const* mapUpdateInfo = sMapMgr.GetMapUpdater()->GetMapUpdateInfo(threadId))
             {
-                ACE_Stack_Trace stackTrace;
                 sLog.outLog(LOG_CRASH, "CRASH[%i]: mapid: %u, instanceid: %u", s, mapUpdateInfo->GetId(), mapUpdateInfo->GetInstanceId());
                 sLog.outLog(LOG_CRASH, "\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
@@ -460,14 +460,13 @@ void Master::_OnSignal(int s)
 
                 sMapMgr.GetMapUpdater()->unregister_thread(ACE_OS::thr_self());
                 sMapMgr.GetMapUpdater()->update_finished();
-
-                ACE_OS::thr_exit();
-                break;
+            }
+            else
+            {
+                sLog.outLog(LOG_CRASH, "Signal Handler: Thread is not virtual map server. Stopping world.");
+                sLog.outLog(LOG_CRASH, "\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
             }
 
-            ACE_Stack_Trace stackTrace;
-            sLog.outLog(LOG_CRASH, "Signal Handler: Thread is not virtual map server. Stopping world.");
-            sLog.outLog(LOG_CRASH, "\r\n************ BackTrace *************\r\n%s\r\n***********************************\r\n", stackTrace.c_str());
 
             ACE_SIGACTION action;
             action.sa_handler = SIG_DFL;

@@ -706,7 +706,7 @@ struct boss_kagani_nightstrikeAI : public boss_priestess_guestAI
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
             {
                 float x, y, z;
-                me->GetNearPoint(target, x, y, z, 0, 5.0, frand(0, 2*M_PI));
+                me->GetNearPoint(x, y, z, 0, 5.0, frand(0, 2*M_PI));
                 AttackStart(target);
                 me->AddThreat(target, 10000);
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
@@ -1148,7 +1148,7 @@ struct boss_yazzaiAI : public boss_priestess_guestAI
                     if(!canBlink)
                     {
                         float x, y, z;
-                        me->GetClosePoint(x, y, z, 0, 7.0, frand(0, 2*M_PI));
+                        me->GetNearPoint(x, y, z, 0, 7.0, frand(0, 2*M_PI));
                         me->UpdateAllowedPositionZ(x, y, z);
                         me->GetMotionMaster()->MovePoint(1, x, y, z);
                     }
@@ -1392,7 +1392,7 @@ struct boss_garaxxasAI : public boss_priestess_guestAI
                 if(!Sliver)
                 {
                     float x, y, z;
-                    me->GetNearPoint(me, x, y, z, 0, 3.0, frand(0, 2*M_PI));
+                    me->GetNearPoint( x, y, z, 0, 3.0, frand(0, 2*M_PI));
                     Creature* Sliver = m_creature->SummonCreature(NPC_SLIVER, x, y, z, me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
                 }
 
@@ -1400,7 +1400,7 @@ struct boss_garaxxasAI : public boss_priestess_guestAI
                 {
                     ((Creature*)Sliver)->RemoveCorpse();
                     float x, y, z;
-                    me->GetNearPoint(me, x, y, z, 0, 3.0, frand(0, 2*M_PI));
+                    me->GetNearPoint( x, y, z, 0, 3.0, frand(0, 2*M_PI));
                     Creature* Sliver = m_creature->SummonCreature(NPC_SLIVER, x, y, z, me->GetOrientation(), TEMPSUMMON_CORPSE_TIMED_DESPAWN, 30000);
                 }
                 GetSliver_Timer = 15000;
@@ -1457,7 +1457,7 @@ struct boss_garaxxasAI : public boss_priestess_guestAI
         {
             ForceSpellCast(SPELL_WING_CLIP, CAST_TANK, INTERRUPT_AND_CAST);
             float x, y, z;
-            me->GetClosePoint(x, y, z, 0, 9.0, frand(0, 2*M_PI));
+            me->GetNearPoint(x, y, z, 0, 9.0, frand(0, 2*M_PI));
             me->UpdateAllowedPositionZ(x, y, z);
             me->GetMotionMaster()->MovePoint(2, x, y, z);
             canWingClip = false;

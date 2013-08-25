@@ -275,7 +275,7 @@ struct boss_felblood_kaelthasAI : public ScriptedAI
             return;
         }
 
-        if(!UpdateVictim())
+        if(!UpdateVictim() && Phase != 2)
             return;
 
         if(CheckTimer < diff)
@@ -554,26 +554,25 @@ struct mob_arcane_sphereAI : public ScriptedAI
     {
         DoZoneInCombat();
         m_creature->SetLevitate(true);
-        m_creature->SetSpeed(MOVE_FLIGHT, 0.5);
+        m_creature->SetSpeed(MOVE_FLIGHT, 0.6);
         DoCast(m_creature, SPELL_ARCANE_SPHERE_PASSIVE, true);
-        if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true))
-        {
-            AttackStart(target);
-            me->AddThreat(target, 50000.0);
-        }
         DespawnTimer = 29000;
-        ChangeTargetTimer = 5000;
+        ChangeTargetTimer = 1000;
         CheckTimer = 1000;
+    }
+
+    void MovementInform(uint32 Type, uint32 Id)
+    {
+        if(Type == POINT_MOTION_TYPE)
+            if(Id == 1)
+                ChangeTargetTimer = 0;
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
-            ChangeTargetTimer = 0;
-
         if(CheckTimer < diff)
         {
-            m_creature->SetSpeed(MOVE_FLIGHT, 0.5);    // to be tested
+            m_creature->SetSpeed(MOVE_FLIGHT, 0.6);    // to be tested
             if(pInstance && pInstance->GetData(DATA_KAELTHAS_EVENT) != IN_PROGRESS)
                 DespawnTimer = 0;
             CheckTimer = 1000;
@@ -582,7 +581,9 @@ struct mob_arcane_sphereAI : public ScriptedAI
             CheckTimer -= diff;
 
         if(DespawnTimer < diff)
-            me->Kill(me, false);
+        {
+            me->DisappearAndDie();
+        }
         else
             DespawnTimer -= diff;
 
@@ -590,10 +591,7 @@ struct mob_arcane_sphereAI : public ScriptedAI
         {
             DoResetThreat();
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, me->getVictimGUID()))
-            {
-                AttackStart(target);
-                me->AddThreat(target, 50000.0);
-            }
+                me->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, UNIT_ACTION_DOWAYPOINTS);
             ChangeTargetTimer = 7000;   // to be tested
         }
         else

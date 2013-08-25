@@ -46,7 +46,7 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
     boss_gatewatcher_iron_handAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -72,7 +72,7 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
         if(pInstance)
             pInstance->SetData(DATA_IRONHAND_EVENT, IN_PROGRESS);
 
-        DoScriptText(SAY_AGGRO_1, m_creature);
+        DoScriptText(SAY_AGGRO_1, me);
     }
 
     void KilledUnit(Unit* victim)
@@ -80,12 +80,12 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
         if (rand()%2)
             return;
 
-        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), m_creature);
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEATH_1, m_creature);
+        DoScriptText(SAY_DEATH_1, me);
 
         if (!pInstance)
             return;
@@ -103,7 +103,7 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
         //Shadow Power
         if(Shadow_Power_Timer < diff)
         {
-            DoCast(m_creature,HeroicMode ? H_SPELL_SHADOW_POWER : SPELL_SHADOW_POWER);
+            DoCast(me,HeroicMode ? H_SPELL_SHADOW_POWER : SPELL_SHADOW_POWER);
             Shadow_Power_Timer = 20000 + rand()%8000;
         }else Shadow_Power_Timer -= diff;
 
@@ -111,14 +111,14 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
         if(Jackhammer_Timer < diff)
         {
             //TODO: expect cast this about 5 times in a row (?), announce it by emote only once
-            DoScriptText(EMOTE_HAMMER, m_creature);
-            DoCast(m_creature->getVictim(),HeroicMode ? H_SPELL_JACKHAMMER : SPELL_JACKHAMMER);
+            DoScriptText(EMOTE_HAMMER, me);
+            DoCast(me->getVictim(),HeroicMode ? H_SPELL_JACKHAMMER : SPELL_JACKHAMMER);
 
             //chance to yell, but not same time as emote (after spell in fact casted)
             if (rand()%2)
                 return;
 
-            DoScriptText(RAND(SAY_HAMMER_1, SAY_HAMMER_2), m_creature);
+            DoScriptText(RAND(SAY_HAMMER_1, SAY_HAMMER_2), me);
 
             Jackhammer_Timer = 30000;
         }else Jackhammer_Timer -= diff;
@@ -126,7 +126,7 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
         //Stream of Machine Fluid
         if(Stream_of_Machine_Fluid_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_STREAM_OF_MACHINE_FLUID);
+            DoCast(me->getVictim(),SPELL_STREAM_OF_MACHINE_FLUID);
             Stream_of_Machine_Fluid_Timer = 35000 + rand()%15000;
         }else Stream_of_Machine_Fluid_Timer -= diff;
 

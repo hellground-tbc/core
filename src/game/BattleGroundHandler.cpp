@@ -206,7 +206,7 @@ void WorldSession::HandleBattleGroundJoinOpcode(WorldPacket & recv_data )
 
     if (sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
     {
-        uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, bgBracketId);
+        uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_HORDE, bgBracketId);
         uint32 queuedAlliance = sBattleGroundMgr.m_BattleGroundQueues[bgQueueTypeId].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, bgBracketId);
         uint32 minPlayers = bg->GetMinPlayersPerTeam();
         ChatHandler(_player).PSendSysMessage("Horde queued: %u, Alliance queued: %u. Minimum per team: %u", queuedHorde, queuedAlliance, minPlayers);
@@ -244,15 +244,43 @@ void WorldSession::HandleBattleGroundPlayerPositionsOpcode(WorldPacket & /*recv_
         data << count2;                                     // horde flag holders count
         if (ap)
         {
-            data << (uint64)ap->GetGUID();
-            data << (float)ap->GetPositionX();
-            data << (float)ap->GetPositionY();
+            // Horde team can always track alliance flag picker
+            if (_player->GetTeam() == HORDE)
+            {
+                data << (uint64)ap->GetGUID();
+                data << (float)ap->GetPositionX();
+                data << (float)ap->GetPositionY();
+            }
+
+            if (_player->GetTeam() == ALLIANCE)
+            {
+                if (BG_WS_FLAG_UPDATE_TIME < (time(NULL) - ((BattleGroundWS*)bg)->m_AllianceFlagUpdate))
+                {
+                    data << (uint64)ap->GetGUID();
+                    data << (float)ap->GetPositionX();
+                    data << (float)ap->GetPositionY();
+                }
+            }
         }
         if (hp)
         {
-            data << (uint64)hp->GetGUID();
-            data << (float)hp->GetPositionX();
-            data << (float)hp->GetPositionY();
+            // Alliance team can always track horde flag picker
+            if (_player->GetTeam() == ALLIANCE)
+            {
+                data << (uint64)hp->GetGUID();
+                data << (float)hp->GetPositionX();
+                data << (float)hp->GetPositionY();
+            }
+
+            if (_player->GetTeam() == HORDE)
+            {
+                if (BG_WS_FLAG_UPDATE_TIME < (time(NULL) - ((BattleGroundWS*)bg)->m_HordeFlagUpdate))
+                {
+                    data << (uint64)hp->GetGUID();
+                    data << (float)hp->GetPositionX();
+                    data << (float)hp->GetPositionY();
+                }
+            }
         }
 
         SendPacket(&data);
@@ -264,10 +292,7 @@ void WorldSession::HandleBattleGroundPVPlogdataOpcode(WorldPacket & /*recv_data*
     sLog.outDebug("WORLD: Recvd MSG_PVP_LOG_DATA Message");
 
     BattleGround *bg = _player->GetBattleGround();
-    if (!bg)
-        return;
-
-    if (bg->isArena())
+    if (!bg || bg->isArena())
         return;
 
     WorldPacket data;

@@ -31,7 +31,7 @@ EndContentData */
 #include "precompiled.h"
 
 /*######
-## mob_rift_spawn - for mage q "Investigate the Alchemist Shop"
+## mob_rift_spawn - for mage qs "Investigate the Alchemist Shop" & "Investigate the Blue Recluse"
 ######*/
 
 #define RIFT_EMOTE_AGGRO    "is angered and attacks!"
@@ -117,7 +117,7 @@ struct mob_rift_spawnAI : public ScriptedAI
         {
             if(caster->GetTypeId() == TYPEID_PLAYER)
                 casterGUID = caster->GetGUID();
-            manifestation_timer = 1500;
+            manifestation_timer = 2500;
         }
     }
 
@@ -189,16 +189,6 @@ struct mob_rift_spawnAI : public ScriptedAI
             }
             else
                 manifestation_timer -= diff;
-        }
-
-        // evade if too far from Mana Rift Disturbance
-        if(me->isInCombat() && me->GetMapId() == 0 && !me->IsWithinDist2d(1409, 353.5, 55.0))
-        {
-            me->CombatStop();
-            me->getThreatManager().clearReferences();
-            me->RemoveAllAuras();
-            me->SetHealth(me->GetMaxHealth());
-            EscapeIntoVoid(Sucked);
         }
 
         if (!UpdateVictim())

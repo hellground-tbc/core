@@ -27,20 +27,9 @@
 #include "Auth/BigNumber.h"
 #include "Auth/Sha1.h"
 #include "ByteBuffer.h"
-// gcc 4.6+ will set __GXX_EXPERIMENTAL_CXX0X__ to 1 if compiled with -std=c++0x
-#if COMPILER == COMPILER_GNU/* && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 6) && __GXX_EXPERIMENTAL_CXX0X__ //use c++11 library for GCC >= 4.6
+
 #include <regex>
 #define REGEX_NAMESPACE std
-// tr1::regex were added with gcc 4.3.0
-#elif COMPILER == COMPILER_GNU && (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)//use tr1 library for old gcc
-#include <tr1/regex>
-#define REGEX_NAMESPACE std::tr1*/
-#include <boost/regex.hpp>
-#define REGEX_NAMESPACE boost
-#elif COMPILER == COMPILER_MICROSOFT //use c++11 library for >= VS2010
-#include <regex>
-#define REGEX_NAMESPACE std
-#endif
 
 #include "BufferedSocket.h"
 
@@ -90,14 +79,14 @@ class AuthSocket: public BufferedSocket
 
         std::string _login;
         std::string _safelogin;
-        std::string operatingSystem;
-        std::string localIp;
+        std::string operatingSystem_;
+        std::string localIp_;
 
         // Since GetLocaleByName() is _NOT_ bijective, we have to store the locale as a string. Otherwise we can't differ
         // between enUS and enGB, which is important for the patch system
         std::string _localizationName;
         uint16 _build;
-        uint64 accountPermissionMask;
+        uint64 accountPermissionMask_;
 
         ACE_HANDLE patch_;
 

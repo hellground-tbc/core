@@ -3567,7 +3567,7 @@ bool ChatHandler::HandleReviveGroupCommand(const char* args)
 
         // before GM
         float x,y,z;
-        gm->GetClosePoint(x, y, z, pl->GetObjectSize());
+        gm->GetNearPoint(x, y, z, pl->GetObjectSize());
         pl->TeleportTo(gm->GetMapId(), x, y, z, pl->GetOrientation());
 
         pl->ResurrectPlayer(0.5f);
@@ -3816,6 +3816,8 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     if (npcflags & UNIT_NPC_FLAG_TRAINER)
         SendSysMessage(LANG_NPCINFO_TRAINER);
 
+    PSendSysMessage("XpMOD template: %f", cInfo->xpMod);
+    PSendSysMessage("XpMOD creature: %f", target->m_xpMod);
     PSendSysMessage("AIName: %s, ScriptName: %s", target->GetAIName().c_str(), target->GetScriptName().c_str());
     PSendSysMessage("DeadByDefault: %i", (int)target->GetIsDeadByDefault());
 
@@ -4002,6 +4004,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
 
     if (chr)
     {
+        chr->SetDifficulty(DIFFICULTY_NORMAL);
         chr->GiveLevel(newlevel);
         chr->InitTalentForLevel();
         chr->SetUInt32Value(PLAYER_XP,0);
@@ -4770,16 +4773,16 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     if (casename=="spells")
     {
         atLogin = AT_LOGIN_RESET_SPELLS;
-        sWorld.SendWorldText(LANG_RESETALL_SPELLS);
+        sWorld.SendWorldText(LANG_RESETALL_SPELLS, 0);
     }
     else if (casename=="talents")
     {
         atLogin = AT_LOGIN_RESET_TALENTS;
-        sWorld.SendWorldText(LANG_RESETALL_TALENTS);
+        sWorld.SendWorldText(LANG_RESETALL_TALENTS, 0);
     }
     else
     {
-        PSendSysMessage(LANG_RESETALL_UNKNOWN_CASE,args);
+        PSendSysMessage(LANG_RESETALL_UNKNOWN_CASE, 0, args);
         SetSentErrorMessage(true);
         return false;
     }
@@ -4866,7 +4869,7 @@ bool ChatHandler::HandleServerRollShutDownCommand(const char* args)
 
     time = urand(1, roll);
 
-    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, roll, time, exitmsg);
+    sWorld.SendWorldText(LANG_ROLLSHUTDOWN, 0, roll, time, exitmsg);
 
     sWorld.ShutdownServ(time, 0, SHUTDOWN_EXIT_CODE, exitmsg);
     return true;
@@ -6007,7 +6010,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     bool triggered = (trig_str != NULL);
 
     float x,y,z;
-    m_session->GetPlayer()->GetClosePoint(x,y,z,dist);
+    m_session->GetPlayer()->GetNearPoint(x,y,z,dist);
 
     m_session->GetPlayer()->CastSpell(x,y,z,spell,triggered);
     return true;

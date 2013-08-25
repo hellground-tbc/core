@@ -233,6 +233,7 @@ class BattleGroundMgr
         uint32 GetMaxRatingDifference() const;
         uint32 GetRatingDiscardTimer()  const;
         uint32 GetPrematureFinishTime() const;
+        bool IsPrematureFinishTimerEnabled() {return sWorld.getConfig(CONFIG_BATTLEGROUND_TIMER_INFO);}
 
         void InitAutomaticArenaPointDistribution();
         void DistributeArenaPoints();

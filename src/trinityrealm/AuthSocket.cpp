@@ -187,7 +187,7 @@ AuthSocket::AuthSocket()
     g.SetDword(7);
     _authed = false;
 
-    accountPermissionMask = PERM_PLAYER;
+    accountPermissionMask_ = PERM_PLAYER;
 
     _build = 0;
     patch_ = ACE_INVALID_HANDLE;
@@ -367,20 +367,24 @@ bool AuthSocket::_HandleLogonChallenge()
     EndianConvert(ch->timezone_bias);
     EndianConvert(*((uint32*)(&ch->ip[0])));
 
-    if (ch->os[3]) operatingSystem.push_back(ch->os[3]);
-    if (ch->os[2]) operatingSystem.push_back(ch->os[2]);
-    if (ch->os[1]) operatingSystem.push_back(ch->os[1]);
-    if (ch->os[0]) operatingSystem.push_back(ch->os[0]);
-
     std::stringstream tmpLocalIp;
     tmpLocalIp << (uint32)ch->ip[0] << "." << (uint32)ch->ip[1] << "." << (uint32)ch->ip[2] << "." << (uint32)ch->ip[3];
 
-    localIp = tmpLocalIp.str();
+    localIp_ = tmpLocalIp.str();
 
     ByteBuffer pkt;
 
     _login = (const char*)ch->I;
     _build = ch->build;
+    operatingSystem_ = (const char*)ch->os;
+
+    // Restore string order as its byte order is reversed
+    std::reverse(operatingSystem_.begin(), operatingSystem_.end());
+
+    if (operatingSystem_.size() > 4 || (operatingSystem_ != "Win" && operatingSystem_ != "OSX" && (sRealmList.ChatboxOsName == "" || operatingSystem_ != sRealmList.ChatboxOsName))){
+        sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _login.c_str(), operatingSystem_.c_str());
+        return false;
+    }
 
     ///- Normalize account name
     //utf8ToUpperOnlyLatin(_login); -- client already send account in expected form
@@ -398,7 +402,7 @@ bool AuthSocket::_HandleLogonChallenge()
 #ifdef REGEX_NAMESPACE
     for (PatternList::const_iterator i = pattern_banned.begin(); i != pattern_banned.end(); ++i)
     {
-        if (REGEX_NAMESPACE::regex_match(address.c_str(), i->first) && REGEX_NAMESPACE::regex_match(localIp.c_str(), i->second))
+        if (REGEX_NAMESPACE::regex_match(address.c_str(), i->first) && REGEX_NAMESPACE::regex_match(localIp_.c_str(), i->second))
         {
             pkt<< (uint8) WOW_FAIL_UNKNOWN_ACCOUNT;
             send((char const*)pkt.contents(), pkt.size());
@@ -452,7 +456,7 @@ bool AuthSocket::_HandleLogonChallenge()
             if (strcmp(fields[3].GetString(), get_remote_address().c_str()))
             {
                 DEBUG_LOG("[AuthChallenge] Account IP differs");
-                pkt << uint8(WOW_FAIL_SUSPENDED);
+                    pkt << (uint8) WOW_FAIL_LOCKED_ENFORCED;
                 send((char const*)pkt.contents(), pkt.size());
                 return true;
             }
@@ -568,7 +572,7 @@ bool AuthSocket::_HandleLogonChallenge()
     if (securityFlags & 0x04)                // Security token input
         pkt << uint8(1);
 
-    accountPermissionMask = fields[4].GetUInt64();
+    accountPermissionMask_ = fields[4].GetUInt64();
 
     _localizationName.resize(4);
     for (int i = 0; i < 4; ++i)
@@ -734,15 +738,18 @@ bool AuthSocket::_HandleLogonProof()
 
         uint8 OS;
 
-        if (!strcmp(operatingSystem.c_str(), "Win"))
+        if (!strcmp(operatingSystem_.c_str(), "Win"))
             OS = CLIENT_OS_WIN;
-        else if (!strcmp(operatingSystem.c_str(), "OSX"))
+        else if (!strcmp(operatingSystem_.c_str(), "OSX"))
             OS = CLIENT_OS_OSX;
+        else if (!strcmp(operatingSystem_.c_str(), "CHA") ||
+                 !strcmp(operatingSystem_.c_str(), "CHAT"))
+            OS = CLIENT_OS_CHAT;
         else
         {
             OS = CLIENT_OS_UNKNOWN;
-            AccountsDatabase.escape_string(operatingSystem);
-            sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem.c_str());
+            AccountsDatabase.escape_string(operatingSystem_);
+            sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem_.c_str());
         }
 
         ///- Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
@@ -776,7 +783,7 @@ bool AuthSocket::_HandleLogonProof()
         SqlStatement stmt = AccountsDatabase.CreateStatement(updateAccount, "UPDATE account SET last_ip = ?, last_local_ip = ?, last_login = UNIX_TIMESTAMP(), locale_id = ?, failed_logins = 0, client_os_version_id = ? WHERE account_id = ?");
         std::string tmpIp = get_remote_address();
         stmt.addString(tmpIp.c_str());
-        stmt.addString(localIp.c_str());
+        stmt.addString(localIp_.c_str());
         stmt.addUInt8(uint8(GetLocaleByName(_localizationName)));
         stmt.addUInt8(OS);
         stmt.addUInt32(accId);
@@ -1039,7 +1046,7 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 }
 
                 // Show offline state for unsupported client builds and locked realms (1.x clients not support locked state show)
-                if (!ok_build || !(i->second.requiredPermissionMask & accountPermissionMask))
+                if (!ok_build || !(i->second.requiredPermissionMask & accountPermissionMask_))
                     realmflags = RealmFlags(realmflags | REALM_FLAG_OFFLINE);
 
                 pkt << uint32(i->second.icon);              // realm type
@@ -1087,7 +1094,7 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 if (!buildInfo)
                     buildInfo = &i->second.realmBuildInfo;
 
-                uint8 lock = (i->second.requiredPermissionMask & accountPermissionMask) ? 0 : 1;
+                uint8 lock = (i->second.requiredPermissionMask & accountPermissionMask_) ? 0 : 1;
 
                 RealmFlags realmFlags = i->second.realmflags;
 

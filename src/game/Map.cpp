@@ -1513,6 +1513,10 @@ void Map::ScriptsProcess()
                 }
 
                 source->SetFlag(step.script->datalong, step.script->datalong2);
+
+                if (source->GetTypeId() == TYPEID_UNIT && step.script->datalong == UNIT_NPC_FLAGS)
+                    ((Creature *)source)->ResetGossipOptions();
+
                 break;
             case SCRIPT_COMMAND_FLAG_REMOVE:
                 if (!source)
@@ -1528,6 +1532,10 @@ void Map::ScriptsProcess()
                 }
 
                 source->RemoveFlag(step.script->datalong, step.script->datalong2);
+
+                if (source->GetTypeId() == TYPEID_UNIT && step.script->datalong == UNIT_NPC_FLAGS)
+                    ((Creature *)source)->ResetGossipOptions();
+
                 break;
 
             case SCRIPT_COMMAND_TELEPORT_TO:
@@ -2048,6 +2056,21 @@ void Map::ScriptsProcess()
                 case 0: break; //return false not remove corpse
                 case 1: ((Creature*)source)->RemoveCorpse(); break;
                 }
+                break;
+            }
+            case SCRIPT_COMMAND_SET_INST_DATA:
+            {
+                if (!source)
+                    break;
+
+                InstanceData* pInst = (InstanceData*)((WorldObject*)source)->GetInstanceData();
+                if (!pInst)
+                {
+                    sLog.outLog(LOG_DEFAULT, "ERROR: SCRIPT_COMMAND_SET_INST_DATA %d attempt to set instance data without instance script.", step.script->id);
+                    return;
+                }
+
+                pInst->SetData(step.script->datalong, step.script->datalong2);
                 break;
             }
 
@@ -2599,6 +2622,12 @@ Creature * Map::GetCreature(uint64 guid, float x, float y)
     }
 
     return NULL;
+}
+
+
+Creature * Map::GetCreatureById(uint32 id, GetCreatureGuidType type)
+{
+    return GetCreature(GetCreatureGUID(id, type));
 }
 
 Creature * Map::GetCreatureOrPet(uint64 guid)

@@ -130,31 +130,48 @@ bool Spell_arcane_torrent(Unit* caster, std::list<Unit*> &, SpellCastTargets con
     return true;
 }
 
-bool Spell_throw_glaive(Unit* pCaster, std::list<Unit*> &unitList, SpellCastTargets const& targets, SpellEntry const *pSpell, uint32 effect_index)
+bool Spell_strong_fetish(Unit *caster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
 {
-    if (effect_index != 0)
+    if (caster->GetTypeId() != TYPEID_PLAYER)
         return true;
 
-    if (unitList.empty())
-        return true;
-
-    Unit* target = NULL;
-    for (std::list<Unit*>::iterator it = unitList.begin(); it != unitList.end(); ++it)
+    if (Player* player = caster->ToPlayer())
     {
-        if (!(*it)->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
+        if (player->GetQuestStatus(10544) == QUEST_STATUS_INCOMPLETE)
         {
-            target = *it;
-            break;
+            switch (player->GetAreaId())
+            {
+                case 3773:
+                    player->SummonCreature(21446, player->GetPositionX()+(rand()%4), player->GetPositionY()+(rand()%4), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                    return true;
+                    break;
+                case 3776:
+                    player->SummonCreature(21452, player->GetPositionX()+(rand()%4), player->GetPositionY()+(rand()%4), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000);
+                    return true;
+                    break;
+            }
         }
+        return false;
     }
 
-    unitList.clear();
+    return true;
+}
 
-    if (target)
+bool Spell_coax_marmot(Unit *caster, Unit* pUnit, Item* pItem, GameObject* pGameObject, SpellEntry const *pSpell, uint32 effectIndex)
+{
+    if (caster->GetTypeId() != TYPEID_PLAYER)
+        return true;
+
+    if (Player* player = caster->ToPlayer())
     {
-        target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
-        unitList.push_back(target);
+        if (player->GetQuestStatus(10720) == QUEST_STATUS_INCOMPLETE)
+        {
+            if (Creature* marmot = GetClosestCreatureWithEntry(player, 22189, 15.0f))
+                player->CastSpell(marmot, 530, true); // not the correct spell, workaround
+        }
+        return false;
     }
+
     return true;
 }
 
@@ -183,7 +200,12 @@ void AddSC_spell_scripts()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "spell_throw_glaive";
-    newscript->pSpellTargetMap = &Spell_throw_glaive;
+    newscript->Name = "strong_fetish";
+    newscript->pSpellHandleEffect = &Spell_strong_fetish;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "coax_marmot";
+    newscript->pSpellHandleEffect = &Spell_coax_marmot;
     newscript->RegisterSelf();
 }

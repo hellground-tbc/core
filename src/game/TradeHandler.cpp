@@ -204,7 +204,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
                 }
 
-                sLog.outLog(LOG_MAIL, "Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                sLog.outLog(LOG_TRADE, "Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                     _player->GetName(),_player->GetSession()->GetAccountId(),
                     myItems[i]->GetProto()->Name1,myItems[i]->GetEntry(),myItems[i]->GetCount(),
                     _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
@@ -224,7 +224,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                         _player->GetName(),_player->GetSession()->GetAccountId());
                 }
 
-                sLog.outLog(LOG_MAIL, "Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                sLog.outLog(LOG_TRADE, "Player %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                     _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
                     hisItems[i]->GetProto()->Name1,hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
                     _player->GetName(),_player->GetSession()->GetAccountId());
@@ -445,14 +445,14 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 
         if (_player->tradeGold > 0)
         {
-            sLog.outLog(LOG_MAIL, "Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+            sLog.outLog(LOG_TRADE, "Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
                 _player->GetName(),_player->GetSession()->GetAccountId(),
                 _player->tradeGold,
                 _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId());
         }
         if (_player->pTrader->tradeGold > 0)
         {
-            sLog.outLog(LOG_MAIL, "Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+            sLog.outLog(LOG_TRADE, "Player %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
                 _player->pTrader->GetName(),_player->pTrader->GetSession()->GetAccountId(),
                 _player->pTrader->tradeGold,
                 _player->GetName(),_player->GetSession()->GetAccountId());

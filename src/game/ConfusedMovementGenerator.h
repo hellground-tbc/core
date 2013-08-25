@@ -48,6 +48,7 @@ class HELLGROUND_EXPORT ConfusedMovementGenerator : public MovementGeneratorMedi
         void _generateMovement(UNIT &unit);
 
         TimeTrackerSmall _nextMoveTime;
+
         Position _randomPosition[MAX_RANDOM_POINTS+1];
 };
 

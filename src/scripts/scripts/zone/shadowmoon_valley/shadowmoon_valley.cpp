@@ -168,39 +168,45 @@ CreatureAI* GetAI_mob_azaloth(Creature *_creature)
 #define SPELL_NETHER_BREATH             38467
 
 #define SAY_JUST_EATEN                  -1000222
+#define GO_FLAYER_CARCASS               185155
 
-struct mob_mature_netherwing_drakeAI : public ScriptedAI
+struct mob_mature_netherwing_drakeAI : public npc_escortAI
 {
-    mob_mature_netherwing_drakeAI(Creature* c) : ScriptedAI(c)
-    {
-        PlayerGUID = 0;
-    }
+    mob_mature_netherwing_drakeAI(Creature* creature) : npc_escortAI(creature) {}
 
-    uint64 PlayerGUID;
-
-    bool IsEating;
-    bool Evade;
-
-    uint32 ResetTimer;
     uint32 CastTimer;
-    uint32 EatTimer;
 
     void Reset()
     {
-        IsEating = false;
-        Evade = false;
-
-        ResetTimer = 120000;
-        EatTimer = 5000;
         CastTimer = 5000;
     }
 
-    void MoveInLineOfSight(Unit* who)
+    void WaypointReached(uint32 i)
     {
-        if(m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-            return;
+        switch(i)
+        {
+            case 0:
+                if (GameObject* go = GetClosestGameObjectWithEntry(me, GO_FLAYER_CARCASS, INTERACTION_DISTANCE))
+                    me->SetFacingToObject(go);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
+                break;
+            case 1:
+                DoCast(me, SPELL_JUST_EATEN);
+                me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
+                DoScriptText(SAY_JUST_EATEN, m_creature);
+                if (GameObject* go = GetClosestGameObjectWithEntry(me, GO_FLAYER_CARCASS, INTERACTION_DISTANCE))
+                    go->Delete();
+                if (Player* player = GetPlayerForEscort())
+                    player->KilledMonster(22131, m_creature->GetGUID());
+                me->GetUnitStateMgr().PushAction(UNIT_ACTION_DOWAYPOINTS);
+                break;
+        }
+    }
 
-        ScriptedAI::MoveInLineOfSight(who);
+     void OnAuraRemove(Aura* aur, bool)
+    {
+        if(aur->GetId() == SPELL_JUST_EATEN)
+            me->setFaction(1824);
     }
 
     void SpellHit(Unit* caster, const SpellEntry* spell)
@@ -208,74 +214,45 @@ struct mob_mature_netherwing_drakeAI : public ScriptedAI
         if(!caster)
             return;
 
-        if(caster->GetTypeId() == TYPEID_PLAYER && spell->Id == SPELL_PLACE_CARCASS && !m_creature->HasAura(SPELL_JUST_EATEN, 0) && !PlayerGUID)
+        if(caster->GetTypeId() == TYPEID_PLAYER && spell->Id == SPELL_PLACE_CARCASS && !me->HasAura(SPELL_JUST_EATEN, 0))
         {
-            float PlayerX, PlayerY, PlayerZ;
-            caster->GetClosePoint(PlayerX, PlayerY, PlayerZ, m_creature->GetObjectSize());
-            m_creature->SetLevitate(true);
-            m_creature->GetMotionMaster()->MovePoint(1, PlayerX, PlayerY, PlayerZ);
-            PlayerGUID = caster->GetGUID();
-        }
-    }
-
-    void MovementInform(uint32 type, uint32 id)
-    {
-        if(type != POINT_MOTION_TYPE)
-            return;
-
-        if(id == 1)
-        {
-            IsEating = true;
-            EatTimer = 5000;
-            m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_ATTACKUNARMED);
-            m_creature->SetLevitate(false);
-        }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if(IsEating)
-            if(EatTimer < diff)
-        {
-            IsEating = false;
-            DoCast(m_creature, SPELL_JUST_EATEN);
-            m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-            DoScriptText(SAY_JUST_EATEN, m_creature);
-            if(PlayerGUID)
+            if (caster->ToPlayer()->GetQuestStatus(10804) == QUEST_STATUS_INCOMPLETE)
             {
-                Player* plr = Unit::GetPlayer(PlayerGUID);
-                if(plr && plr->GetQuestStatus(10804) == QUEST_STATUS_INCOMPLETE)
-                {
-                    plr->KilledMonster(22131, m_creature->GetGUID());
-                    Evade = true;
-                    PlayerGUID = 0;
-                }
+                float x, y, z;
+                caster->GetNearPoint(x, y, z, me->GetObjectSize());
+                AddWaypoint(0, x, y, z, 15000);
+                AddWaypoint(1, x+0.1f, y-0.1f, z, 1000);
+                me->GetRespawnCoord(x, y, z);
+                AddWaypoint(2, x, y, z, 5000);
+                ((npc_escortAI*)(me->AI()))->SetClearWaypoints(true);
+                ((npc_escortAI*)(me->AI()))->SetDespawnAtEnd(false);
+                ((npc_escortAI*)(me->AI()))->SetDespawnAtFar(false);
+                me->setFaction(35);
+                me->GetUnitStateMgr().DropAction(UNIT_ACTION_DOWAYPOINTS);
+                Start(false, true, caster->GetGUID());
             }
-        }else EatTimer -= diff;
+        }
+    }
 
-        if(Evade)
-            if(ResetTimer < diff)
-            {
-                EnterEvadeMode();
-                return;
-            }else ResetTimer -= diff;
-
-        if(!UpdateVictim())
+    void UpdateEscortAI(const uint32 diff)
+    {
+        if (!UpdateVictim())
             return;
 
-        if(CastTimer < diff)
+        if (CastTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_NETHER_BREATH);
+            DoCast(me->getVictim(), SPELL_NETHER_BREATH);
             CastTimer = 5000;
-        }else CastTimer -= diff;
+        }
+        else CastTimer -= diff;
 
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_mob_mature_netherwing_drake(Creature *_creature)
+CreatureAI* GetAI_mob_mature_netherwing_drake(Creature* creature)
 {
-    return new mob_mature_netherwing_drakeAI(_creature);
+    return new mob_mature_netherwing_drakeAI(creature);
 }
 
 /*###
@@ -442,7 +419,7 @@ struct mob_dragonmaw_peonAI : public ScriptedAI
 
             Tapped = true;
             float x, y, z;
-            caster->GetClosePoint(x, y, z, m_creature->GetObjectSize());
+            caster->GetNearPoint(x, y, z, m_creature->GetObjectSize());
 
             m_creature->SetWalk(false);
             m_creature->GetMotionMaster()->MovePoint(1, x, y, z);
@@ -1770,6 +1747,7 @@ bool GOQuestAccept_GO_crystal_prison(Player* plr, GameObject* go, Quest const* q
 
         if(Illidan && !(((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->EventStarted))
         {
+            ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->Reset();
             ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->PlayerGUID = plr->GetGUID();
             ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->LiveCount = 0;
             ((npc_lord_illidan_stormrageAI*)((Creature*)Illidan)->AI())->EventStarted=true;
@@ -2503,7 +2481,6 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
     uint64 HeartGUID;
 
     bool landed;
-    bool flying;
     bool felfire;
 
     void Reset()
@@ -2520,44 +2497,22 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
         Fear_Timer = 20000;
         Deathcoil_Timer = 8000;
 
+        m_creature->GetMotionMaster()->Initialize();
+        m_creature->SetLevitate(true);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        //m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
+        //this waypoints are to far away from home and npc resets during travel
+        m_creature->GetMotionMaster()->MovePoint( -3247, 284, 187, 0);
+        landed = false;
+
         Unit* trigger = FindCreature(22096, 100, m_creature);
-        if(trigger)
-        {
-            if(trigger->isAlive())
-            {
-                m_creature->GetMotionMaster()->Initialize();
-                m_creature->SetLevitate(true);
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
-                landed = false;
-                flying = false;
-            }
-            else
-            {
-                me->SetWalk(true);
-                m_creature->SetSpeed(MOVE_RUN, 1.4);
-                m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
-            }
-        }
-    }
-
-    void EnterCombat(Unit *who)
-    {
-        if(!flying)
-            return;
-    }
-
-    void MoveInLineOfSight(Unit *who)
-    {
-        if(!flying)
-            return;
+        if (trigger && !trigger->isAlive())
+            ((Creature*)trigger)->Respawn();
     }
 
     void AttackStart(Unit* who)
     {
-        if(!flying)
-            return;
-        else if (m_creature->Attack(who, true))
+        if (m_creature->Attack(who, true))
         {
             m_creature->AddThreat(who, 0.0f);
             m_creature->SetInCombatWith(who);
@@ -2579,9 +2534,10 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
                 m_creature->GetMotionMaster()->Initialize();
                 m_creature->SetLevitate(true);
                 m_creature->GetMotionMaster()->MovePoint(1, -3247, 284, 138.1);
+                m_creature->SetHomePosition( -3247, 284, 138.1, 0);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                DoZoneInCombat(50);
                 landed = true;
-                flying = true;
                 felfire = false;
             }
             if(!m_creature->isInCombat() && landed && trigger && trigger->isAlive())
@@ -2602,47 +2558,48 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
         else
             Check_Timer -= diff;
 
-        if(flying && UpdateVictim())
+        if(!landed || !UpdateVictim())
+            return;
+
+        if(Shadowbolt_Timer < diff)
         {
-            if(Shadowbolt_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
-                Shadowbolt_Timer = 12000+rand()%6000;
-            }
-            else
-                Shadowbolt_Timer -= diff;
-
-            if(ShadowboltVoley_Timer < diff)
-            {
-                AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
-                ShadowboltVoley_Timer = 25000+rand()%15000;
-            }
-            else
-                ShadowboltVoley_Timer -= diff;
-
-            if(Fear_Timer < diff)
-            {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true))
-                    AddSpellToCast(target, SPELL_FEAR);
-                Fear_Timer = 10000+rand()%20000;
-            }
-            else
-                Fear_Timer -= diff;
-
-            if(Deathcoil_Timer < diff)
-            {
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictimGUID()))
-                    AddSpellToCast(target, SPELL_DEATHCOIL);
-                else
-                    AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);
-                Deathcoil_Timer = 15000+rand()%30000;
-            }
-            else
-                Deathcoil_Timer -= diff;
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
+            Shadowbolt_Timer = 12000+rand()%6000;
         }
+        else
+            Shadowbolt_Timer -= diff;
 
+        if(ShadowboltVoley_Timer < diff)
+        {
+            AddSpellToCast(m_creature->getVictim(), SPELL_SHADOWBOLT);
+            ShadowboltVoley_Timer = 25000+rand()%15000;
+        }
+        else
+            ShadowboltVoley_Timer -= diff;
+
+        if(Fear_Timer < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true))
+                AddSpellToCast(target, SPELL_FEAR);
+            Fear_Timer = 10000+rand()%20000;
+        }
+        else
+            Fear_Timer -= diff;
+
+        if(Deathcoil_Timer < diff)
+        {
+            if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 30.0, true, m_creature->getVictimGUID()))
+                AddSpellToCast(target, SPELL_DEATHCOIL);
+            else
+                AddSpellToCast(m_creature->getVictim(), SPELL_DEATHCOIL);
+            Deathcoil_Timer = 15000+rand()%30000;
+        }
+        else
+            Deathcoil_Timer -= diff;
+       
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
+
     }
 };
 

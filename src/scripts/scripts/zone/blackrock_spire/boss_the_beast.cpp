@@ -22,6 +22,7 @@ SDCategory: Blackrock Spire
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_blackrock_spire.h"
 
 #define SPELL_FLAMEBREAK            16785
 #define SPELL_IMMOLATE              20294
@@ -29,7 +30,12 @@ EndScriptData */
 
 struct boss_thebeastAI : public ScriptedAI
 {
-    boss_thebeastAI(Creature *c) : ScriptedAI(c) {}
+    boss_thebeastAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance* pInstance;
 
     uint32 Flamebreak_Timer;
     uint32 Immolate_Timer;
@@ -42,6 +48,7 @@ struct boss_thebeastAI : public ScriptedAI
         Immolate_Timer = 3000;
         TerrifyingRoar_Timer = 23000;
         checkTimer = 3000;
+        pInstance->SetData(DATA_THE_BEAST, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
@@ -55,6 +62,13 @@ struct boss_thebeastAI : public ScriptedAI
 
             EnterEvadeMode();
         }
+        pInstance->SetData(DATA_THE_BEAST, IN_PROGRESS);
+    }
+
+    void JustDied(Unit * killer)
+    {
+        if (pInstance)
+            pInstance->SetData(DATA_THE_BEAST, DONE);
     }
 
     void UpdateAI(const uint32 diff)

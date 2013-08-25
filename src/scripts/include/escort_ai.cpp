@@ -32,7 +32,8 @@ npc_escortAI::npc_escortAI(Creature* pCreature) : ScriptedAI(pCreature),
     QuestForEscort(NULL),
     CanInstantRespawn(false),
     CanReturnToStart(false),
-    ScriptWP(false)
+    ScriptWP(false),
+    ClearWaypoints(false)
 {}
 
 void npc_escortAI::AttackStart(Unit* pWho)
@@ -42,12 +43,14 @@ void npc_escortAI::AttackStart(Unit* pWho)
 
     if (me->Attack(pWho, true))
     {
-        //stop movement and attack the target && set the correct wp
-        //if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-        //    CurrentWP = ReachedLastWP;
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE && !HasEscortState(STATE_ESCORT_INCOMBAT))
+            AddEscortState(STATE_ESCORT_INCOMBAT);
 
         if (IsCombatMovement())
+        {
+            me->StopMoving();
             me->GetMotionMaster()->MoveChase(pWho);
+        }
     }
 }
 
@@ -177,7 +180,6 @@ void npc_escortAI::EnterEvadeMode()
 
     if (HasEscortState(STATE_ESCORT_ESCORTING))
     {
-        AddEscortState(STATE_ESCORT_RETURNING);
         ReturnToLastPoint();
     }
     else
@@ -217,7 +219,7 @@ bool npc_escortAI::IsPlayerOrGroupInRange()
 void npc_escortAI::UpdateAI(const uint32 uiDiff)
 {
     //Waypoint Updating
-    if (HasEscortState(STATE_ESCORT_ESCORTING) && !me->getVictim() && WPWaitTimer && !HasEscortState(STATE_ESCORT_RETURNING))
+    if (HasEscortState(STATE_ESCORT_ESCORTING) && !me->isInCombat() && WPWaitTimer && !HasEscortState(STATE_ESCORT_INCOMBAT))
     {
         if (WPWaitTimer <= uiDiff)
         {
@@ -251,6 +253,13 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
                 }
                 else
                 {
+                    if (ClearWaypoints)
+                    {
+                        WaypointList.clear();
+                        RemoveEscortState(STATE_ESCORT_ESCORTING);
+                        ScriptWP = false;
+                    }
+
                     debug_log("TSCR: EscortAI reached end of waypoints with Despawn off");
 
                     return;
@@ -272,7 +281,7 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
     }
 
     //Check if player or any member of his group is within range
-    if (HasEscortState(STATE_ESCORT_ESCORTING) && PlayerGUID && !me->getVictim() && !HasEscortState(STATE_ESCORT_RETURNING))
+    if (HasEscortState(STATE_ESCORT_ESCORTING) && PlayerGUID && !me->isInCombat() && !HasEscortState(STATE_ESCORT_INCOMBAT))
     {
         if (PlayerCheckTimer < uiDiff)
         {
@@ -310,7 +319,7 @@ void npc_escortAI::UpdateEscortAI(const uint32 uiDiff)
 
 void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
 {
-    if (uiMoveType != POINT_MOTION_TYPE || !HasEscortState(STATE_ESCORT_ESCORTING))
+    if (uiMoveType != POINT_MOTION_TYPE || !HasEscortState(STATE_ESCORT_ESCORTING) || me->isInCombat())
         return;
 
     //Combat start position reached, continue waypoint movement
@@ -324,7 +333,7 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
             me->SetWalk(true);
 
         me->GetUnitStateMgr().InitDefaults(false);
-        RemoveEscortState(STATE_ESCORT_RETURNING);
+        RemoveEscortState(STATE_ESCORT_INCOMBAT);
 
         if (!WPWaitTimer)
             WPWaitTimer = 1;
@@ -334,7 +343,6 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
         debug_log("TSCR: EscortAI has returned to original home location and will continue from beginning of waypoint list.");
 
         CurrentWP = WaypointList.begin();
-        ReachedLastWP = WaypointList.begin();
         WPWaitTimer = 1;
     }
     else
@@ -352,7 +360,8 @@ void npc_escortAI::MovementInform(uint32 uiMoveType, uint32 uiPointId)
         WaypointReached(CurrentWP->id);
 
         WPWaitTimer = CurrentWP->WaitTimeMs + 1;
-        ReachedLastWP = CurrentWP++;
+
+        ++CurrentWP;
     }
 }
 
@@ -362,16 +371,7 @@ void npc_escortAI::AddWaypoint(uint32 id, float x, float y, float z, uint32 Wait
 
     WaypointList.push_back(t);
 
-    // i think SD2 no longer uses this function
     ScriptWP = true;
-    /*PointMovement wp;
-    wp.CreatureEntry = me->GetEntry();
-    wp.PointId = id;
-    wp.m_fX = x;
-    wp.m_fY = y;
-    wp.m_fZ = z;
-    wp.WaitTime = WaitTimeMs;
-    PointMovementMap[wp.CreatureEntry].push_back(wp);*/
 }
 
 void npc_escortAI::FillPointMovementListForCreature()

@@ -332,22 +332,22 @@ bool GOUse_go_manaforge_control_console(Player* player, GameObject* go)
         case 3726:                                          //b'naar
             if ((player->GetQuestStatus(10299) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10329) == QUEST_STATUS_INCOMPLETE) &&
                 player->HasItemCount(29366,1))
-                manaforge = player->SummonCreature(ENTRY_BNAAR_C_CONSOLE,2918.95,4189.98,161.88,0.34,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
+                manaforge = go->SummonCreature(ENTRY_BNAAR_C_CONSOLE,2918.95,4189.98,161.88,0.34,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
             break;
         case 3730:                                          //coruu
             if ((player->GetQuestStatus(10321) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10330) == QUEST_STATUS_INCOMPLETE) &&
                 player->HasItemCount(29396,1))
-                manaforge = player->SummonCreature(ENTRY_CORUU_C_CONSOLE,2426.77,2750.38,133.24,2.14,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
+                manaforge = go->SummonCreature(ENTRY_CORUU_C_CONSOLE,2426.77,2750.38,133.24,2.14,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
             break;
         case 3734:                                          //duro
             if ((player->GetQuestStatus(10322) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10338) == QUEST_STATUS_INCOMPLETE) &&
                 player->HasItemCount(29397,1))
-                manaforge = player->SummonCreature(ENTRY_DURO_C_CONSOLE,2976.48,2183.29,163.20,1.85,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
+                manaforge = go->SummonCreature(ENTRY_DURO_C_CONSOLE,2976.48,2183.29,163.20,1.85,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
             break;
         case 3722:                                          //ara
             if ((player->GetQuestStatus(10323) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(10365) == QUEST_STATUS_INCOMPLETE) &&
                 player->HasItemCount(29411,1))
-                manaforge = player->SummonCreature(ENTRY_ARA_C_CONSOLE,4013.71,4028.76,192.10,1.25,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
+                manaforge = go->SummonCreature(ENTRY_ARA_C_CONSOLE,4013.71,4028.76,192.10,1.25,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,125000);
             break;
     }
 
@@ -1214,8 +1214,16 @@ CreatureAI* GetAI_mob_epextraction(Creature* creature)
     return new mob_epextractionAI (creature);
 }
 
-#define BOOM_BOT_TARGET 20392
-#define BOOM_BOT 19692
+/*######
+## npc_dr_boom
+######*/
+
+enum
+{
+    THROW_DYNAMITE    = 35276,
+    BOOM_BOT          = 19692,
+    BOOM_BOT_TARGET   = 20392
+};
 
 struct mob_dr_boomAI : public ScriptedAI
 {
@@ -1252,7 +1260,7 @@ struct mob_dr_boomAI : public ScriptedAI
             else
                 Reset();
 
-            SummonTimer = 3000;
+            SummonTimer = 2000;
         }
         else
             SummonTimer -= diff;
@@ -1260,15 +1268,15 @@ struct mob_dr_boomAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        if (!me->IsWithinDistInMap(me->getVictim(), 30.0f))
+        if (!me->IsWithinDistInMap(me->getVictim(), 23.0f))
         {
             EnterEvadeMode();
             return;
         }
 
-        if (me->isAttackReady())
+        if (me->isAttackReady() && me->IsWithinDistInMap(me->getVictim(), 12.2f))
         {
-            DoCast(me->getVictim(), 35276, true);
+            DoCast(me->getVictim(), THROW_DYNAMITE, true);
             me->resetAttackTimer();
         }
     }
@@ -1279,22 +1287,33 @@ CreatureAI* GetAI_mob_dr_boom(Creature* creature)
     return new mob_dr_boomAI (creature);
 }
 
+/*######
+## mob_boom_bot
+######*/
+
+#define    SPELL_BOOM    35132 
+
 struct mob_boom_botAI : public ScriptedAI
 {
     mob_boom_botAI(Creature* creature) : ScriptedAI(creature) {}
 
-    void Reset() {}
+    void Reset()
+    {
+        me->SetWalk(true);
+    }
 
     void EnterCombat(Unit* who) { return; }
+    void AttackedBy(Unit* who) { return; }
+    void AttackStart(Unit* who) { return; }
 
     void MovementInform(uint32 type, uint32 id)
     {
         if (type != POINT_MOTION_TYPE)
             return;
 
-        DoCast(me, 35132, true);    //proper Boom spell
-        me->Kill(me, false);
-        me->RemoveCorpse();
+        DoCast(me, SPELL_BOOM, true);
+        me->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+        me->ForcedDespawn(2000);
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -1302,20 +1321,12 @@ struct mob_boom_botAI : public ScriptedAI
         if (!who->isCharmedOwnedByPlayerOrPlayer())
             return;
 
-        if (me->IsWithinDistInMap(who, 6.0f, false))
+        if (me->IsWithinDistInMap(who, 1.0f, false))
         {
-            DoCast(me, 35132, true);    //proper Boom spell
-            me->Kill(me, false);
-            me->RemoveCorpse();
+            DoCast(me, SPELL_BOOM, true);
+            me->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+            me->ForcedDespawn(2000);
         }
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        if (!UpdateVictim())
-            return;
-
-        DoMeleeAttackIfReady();
     }
 };
 
@@ -1500,7 +1511,7 @@ struct npc_scrapped_reaverAI : public ScriptedAI
         float angle = RAND(2.3f, 3.4f, 4.8f);
         float x, y, z;
 
-        me->GetNearPoint(me, x, y, z, 0.0f, 35.0f, angle);
+        me->GetNearPoint( x, y, z, 0.0f, 35.0f, angle);
         me->SummonCreature(NPC_ZAXXIS, x, y, z+2, me->GetAngle(x, y), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 7000);
     }
 
@@ -2566,7 +2577,7 @@ struct npc_dimensiusAI : public ScriptedAI
         }
 
         float fx, fy, fz;
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 20.0f, fangle);
+        me->GetNearPoint( fx, fy, fz, 0.0f, 20.0f, fangle);
         me->SummonCreature(NPC_SPAWN, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_DEAD_DESPAWN, 5000);
     }
 
@@ -2891,7 +2902,7 @@ CreatureAI* GetAI_npc_energy_ball(Creature* creature)
 # npc_trader_marid
 ######*/
 
-#define GOSSIP_ITEM_GO         "I am prepared to offer a deal!"
+#define GOSSIP_ITEM_GO1         "I am prepared to offer a deal!"
 
 enum
 {
@@ -2917,9 +2928,9 @@ struct npc_trader_maridAI : public npc_escortAI
     void EnterCombat(Unit* who)
     {
         float fx, fy, fz;
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 4.0f, 0.0f);
+        me->GetNearPoint( fx, fy, fz, 0.0f, 4.0f, 0.0f);
         me->SummonCreature(NPC_BODYGUARD, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-        me->GetNearPoint(me, fx, fy, fz, 0.0f, 4.0f, M_PI);
+        me->GetNearPoint( fx, fy, fz, 0.0f, 4.0f, M_PI);
         me->SummonCreature(NPC_BODYGUARD, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
     }
 
@@ -2964,7 +2975,7 @@ bool GossipHello_npc_trader_marid(Player* player, Creature* creature)
 {
     if( player->GetQuestStatus(QUEST_TROUBLE) == QUEST_STATUS_INCOMPLETE)
     {
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_ITEM_GO1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         player->SEND_GOSSIP_MENU(creature->GetNpcTextId(), creature->GetGUID());
     }
     else
@@ -3022,9 +3033,9 @@ struct npc_doctor_vomisaAI : public ScriptedAI
             CheckTimer = 5000;
 
             float fx, fy, fz;
-            me->GetNearPoint(me, fx, fy, fz, 0.0f, 5.0f, 4.7f);
+            me->GetNearPoint( fx, fy, fz, 0.0f, 5.0f, 4.7f);
             me->SummonCreature(NPC_X6000, fx, fy, fz, me->GetAngle(fx, fy), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 61000);
-            me->GetNearPoint(me, fx, fy, fz, 0.0f, 56.0f, 4.7f);
+            me->GetNearPoint( fx, fy, fz, 0.0f, 56.0f, 4.7f);
             me->SummonCreature(NPC_NEGATRON, fx, fy, fz, 2.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 50000);
         }
     }

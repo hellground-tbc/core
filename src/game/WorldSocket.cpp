@@ -621,6 +621,12 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
 
                 if (m_Session != NULL)
                 {
+                    if((_os == "CHA") && !IsChatOpcode(opcode))
+                    {
+                        sLog.outLog(LOG_WARDEN, "Chat Client for account %u send illegal opcode %u",m_Session->GetAccountId(),opcode);
+                        if (sWorld.getConfig(CONFIG_WARDEN_KICK))
+                            m_Session->KickPlayer();
+                    }
                     // OK ,give the packet to WorldSession
                     aptr.release();
                     // WARNINIG here we call it with locks held.
@@ -912,7 +918,9 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     AccountsDatabase.PExecute("INSERT INTO account_login VALUES ('%u', UNIX_TIMESTAMP(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
 
-    m_Session->InitWarden(&K, operatingSystem);
+    // Initialize Warden system only if it is enabled by config
+    if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
+		m_Session->InitWarden(&K, operatingSystem);
 
     // In case needed sometime the second arg is in microseconds 1 000 000 = 1 sec
     ACE_OS::sleep(ACE_Time_Value(0, 10000));
@@ -1049,4 +1057,33 @@ bool WorldSocket::iFlushPacketQueue()
     }
 
     return haveone;
+}
+
+bool WorldSocket::IsChatOpcode(uint16 opcode)
+{
+    switch(opcode)
+    {
+    case CMSG_CHAR_ENUM:            //0x037
+    case CMSG_PLAYER_LOGIN:         //0x03D
+    case CMSG_LOGOUT_REQUEST:       //0x04B
+    case CMSG_NAME_QUERY:           //0x050
+    case CMSG_ITEM_QUERY_SINGLE:    //0x056
+    case CMSG_QUEST_QUERY:          //0x05C
+    case CMSG_WHO:                  //0x062
+    case CMSG_CONTACT_LIST:         //0x066
+    case CMSG_ADD_FRIEND:           //0x069
+    case CMSG_DEL_FRIEND:           //0x06A
+    case CMSG_ADD_IGNORE:           //0x06C
+    case CMSG_DEL_IGNORE:           //0x06D
+    case CMSG_GUILD_ROSTER:         //0x089
+    case CMSG_MESSAGECHAT:          //0x095
+    case CMSG_JOIN_CHANNEL:         //0x097
+    case CMSG_LEAVE_CHANNEL:        //0x098
+    case CMSG_CHANNEL_LIST:         //0x09A
+    case CMSG_EMOTE:                //0x102
+    case CMSG_TEXT_EMOTE:           //0x104
+    case CMSG_ITEM_NAME_QUERY:      //0x2C4
+        return true;
+    }
+    return false;
 }

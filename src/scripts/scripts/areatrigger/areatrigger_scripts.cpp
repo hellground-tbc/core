@@ -118,6 +118,18 @@ bool AreaTrigger_at_nats_landing(Player* player, AreaTriggerEntry const* trigger
     return false;
 }
 
+/*#####
+## at_eredar_twins
+#####*/
+
+bool AreaTrigger_at_eredar_twins(Player* player, AreaTriggerEntry const* trigger)
+{
+    Unit* Alythess = FindCreature(25166, 50, player);
+    if(Alythess)
+        Alythess->ToCreature()->AI()->SetData(1, 1);    // just to trigger intro event
+    return false;
+}
+
 void AddSC_areatrigger_scripts()
 {
     Script *newscript;
@@ -137,5 +149,9 @@ void AddSC_areatrigger_scripts()
     newscript->pAreaTrigger = &AreaTrigger_at_nats_landing;
     newscript->RegisterSelf();
 
+    newscript = new Script;
+    newscript->Name = "at_eredar_twins";
+    newscript->pAreaTrigger = &AreaTrigger_at_eredar_twins;
+    newscript->RegisterSelf();
 }
 

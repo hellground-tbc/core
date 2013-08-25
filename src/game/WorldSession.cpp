@@ -45,6 +45,7 @@
 #include "SocialMgr.h"
 #include "WardenWin.h"
 #include "WardenMac.h"
+#include "WardenChat.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -176,11 +177,16 @@ void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
     SaveOpcodesDisableFlags();
 }
 
+void WorldSession::SaveAccountFlags(uint32 accountId, uint64 flags)
+{
+    SqlStatementID saveAccountFlags;
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE id = ?");
+    stmt.PExecute(flags, accountId);
+}
+
 void WorldSession::SaveAccountFlags()
 {
-    static SqlStatementID saveAccountFlags;
-    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE account_id = ?");
-    stmt.PExecute(m_accFlags, GetAccountId());
+    SaveAccountFlags(GetAccountId(), m_accFlags);
 }
 
 void WorldSession::AddAccountFlag(AccountFlags flag)
@@ -247,13 +253,13 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
     if (!new_packet)
         return;
 
-    OpcodesCooldown::iterator opItr = _opcodesCooldown.find(new_packet->GetOpcode());
-    if (opItr != _opcodesCooldown.end())
+    auto i = _opcodesCooldown.find(new_packet->GetOpcode());
+    if (i != _opcodesCooldown.end())
     {
-        if (opItr->second.Passed())
-            opItr->second.Reset();
-        else
+        if (!i->second.Passed())
             return;
+
+        i->second.SetCurrent(0);
     }
 
     _recvQueue.add(new_packet);
@@ -546,6 +552,11 @@ void WorldSession::LogoutPlayer(bool Save)
                 _player->BuildPlayerRepop();
                 _player->RepopAtGraveyard();
             }
+            else
+            {
+                 _player->RemoveSpellsCausingAura(SPELL_AURA_MOD_UNATTACKABLE);
+                 _player->RemoveCharmAuras();
+            }
         }
 
         //drop a flag if player is carrying it
@@ -770,7 +781,11 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
             break;
         case CLIENT_OS_OSX:
 //            m_Warden = (WardenBase*)new WardenMac();
+            sLog.outLog(LOG_WARDEN, "Client %u got OSX client operating system (%i)", GetAccountId(), OperatingSystem);
             break;
+		case CLIENT_OS_CHAT:
+			m_Warden = (WardenBase*)new WardenChat();
+			break;
         default:
             sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
             if (sWorld.getConfig(CONFIG_WARDEN_KICK))

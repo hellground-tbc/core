@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Mekgineer_Steamrigger
-SD%Complete: 60
-SDComment: Mechanics' interrrupt heal doesn't work very well, also a proper movement needs to be implemented -> summon further away and move towards target to repair.
+SD%Complete: 90
+SDComment:
 SDCategory: Coilfang Resevoir, The Steamvault
 EndScriptData */
 
@@ -42,16 +42,26 @@ EndContentData */
 #define SPELL_SUPER_SHRINK_RAY      31485
 #define SPELL_SAW_BLADE             31486
 #define SPELL_ELECTRIFIED_NET       35107
-#define H_SPELL_ENRAGE              1                       //corrent enrage spell not known
+#define H_SPELL_ENRAGE              41924
 
 #define ENTRY_STREAMRIGGER_MECHANIC 17951
+
+struct SumonPos
+{
+    float x, y, z;
+};
+
+static SumonPos Pos[]=
+{
+    {-339.99f, -118.05f, -7.827f}
+};
 
 struct boss_mekgineer_steamriggerAI : public ScriptedAI
 {
     boss_mekgineer_steamriggerAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance *pInstance;
@@ -60,6 +70,7 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
     uint32 Shrink_Timer;
     uint32 Saw_Blade_Timer;
     uint32 Electrified_Net_Timer;
+    uint32 Berserk_timer;
     bool Summon75;
     bool Summon50;
     bool Summon25;
@@ -69,18 +80,19 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
         Shrink_Timer = 20000;
         Saw_Blade_Timer = 15000;
         Electrified_Net_Timer = 10000;
+        Berserk_timer = 300000;
 
         Summon75 = false;
         Summon50 = false;
         Summon25 = false;
 
-        if (pInstance && m_creature->isAlive())
+        if (pInstance && me->isAlive())
             pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, NOT_STARTED);
     }
 
     void JustDied(Unit* Killer)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance)
             pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, DONE);
@@ -88,30 +100,30 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
 
     void KilledUnit(Unit* victim)
     {
-        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), m_creature);
+        DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+        DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
         if (pInstance)
             pInstance->SetData(TYPE_MEKGINEER_STEAMRIGGER, IN_PROGRESS);
     }
 
-    //no known summon spells exist
     void SummonMechanichs()
     {
-        DoScriptText(SAY_MECHANICS, m_creature);
+        DoScriptText(SAY_MECHANICS, me);
 
-        DoSpawnCreature(ENTRY_STREAMRIGGER_MECHANIC,5,5,0,0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
-        DoSpawnCreature(ENTRY_STREAMRIGGER_MECHANIC,-5,5,0,0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
-        DoSpawnCreature(ENTRY_STREAMRIGGER_MECHANIC,-5,-5,0,0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+        me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+        me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+        me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
 
-        if (rand()%2)
-            DoSpawnCreature(ENTRY_STREAMRIGGER_MECHANIC,5,-7,0,0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
-        if (rand()%2)
-            DoSpawnCreature(ENTRY_STREAMRIGGER_MECHANIC,7,-5,0,0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+        if (roll_chance_i(30))
+            me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
+
+        if (roll_chance_i(10))
+            me->SummonCreature(ENTRY_STREAMRIGGER_MECHANIC, Pos[0].x,Pos[0].y ,Pos[0].z , 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 240000);
     }
 
     void UpdateAI(const uint32 diff)
@@ -121,30 +133,38 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
 
         if (Shrink_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SUPER_SHRINK_RAY);
+            DoCast(me->getVictim(),SPELL_SUPER_SHRINK_RAY);
             Shrink_Timer = 20000;
         }else Shrink_Timer -= diff;
 
         if (Saw_Blade_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, m_creature->getVictimGUID()))
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, me->getVictimGUID()))
                 DoCast(target,SPELL_SAW_BLADE);
             else
-                DoCast(m_creature->getVictim(),SPELL_SAW_BLADE);
+                DoCast(me->getVictim(),SPELL_SAW_BLADE);
 
             Saw_Blade_Timer = 15000;
         } else Saw_Blade_Timer -= diff;
 
         if (Electrified_Net_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_ELECTRIFIED_NET);
+            DoCast(me->getVictim(),SPELL_ELECTRIFIED_NET);
             Electrified_Net_Timer = 10000;
         }
         else Electrified_Net_Timer -= diff;
 
+        if (Berserk_timer < diff)
+        {
+            if (HeroicMode)
+                DoCast(me, H_SPELL_ENRAGE);
+
+            Berserk_timer = 300000+rand()%10000;
+        }else Berserk_timer -=diff;
+
         if (!Summon75)
         {
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 75)
+            if ((me->GetHealth()*100 / me->GetMaxHealth()) < 75)
             {
                 SummonMechanichs();
                 Summon75 = true;
@@ -153,7 +173,7 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
 
         if (!Summon50)
         {
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
+            if ((me->GetHealth()*100 / me->GetMaxHealth()) < 50)
             {
                 SummonMechanichs();
                 Summon50 = true;
@@ -162,7 +182,7 @@ struct boss_mekgineer_steamriggerAI : public ScriptedAI
 
         if (!Summon25)
         {
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25)
+            if ((me->GetHealth()*100 / me->GetMaxHealth()) < 25)
             {
                 SummonMechanichs();
                 Summon25 = true;
@@ -179,18 +199,16 @@ CreatureAI* GetAI_boss_mekgineer_steamrigger(Creature *_Creature)
 }
 
 #define SPELL_DISPEL_MAGIC          17201
-#define SPELL_REPAIR                31532
-#define H_SPELL_REPAIR              37936
+#define SPELL_REPAIR (HeroicMode ? 37936 : 31532)
 
-#define MAX_REPAIR_RANGE            (13.0f)                 //we should be at least at this range for repair
-#define MIN_REPAIR_RANGE            (7.0f)                  //we can stop movement at this range to repair but not required
+#define MAX_REPAIR_RANGE            (13.0f)
 
 struct mob_steamrigger_mechanicAI : public ScriptedAI
 {
     mob_steamrigger_mechanicAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -200,7 +218,13 @@ struct mob_steamrigger_mechanicAI : public ScriptedAI
 
     void Reset()
     {
-        Repair_Timer = irand(500, 2500);
+        Repair_Timer = irand(1500, 2500);
+
+        if (Unit* Mekgineer = Unit::GetUnit((*me), pInstance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
+        {
+            float angle = RAND(0.0f, 1.5f, 3.1f, 4.6f);
+            me->GetMotionMaster()->MoveFollow(Mekgineer, 7.0f, angle);
+        }
     }
 
     void MoveInLineOfSight(Unit* who)
@@ -209,7 +233,14 @@ struct mob_steamrigger_mechanicAI : public ScriptedAI
         return;
     }
 
-    void EnterCombat(Unit *who) { }
+    void EnterCombat(Unit *who) {}
+    void AttackStart(Unit* who)
+    {
+        if (pInstance && pInstance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == IN_PROGRESS)
+            return;
+
+        ScriptedAI::AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -217,20 +248,16 @@ struct mob_steamrigger_mechanicAI : public ScriptedAI
         {
             if (pInstance && pInstance->GetData64(DATA_MEKGINEERSTEAMRIGGER) && pInstance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == IN_PROGRESS)
             {
-                if (Unit* pMekgineer = Unit::GetUnit((*m_creature), pInstance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
+                if (Unit* Mekgineer = Unit::GetUnit((*me), pInstance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
                 {
-                    if (m_creature->IsWithinDistInMap(pMekgineer, MAX_REPAIR_RANGE))
+                    if (me->IsWithinDistInMap(Mekgineer, MAX_REPAIR_RANGE))
                     {
-                        DoCast(pMekgineer,HeroicMode ? H_SPELL_REPAIR : SPELL_REPAIR);                       
-                        Repair_Timer = irand(1500, 3000);;
-                    }
-                    else
-                    {
-                        //m_creature->GetMotionMaster()->MovementExpired();
-                        //m_creature->GetMotionMaster()->MoveFollow(pMekgineer,0,0);
+                        DoCast(Mekgineer, SPELL_REPAIR);
+
+                        Repair_Timer = irand(1500, 3000);
                     }
                 }
-            }else Repair_Timer = irand(1500, 3000);;
+            }else Repair_Timer = irand(1500, 3000);
         }else Repair_Timer -= diff;
 
         if (!UpdateVictim())

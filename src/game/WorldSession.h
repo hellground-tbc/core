@@ -70,6 +70,7 @@ enum AccountFlags
     ACC_BLIZZLIKE_RATES     = 0x0008,   // enables fully blizzlike rates for account. ex: XP, QXP etc
     ACC_HIDE_BONES          = 0x0010,   // client won't show bones created from corpses
     ACC_DISABLED_BGANN      = 0x0020,   // BG start announce will be disabled for this account
+    ACC_DISABLED_BROADCAST  = 0x0040,   // Broadcast accounces will be disabled for this account
 };
 
 enum PartyOperation
@@ -178,6 +179,7 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         uint32 RecordVerboseTimeDiff(bool reset);
 
         uint64 GetPermissions() const { return m_permissions; }
+		bool HasPermissions(uint64 perms) const { return m_permissions & perms; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
         char const* GetPlayerName() const;
@@ -187,6 +189,8 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         uint8 Expansion() const { return m_expansion; }
 
         void SaveAccountFlags();
+        static void SaveAccountFlags(uint32 accountId, uint64 flags);
+
         bool IsAccountFlagged(AccountFlags flag) const { return m_accFlags & flag; }
         void AddAccountFlag(AccountFlags flag);
         void RemoveAccountFlag(AccountFlags flag);

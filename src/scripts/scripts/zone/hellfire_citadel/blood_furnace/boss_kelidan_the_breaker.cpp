@@ -69,7 +69,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
 {
     boss_kelidan_the_breakerAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
         for(int i=0; i<5; ++i) Channelers[i] = 0;
     }
 
@@ -94,12 +94,18 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         check_Timer = 0;
         Firenova = false;
         addYell = false;
-        SummonChannelers();
+
+        if (pInstance)
+            pInstance->SetData(DATA_KELIDANEVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_WAKE, m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_KELIDANEVENT, IN_PROGRESS);
+
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(true);
         DoStartMovement(who);
@@ -173,8 +179,21 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DIE, m_creature);
-       if(pInstance)
-           pInstance->SetData(DATA_KELIDANEVENT, DONE);
+
+        if(pInstance)
+            pInstance->SetData(DATA_KELIDANEVENT, DONE);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (id == 1)
+        {
+            SummonChannelers();
+            DoCast(m_creature,SPELL_EVOCATION);
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -184,7 +203,11 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
             if(check_Timer < diff)
             {
                 if (!m_creature->IsNonMeleeSpellCasted(false))
-                    DoCast(m_creature,SPELL_EVOCATION);
+                {
+                    float x, y, z;
+                    me->GetRespawnCoord(x, y, z);
+                    me->GetMotionMaster()->MovePoint(1, x, y, z);
+                }
 
                 check_Timer = 5000;
             }
@@ -198,7 +221,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         {
             if (Firenova_Timer < diff)
             {
-                AddSpellToCast(m_creature,SPELL_FIRE_NOVA);
+                ForceSpellCast(me, SPELL_FIRE_NOVA, INTERRUPT_AND_CAST_INSTANTLY);
                 Firenova = false;
                 ShadowVolley_Timer = 2000;
             }
@@ -247,7 +270,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
             }
 
             BurningNova_Timer = urand(20000, 28000);
-            Firenova_Timer= 6500;
+            Firenova_Timer= 5000;
             Firenova = true;
         }
         else

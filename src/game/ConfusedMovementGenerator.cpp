@@ -69,7 +69,15 @@ bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
         uint32 nextMove = urand(0, MAX_RANDOM_POINTS-1);
 
         Movement::MoveSplineInit init(unit);
-        init.MoveTo(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
+
+        PathFinder path(&unit);
+        path.setPathLengthLimit(30.0f);
+        path.calculate(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
+        if (path.getPathType() & PATHFIND_NOPATH)
+            init.MoveTo(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
+        else
+            init.MovebyPath(path.getPath());
+
         init.SetWalk(true);
         init.Launch();
 

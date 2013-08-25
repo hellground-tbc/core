@@ -3020,7 +3020,8 @@ void boss_MedivhAI::SetOrientation(uint64 piece, ChessOrientation ori)
         if (tmpPiece)
         {
             pieceOri = tmpPiece->GetOrientation();
-
+            if (pieceOri <0)
+                pieceOri += 2* M_PI;
             if (pieceOri > ORI_N && pieceOri <= ORI_W)
             {
                 tmpN = pieceOri - ORI_N;

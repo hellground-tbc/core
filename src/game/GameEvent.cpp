@@ -1098,7 +1098,7 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
         case 0:                                             // disable
             break;
         case 1:                                             // announce events
-            sWorld.SendWorldText(LANG_EVENTMESSAGE, mGameEvent[event_id].description.c_str());
+            sWorld.SendWorldText(LANG_EVENTMESSAGE, 0, mGameEvent[event_id].description.c_str());
             break;
     }
 

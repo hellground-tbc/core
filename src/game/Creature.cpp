@@ -148,7 +148,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 }
 
 Creature::Creature() :
-Unit(), m_aggroRange(0.0),
+Unit(), m_aggroRange(0.0), m_ignoreSelection (false),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
 m_deathTimer(0), m_respawnTime(0), m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f),
 m_gossipOptionLoaded(false), m_isPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
@@ -159,6 +159,7 @@ m_tempSummon(false)
 {
     m_regenTimer = 2000;
     m_valuesCount = UNIT_END;
+    m_xpMod = 0;
 
     for (int i =0; i < CREATURE_MAX_SPELLS; ++i)
         m_spells[i] = 0;
@@ -570,6 +571,15 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 UpdateCharmAI();
                 NeedChangeAI = false;
                 IsAIEnabled = true;
+            }
+
+            if (!(isTotem() || isPet() || IsTempSummon() || IS_CREATURE_GUID(GetOwnerGUID()) && GetOwner()->ToCreature()->isTotem()) && GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() && 
+                GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
+                GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
+            {
+                uint32 distToHome = sWorld.getConfig(CONFIG_EVADE_HOMEDIST) * 3;
+                if (!IsWithinDistInMap(&homeLocation, distToHome))
+                    AI()->EnterEvadeMode();
             }
 
             if (!IsInEvadeMode() && IsAIEnabled)
@@ -1237,6 +1247,8 @@ void Creature::SetLootRecipient(Unit *unit)
 
     if (!unit)
     {
+        loot.RemoveSavedLootFromDB();
+
         m_lootRecipient = 0;
         m_playersAllowedToLoot.clear();
 
@@ -1379,6 +1391,8 @@ void Creature::SelectLevel(const CreatureInfo *cinfo)
     uint32 minhealth = std::min(cinfo->maxhealth, cinfo->minhealth);
     uint32 maxhealth = std::max(cinfo->maxhealth, cinfo->minhealth);
     uint32 health = uint32(healthmod * (minhealth + uint32(rellevel*(maxhealth - minhealth))));
+    if (health < 1)
+        health = 1;
 
     SetCreateHealth(health);
     SetMaxHealth(health);
@@ -1552,8 +1566,26 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
 
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
+    
+
+    if (CreatureInfo const* info = sObjectMgr.GetCreatureTemplate(data->id))
+        m_xpMod = info->xpMod;
+    else
+        m_xpMod = 0.0f;
 
     m_creatureData = data;
+
+    // check if it is rabbit day
+    if (isAlive() && sWorld.getConfig(CONFIG_RABBIT_DAY))
+    {
+        time_t rabbit_day = time_t(sWorld.getConfig(CONFIG_RABBIT_DAY));
+        tm rabbit_day_tm = *localtime(&rabbit_day);
+        tm now_tm = *localtime(&sWorld.GetGameTime());
+
+        if (now_tm.tm_mon == rabbit_day_tm.tm_mon && now_tm.tm_mday == rabbit_day_tm.tm_mday)
+            CastSpell(this, 10710 + urand(0, 2), true);
+    }
+
     return true;
 }
 
@@ -1696,6 +1728,7 @@ bool Creature::IsWithinSightDist(Unit const* u) const
 bool Creature::canStartAttack(Unit const* who) const
 {
     if (isCivilian()
+        || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE)
         || !who->isInAccessiblePlacefor (this)
         || (!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
         || !IsWithinDistInMap(who, GetAttackDistance(who)))
@@ -1779,6 +1812,9 @@ void Creature::setDeathState(DeathState s)
         //Dismiss group if is leader
         if (m_formation && m_formation->getLeader() == this)
             m_formation->FormationReset(true);
+
+        if (m_zoneScript)
+            m_zoneScript->OnCreatureDeath(this);
     }
 
     Unit::setDeathState(s);
@@ -1829,6 +1865,9 @@ void Creature::setDeathState(DeathState s)
 
         SetMeleeDamageSchool(SpellSchools(cinfo->dmgschool));
         LoadCreaturesAddon(true);
+
+        //reset map changes
+        GetMap()->CreatureRespawnRelocation(this);
     }
 }
 
@@ -2207,12 +2246,21 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if (sMapStore.LookupEntry(GetMapId())->IsDungeon())
         return false;
 
-    float AttackDist = GetAttackDistance(pVictim);
-    uint32 ThreatRadius = sWorld.getConfig(CONFIG_THREAT_RADIUS);
+    uint32 AttackDist = GetAttackDistance(pVictim);
 
-    float dist = (ThreatRadius > AttackDist ? ThreatRadius : AttackDist);
-    //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return !IsWithinDistInMap(&homeLocation, dist) || !pVictim->IsWithinDistInMap(&homeLocation, 1.5f*dist);
+    uint32 distToHome = std::max(AttackDist, sWorld.getConfig(CONFIG_EVADE_HOMEDIST));
+    uint32 distToTarget = std::max(AttackDist, sWorld.getConfig(CONFIG_EVADE_TARGETDIST));
+
+    if (!IsWithinDistInMap(&homeLocation, distToHome))
+        return true;
+
+    if (!IsWithinDistInMap(pVictim, distToTarget))
+        return true;
+
+    if (!pVictim->IsWithinDistInMap(&homeLocation, distToHome))
+        return true;
+
+    return  false;
 }
 
 CreatureDataAddon const* Creature::GetCreatureAddon() const
@@ -2336,9 +2384,9 @@ void Creature::_AddCreatureSpellCooldown(uint32 spell_id, time_t end_time)
     m_CreatureSpellCooldowns[spell_id] = end_time;
 }
 
-void Creature::_AddCreatureCategoryCooldown(uint32 category, time_t apply_time)
+void Creature::_AddCreatureCategoryCooldown(uint32 category, time_t end_time)
 {
-    m_CreatureCategoryCooldowns[category] = apply_time;
+    m_CreatureCategoryCooldowns[category] = end_time;
 }
 
 void Creature::AddCreatureSpellCooldown(uint32 spellid)
@@ -2348,11 +2396,23 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
         return;
 
     uint32 cooldown = SpellMgr::GetSpellRecoveryTime(spellInfo);
-    if (cooldown)
-        _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/1000);
+    uint32 CategoryCooldown = spellInfo->CategoryRecoveryTime;
 
-    if (spellInfo->Category)
-        _AddCreatureCategoryCooldown(spellInfo->Category, time(NULL));
+    if (isPet())
+        if (Unit* Owner = GetOwner())
+            if (Owner->GetTypeId() == TYPEID_PLAYER)
+            {
+                Owner->ToPlayer()->ApplySpellMod(spellid, SPELLMOD_COOLDOWN, CategoryCooldown);
+                if (CategoryCooldown < 0)
+                    CategoryCooldown = 0;
+                cooldown = CategoryCooldown;
+            }
+
+     if (cooldown)
+         _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/1000);
+
+     if (spellInfo->Category && CategoryCooldown)
+         _AddCreatureCategoryCooldown(spellInfo->Category, time(NULL) + CategoryCooldown/1000);
 }
 
 bool Creature::HasCategoryCooldown(uint32 spell_id) const
@@ -2362,7 +2422,7 @@ bool Creature::HasCategoryCooldown(uint32 spell_id) const
         return false;
 
     CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->Category);
-    return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / 1000)) > time(NULL));
+    return(itr != m_CreatureCategoryCooldowns.end() && itr->second > time(NULL));
 }
 
 bool Creature::HasSpellCooldown(uint32 spell_id) const

@@ -226,7 +226,7 @@ struct trigger_epic_staffAI : public TriggerAI
             for(int i = 0; i<3; i++)
             {
                 float x,y,z;
-                me->GetClosePoint(x,y,z, 0.0f, 7.0f, frand(0, 2*M_PI));
+                me->GetNearPoint(x,y,z, 0.0f, 7.0f, frand(0, 2*M_PI));
                 me->SummonCreature(NPC_SCOURGE_FOOTSOLDIER, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
             }
             Summon_Footsoldier_Timer = 20000;
@@ -238,13 +238,13 @@ struct trigger_epic_staffAI : public TriggerAI
             for(int i = 0; i < 9; i++)
             {
                 float x,y,z;
-                me->GetClosePoint(x,y,z, 0.0f, 6.0f, frand(0, 2*M_PI));
+                me->GetNearPoint(x,y,z, 0.0f, 6.0f, frand(0, 2*M_PI));
                 me->SummonCreature(NPC_INJURED_PEASANT, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 45000);
             }
             for(int i = 0; i < 3; i++)
             {
                 float x,y,z;
-                me->GetClosePoint(x,y,z, 0.0f, 6.0f, frand(0, 2*M_PI));
+                me->GetNearPoint(x,y,z, 0.0f, 6.0f, frand(0, 2*M_PI));
                 me->SummonCreature(NPC_PLAGUED_PEASANT, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 45000);
             }
             Summon_Timer = 40000;

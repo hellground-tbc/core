@@ -47,8 +47,18 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,              false,  NULL,                                           "", NULL }
     };
 
+    static ChatCommand accountAnnounceCommandTable[] =
+    {
+        { "battleground",   PERM_PLAYER,		false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
+        { "bg",             PERM_PLAYER,        false, &ChatHandler::HandleAccountBattleGroundAnnCommand,   "", NULL },
+        { "broadcast",      PERM_PLAYER,        false, &ChatHandler::HandleAccountAnnounceBroadcastCommand, "", NULL },
+        { "guild",          PERM_PLAYER,        false, &ChatHandler::HandleAccountGuildAnnToggleCommand,    "", NULL },
+        { NULL,             0,                  false,  NULL,                                               "", NULL }
+    };
+
     static ChatCommand accountCommandTable[] =
     {
+        { "announce",       PERM_PLAYER,    false,  NULL,                                           "", accountAnnounceCommandTable },
         { "create",         PERM_CONSOLE,   true,   &ChatHandler::HandleAccountCreateCommand,       "", NULL },
         { "bgann",          PERM_PLAYER,    false,  &ChatHandler::HandleAccountBattleGroundAnnCommand, "", NULL },
         { "delete",         PERM_CONSOLE,   true,   &ChatHandler::HandleAccountDeleteCommand,       "", NULL },
@@ -118,6 +128,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "events",         PERM_PLAYER,    true,   &ChatHandler::HandleServerEventsCommand,        "", NULL },
         { "motd",           PERM_PLAYER,    true,   &ChatHandler::HandleServerMotdCommand,          "", NULL },
         { "mute",           PERM_ADM,       true,   &ChatHandler::HandleServerMuteCommand,          "", NULL },
+        { "pvp",            PERM_PLAYER,    false,  &ChatHandler::HandleServerPVPCommand,           "", NULL },
         { "restart",        PERM_ADM,       true,   NULL,                                           "", serverRestartCommandTable },
         { "rollshutdown",   PERM_ADM,       true,   &ChatHandler::HandleServerRollShutDownCommand,  "", NULL},
         { "set",            PERM_ADM,       true,   NULL,                                           "", serverSetCommandTable },
@@ -507,6 +518,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "doaction",       PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcDoActionCommand,         "", NULL },
         { "enterevademode", PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcEnterEvadeModeCommand,   "", NULL },
         { "factionid",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFactionIdCommand,        "", NULL },
+        { "fieldflag",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFieldFlagCommand,        "", NULL },
         { "flag",           PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFlagCommand,             "", NULL },
         { "follow",         PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFollowCommand,           "", NULL },
         { "info",           PERM_PLAYER,    false,  &ChatHandler::HandleNpcInfoCommand,             "", NULL },
@@ -557,6 +569,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "grid",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectGridCommand,      "", NULL },
         { "move",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectMoveCommand,      "", NULL },
         { "near",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectNearCommand,      "", NULL },
+        { "reset",          PERM_GMT,		false,  &ChatHandler::HandleGameObjectResetCommand,      "", NULL },
         { "target",         PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectTargetCommand,    "", NULL },
         { "turn",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGameObjectTurnCommand,      "", NULL },
         { NULL,             0,              false,  NULL,                                           "", NULL }
@@ -1428,7 +1441,7 @@ GameTele const* ChatHandler::extractGameTeleFromLink(char* text)
     // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
     char* cId = extractKeyFromLink(text,"Htele");
     if (!cId)
-        return false;
+        return NULL;
 
     // id case (explicit or from shift link)
     if (cId[0] >= '0' || cId[0] >= '9')

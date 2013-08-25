@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_The_Maker
-SD%Complete: 80
-SDComment: Mind control no support
+SD%Complete: 85
+SDComment:
 SDCategory: Hellfire Citadel, Blood Furnace
 EndScriptData */
 
@@ -38,7 +38,10 @@ EndScriptData */
 
 struct boss_the_makerAI : public ScriptedAI
 {
-    boss_the_makerAI(Creature *c) : ScriptedAI(c){ pInstance = c->GetInstanceData(); }
+    boss_the_makerAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = c->GetInstanceData();
+    }
 
     uint32 AcidSpray_Timer;
     uint32 ExplodingBreaker_Timer;
@@ -53,11 +56,17 @@ struct boss_the_makerAI : public ScriptedAI
         ExplodingBreaker_Timer = 6000;
         Domination_Timer = 20000;
         Knockdown_Timer = 10000;
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAKEREVENT, NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
     {
         DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), m_creature);
+
+        if (pInstance)
+            pInstance->SetData(DATA_MAKEREVENT, IN_PROGRESS);
     }
 
     void KilledUnit(Unit* victim)
@@ -68,7 +77,9 @@ struct boss_the_makerAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DIE, m_creature);
-        pInstance->SetData(DATA_MAKEREVENT, DONE);
+        
+        if (pInstance)
+            pInstance->SetData(DATA_MAKEREVENT, DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -79,7 +90,7 @@ struct boss_the_makerAI : public ScriptedAI
         if (AcidSpray_Timer < diff)
         {
             AddSpellToCast(me->getVictim(), SPELL_ACID_SPRAY);
-            AcidSpray_Timer = 15000+rand()%8000;
+            AcidSpray_Timer = 35000+rand()%8000; // not the correct spell. why spam ?
         }
         else
             AcidSpray_Timer -=diff;

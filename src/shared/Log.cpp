@@ -54,7 +54,9 @@ const char* logToStr[LOG_MAX_FILES][3] =
     { "DiffLogFile",        "a", NULL },                // LOG_DIFF
     { "SessionDiffLogFile", "a", NULL },                // LOG_SESSION_DIFF
     { "CrashLogFile",       "a", NULL },                // LOG_CRASH
-    { "DBDiffFile",         "a", NULL }                 // LOG_DB_DIFF
+    { "DBDiffFile",         "a", NULL },                // LOG_DB_DIFF
+    { "ExpLogFile",         "a", NULL },                // LOG_EXP
+    { "TradeLogFile",       "a", NULL }                 // LOG_TRADE
 };
 
 Log::Log() : m_colored(false), m_includeTime(false), m_gmlog_per_account(false)

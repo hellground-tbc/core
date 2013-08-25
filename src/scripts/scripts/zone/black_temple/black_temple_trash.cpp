@@ -86,7 +86,7 @@ struct mob_aqueous_lordAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
-                    target->GetClosePoint(temp.coord_x, temp.coord_y, temp.coord_z, 15.0);
+                    target->GetNearPoint(temp.coord_x, temp.coord_y, temp.coord_z, 15.0);
                     Creature* Spawn = me->SummonCreature(NPC_AQUEOUS_SPAWN, temp.coord_x, temp.coord_y, temp.coord_z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                     Spawn->AI()->AttackStart(target);
                 }
@@ -1829,7 +1829,7 @@ struct mob_ashtongue_primalistAI : public ScriptedAI
                 AddSpellToCast(me->getVictim(), SPELL_SWEEPING_WING_CLIP);
 
                 float x, y, z;
-                me->GetClosePoint(x,y,z,0.0f, urand(10,15), frand(0.0f, 2*M_PI));
+                me->GetNearPoint(x,y,z,0.0f, urand(10,15), frand(0.0f, 2*M_PI));
                 me->GetMotionMaster()->MovePoint(1, x,y,z);
                 SweepingWingClip = 37000;
             }
@@ -4422,7 +4422,7 @@ struct mob_pristess_of_dementiaAI: public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                 {
-                    target->GetClosePoint(x, y, z, 5.0f);
+                    target->GetNearPoint(x, y, z, 5.0f);
                     me->SummonCreature(NPC_IMAGE_OF_DEMENTIA, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
                 }
             }

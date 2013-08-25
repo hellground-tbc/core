@@ -10,7 +10,6 @@ endif()
 include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared
   ${CMAKE_BINARY_DIR}/dep
-  ${CMAKE_BINARY_DIR}/dep/boost
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_BINARY_DIR}
   ${CMAKE_BINARY_DIR}/src/shared
@@ -48,7 +47,6 @@ endif()
 if(UNIX)
   target_link_libraries(${EXECUTABLE_NAME}
     ${MYSQL_LIBRARY}
-    ${Boost_REGEX_LIBRARY}
     ${OPENSSL_EXTRA_LIBRARIES}
   )
 endif()

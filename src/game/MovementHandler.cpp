@@ -114,7 +114,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (!GetPlayer()->GetMap()->Add(GetPlayer()))
     {
         // Teleport to previous place, if cannot be ported back TP to homebind place
-        GetPlayer()->SetDontMove(false);
         if (!GetPlayer()->TeleportTo(old_loc))
             GetPlayer()->TeleportToHomebind();
 
@@ -150,7 +149,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         if (!_player->InBattleGround())
         {
             // short preparations to continue flight
-            GetPlayer()->SetDontMove(false);
             FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
             flight->Reset(*GetPlayer());
             return;
@@ -198,8 +196,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
         GetPlayer()->m_temporaryUnsummonedPetNumber = 0;
     }
-
-    GetPlayer()->SetDontMove(false);
 }
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recv_data)
@@ -258,7 +254,7 @@ void WorldSession::HandleMoverRelocation(MovementInfo& movementInfo)
 
     if (Player *plMover = mover->ToPlayer())
     {
-        if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && !plMover->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !plMover->isGameMaster() && plMover->m_AC_timer == 0)
+        if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && !plMover->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !plMover->GetSession()->HasPermissions(PERM_GMT) && plMover->m_AC_timer == 0)
             sWorld.m_ac.execute(new ACRequest(plMover, plMover->m_movementInfo, movementInfo));
 
         if (movementInfo.HasMovementFlag(MOVEFLAG_ONTRANSPORT))

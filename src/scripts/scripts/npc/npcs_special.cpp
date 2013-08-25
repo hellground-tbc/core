@@ -38,6 +38,7 @@ npc_mojo                    100%    AI for companion Mojo (summoned by item: 339
 npc_master_omarion          100%    Master Craftsman Omarion, patterns menu
 npc_lorekeeper_lydros       100%    Dialogue (story) + add A Dull and Flat Elven Blade
 npc_crashin_thrashin_robot  100%    AI for Crashin' Thrashin' Robot from engineering
+npc_gnomish_flame_turret
 EndContentData */
 
 #include "precompiled.h"
@@ -1055,7 +1056,7 @@ struct npc_snake_trap_serpentsAI : public ScriptedAI
 
     Timer checkTimer;
 
-    void Reset()
+    void EnterCombat(Unit*)
     {
         if (roll_chance_f(66.0f))
         {
@@ -1074,7 +1075,7 @@ struct npc_snake_trap_serpentsAI : public ScriptedAI
         if (ScriptedAI::UpdateVictim())
             return true;
 
-        if (Unit* target = me->SelectNearbyTarget(15.0f))
+        if (Unit* target = me->SelectNearestTarget(5.0f))
             AttackStart(target);
 
         return me->getVictim();
@@ -1651,7 +1652,7 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
 
 struct npc_elemental_guardianAI : public ScriptedAI
 {
-    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_PASSIVE); }
+    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_DEFENSIVE); }
 
     uint32 m_checkTimer;
 
@@ -1690,8 +1691,6 @@ struct npc_elemental_guardianAI : public ScriptedAI
                     me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
                 }
             }
-            else
-                me->ForcedDespawn();
 
             m_checkTimer = 2000;
         }
@@ -2023,7 +2022,7 @@ struct npc_crashin_trashin_robotAI : public ScriptedAI
 
                 Creature * tmp = *(itr);
 
-                tmp->GetNearPoint(tmp, x, y, z, 0, 5.0f, frand(0.0f, M_PI*2));
+                tmp->GetNearPoint(x, y, z, 0, 5.0f, frand(0.0f, M_PI*2));
                 me->GetMotionMaster()->Clear();
                 me->GetMotionMaster()->MovePoint(0, x, y, z);
             }
@@ -2379,6 +2378,7 @@ enum MiniPetsInfo
 
     NPC_WILLY                   = 23231,
     SPELL_WILLY_SLEEP           = 40663,
+    SPELL_WILLY_TRIGGER         = 40619,
 
     NPC_DRAGON_KITE             = 25110,
     SPELL_DRAGON_KITE_LIGHTNING = 45197,
@@ -2509,6 +2509,11 @@ struct npc_small_pet_handlerAI : public ScriptedAI
                 AddSpellToCast(me->GetOwner(), SPELL_DRAGON_KITE_STRING);
                 break;
             }
+            case NPC_WILLY:
+            {
+                AddSpellToCast(me,SPELL_WILLY_TRIGGER);
+                break;
+            }
             default:
                 break;
         }
@@ -2591,56 +2596,34 @@ bool GossipSelect_npc_combatstop(Player* player, Creature* _Creature, uint32 sen
     return true; 
 }
 
-struct npc_resurrectAI : public ScriptedAI
+struct npc_resurrectAI : public Scripted_NoMovementAI
 {
-    npc_resurrectAI(Creature* c) : ScriptedAI(c) {}
+    npc_resurrectAI(Creature* c) : Scripted_NoMovementAI(c) {}
 
     TimeTrackerSmall timer;
 
-    void Reset()
+    void Reset() override
     {
-        me->setDeathState(DEAD);
-
-        me->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, me->GetGUID());
-        // aura
-        me->SetUInt32Value(UNIT_FIELD_AURA, SPELL_SPIRIT_HEAL_CHANNEL);
-        me->SetUInt32Value(UNIT_FIELD_AURAFLAGS, 0x00000009);
-        me->SetUInt32Value(UNIT_FIELD_AURALEVELS, 0x0000003C);
-        me->SetUInt32Value(UNIT_FIELD_AURAAPPLICATIONS, 0x000000FF);
-        // casting visual effect
-        me->SetUInt32Value(UNIT_CHANNEL_SPELL, SPELL_SPIRIT_HEAL_CHANNEL);
-        // correct cast speed
-        me->SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
-
+        me->SetReactState(REACT_PASSIVE);
         timer.Reset(2000);
     }
 
-    void AttackStart(Unit* who) {}
-    void EnterCombat(Unit *who) {}
+    void MoveInLineOfSight(Unit *who) override {}
+    void AttackStart(Unit* who) override {}
+    void EnterCombat(Unit *who) override {}
 
-    struct PlayerRemove
-    {
-        PlayerRemove(Creature* c) : me(c) {}
-
-        Creature* me;
-        bool operator()(Player* plr)
-        {
-            return plr->isAlive() || me->IsHostileTo(plr);
-        }
-    };
-
-    void UpdateAI(const uint32 uiDiff)
+    void UpdateAI(const uint32 uiDiff) override
     {
         timer.Update(uiDiff);
         if (timer.Passed())
         {
             std::list<Player*> players;
-            Hellground::AnyPlayerInObjectRangeCheck check(me, 15.0f);
+            Hellground::AnyPlayerInObjectRangeCheck check(me, 15.0f, false);
             Hellground::ObjectListSearcher<Player, Hellground::AnyPlayerInObjectRangeCheck> searcher(players, check);
 
             Cell::VisitAllObjects(me, searcher, 15.0f);
 
-            players.remove_if(PlayerRemove(me));
+            players.remove_if([this](Player* plr) -> bool { return me->IsHostileTo(plr); });
 
             while (!players.empty())
             {
@@ -2659,6 +2642,385 @@ struct npc_resurrectAI : public ScriptedAI
 CreatureAI* GetAI_npc_resurrect(Creature* pCreature)
 {
     return new npc_resurrectAI(pCreature);
+}
+
+enum TargetDummySpells
+{
+    TARGET_DUMMY_PASSIVE = 4044,
+    TARGET_DUMMY_SPAWN_EFFECT = 4507,
+
+    ADVANCED_TARGET_DUMMY_PASSIVE = 4048,
+    ADVANCED_TARGET_DUMMY_SPAWN_EFFECT = 4092,
+
+    MASTER_TARGET_DUMMY_PASSIVE = 19809,
+};
+
+enum TargetDummyEntry
+{
+    TARGET_DUMMY = 2673,
+    ADV_TARGET_DUMMY = 2674,
+    MASTER_TARGET_DUMMY = 12426
+};
+
+struct npc_target_dummyAI : public Scripted_NoMovementAI
+{
+    npc_target_dummyAI(Creature* c) : Scripted_NoMovementAI(c) {}
+
+    void Reset() override
+    {
+        me->SetReactState(REACT_PASSIVE);
+
+        ClearCastQueue();
+
+        TargetDummySpells spawneffect;
+        TargetDummySpells passive;
+
+        switch (me->GetEntry())
+        {
+            case TARGET_DUMMY:
+            {
+                spawneffect = TARGET_DUMMY_SPAWN_EFFECT;
+                passive = TARGET_DUMMY_PASSIVE;
+                break;
+            }
+            case ADV_TARGET_DUMMY:
+            {
+                spawneffect = ADVANCED_TARGET_DUMMY_SPAWN_EFFECT;
+                passive = ADVANCED_TARGET_DUMMY_PASSIVE;
+                break;
+            }
+            case MASTER_TARGET_DUMMY:
+            {
+                spawneffect = ADVANCED_TARGET_DUMMY_SPAWN_EFFECT;
+                passive = MASTER_TARGET_DUMMY_PASSIVE;
+                break;
+            }
+        }
+
+        AddSpellToCast(passive, CAST_SELF);
+        AddSpellToCast(spawneffect, CAST_SELF);
+    }
+
+    void AttackStart(Unit* who) override {}
+    void EnterCombat(Unit *who) override {}
+    void MoveInLineOfSight(Unit* who) override {}
+
+    void UpdateAI(const uint32 diff) override
+    {
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_npc_target_dummy(Creature* pCreature)
+{
+    return new npc_target_dummyAI(pCreature);
+}
+
+enum ExplosiveSheepExplosion
+{
+    EXPLOSIVE_SHEEP_EXPLOSION = 4050,
+    HIGH_EXPLOSIVE_SHEEP_EXPLOSION = 44279,
+};
+
+enum ExplosiveSheepEntry
+{
+    EXPLOSIVE_SHEEP = 2675,
+    HIGH_EXPLOSIVE_SHEEP = 24715
+};
+
+struct npc_explosive_sheepAI : public ScriptedAI
+{
+    npc_explosive_sheepAI(Creature* c) : ScriptedAI(c) {}
+
+    TimeTrackerSmall explosionTimer;
+
+    void JustRespawned() override
+    {
+        explosionTimer.Reset(10000);
+    }
+
+    void Reset() override
+    {
+        me->SetReactState(REACT_PASSIVE);
+
+        ClearCastQueue();
+    }
+
+    void AttackStart(Unit* who) override {}
+    void EnterCombat(Unit *who) override {}
+    void MoveInLineOfSight(Unit* who) override {}
+
+    void UpdateAI(const uint32 diff) override
+    {
+        explosionTimer.Update(diff);
+        if (explosionTimer.Passed())
+        {
+            ForceSpellCast(me->GetEntry() == EXPLOSIVE_SHEEP ? EXPLOSIVE_SHEEP_EXPLOSION : HIGH_EXPLOSIVE_SHEEP_EXPLOSION, CAST_SELF, INTERRUPT_AND_CAST, true);
+            me->ForcedDespawn();
+            return;
+        }
+
+        if (me->getVictim() == nullptr)
+        {
+            if (Unit* target = me->SelectNearestTarget())
+                ScriptedAI::AttackStart(target);
+        }
+        else
+        {
+            if (me->IsWithinDistInMap(me->getVictim(), 2.0f))
+            {
+                ForceSpellCast(me->GetEntry() == EXPLOSIVE_SHEEP ? EXPLOSIVE_SHEEP_EXPLOSION : HIGH_EXPLOSIVE_SHEEP_EXPLOSION, CAST_SELF, INTERRUPT_AND_CAST, true);
+                me->ForcedDespawn();
+                return;
+            }
+        }
+
+        CastNextSpellIfAnyAndReady();
+    }
+};
+
+CreatureAI* GetAI_npc_explosive_sheep(Creature* pCreature)
+{
+    return new npc_explosive_sheepAI(pCreature);
+}
+
+/*######
+## Meridith the Mermaiden
+######*/
+
+#define GOSSIP_HELLO "Thank you for your help"
+#define LOVE_SONG_QUEST_ID 8599
+#define SIREN_SONG 25678
+
+bool GossipHello_npc_meridith_the_mermaiden(Player *player, Creature *creature)
+{
+    if( player->GetQuestStatus(LOVE_SONG_QUEST_ID) == QUEST_STATUS_COMPLETE )
+    {
+        player->ADD_GOSSIP_ITEM(0, GOSSIP_HELLO, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    }
+    player->PlayerTalkClass->SendGossipMenu(7916,creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_meridith_the_mermaiden(Player *player, Creature * creature, uint32 sender, uint32 action )
+{
+    if(action == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        creature->Say("Farewell!", LANG_UNIVERSAL, 0);
+        creature->CastSpell(player, SIREN_SONG, false);
+        player->CLOSE_GOSSIP_MENU();
+    }
+    return true;
+}
+
+// npc_gnomish_flame_turret
+#define SPELL_GNOMISH_FLAME_TURRET 43050
+
+struct npc_gnomish_flame_turret : public Scripted_NoMovementAI
+{
+    npc_gnomish_flame_turret(Creature* c) : Scripted_NoMovementAI(c)
+    {
+        me->SetAggroRange(10.0f); // radius of spell
+    }
+    Timer CheckTimer;
+
+    void Reset() 
+    {
+        SetAutocast(SPELL_GNOMISH_FLAME_TURRET, 1000);
+        StartAutocast();
+        me->SetReactState(REACT_AGGRESSIVE);
+        CheckTimer.Reset(2000);
+    }
+
+    bool UpdateVictim()
+    {
+        if (ScriptedAI::UpdateVictim())
+            return true;
+
+        if (Unit* target = me->SelectNearestTarget(10.0f))
+            AttackStart(target);
+
+        return me->getVictim();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        CheckTimer.Update(diff);
+        if (CheckTimer.Passed())
+        {
+            Unit* owner = me->GetOwner();
+            if (!owner || !owner->IsInMap(me))
+            {
+                me->ForcedDespawn();
+                return;
+            }
+            CheckTimer.Reset(2000);
+        }
+
+        if (!UpdateVictim())
+            return;
+
+        CastNextSpellIfAnyAndReady(diff);
+    }
+};
+
+CreatureAI* GetAI_npc_gnomish_flame_turret(Creature *_Creature)
+{
+    return new npc_gnomish_flame_turret(_Creature);
+}
+
+/*######
+ # dummy park control
+ ######*/
+#define DUMMY_PARK_ON "Start dummy park event"
+#define DUMMY_PARK_OFF "Stop dummy park event"
+#define DUMMY_PARK_OBJECTS 16
+#define DUMMY_PARK_NPCS 6
+
+float dummyparkstorage[3] = {-1899, 5607, -33};
+
+float dummyparkobjectlocs[DUMMY_PARK_OBJECTS][3] = {
+    {-1945.59, 5559.70, -12.428},
+    {-1917.56, 5571.52, -12.428},
+    {-1937.18, 5542.79, -12.428},
+    {-1940.55, 5554.45, -12.427},
+    {-1915.94, 5564.6, -12.427},
+    {-1909.43, 5556.58, -12.428},
+    {-1934.38, 5539.64, -12.428},
+    {-1932.02, 5536.95, -12.427},
+    {-1932.02, 5536.95, -11.184},
+    {-1908.28, 5552.2, -12.426},
+    {-1907.54, 5548.75, -12.428},
+    {-1907.54, 5548.75, -11.185},
+    {-1930.43, 5535.41, -12.428},
+    {-1907.17, 5546.7, -12.426},
+    {-1933.35, 5570.6, -12.427},
+    {-1933.36, 5570.6, -12.427}
+};
+
+uint32 dummyparkobjects[DUMMY_PARK_OBJECTS][2] ={
+    {13228578,184380},
+    {13228592,184381},
+    {13231451,173223},
+    {13228737,173223},
+    {13228733,173223},
+    {13231535,173223},
+    {13229544,187225},
+    {13231413,183992},
+    {13231420,186738},
+    {13229522,187225},
+    {13231299,183992},
+    {13231325,186738},
+    {13266292,173223},
+    {13266474,173223},
+    {13266692,183319},
+    {13246219,180423}
+};
+
+float dummyparknpclocs[DUMMY_PARK_NPCS][3] ={
+    {-1919.98, 5551.57, -12.426},
+    {-1926.75, 5548.27, -12.426},
+    {-1928.70, 5560.42, -12.428},
+    {-1913.47, 5560.28, -12.428},
+    {-1933.36, 5570.6, -12.427},
+    {-1938.83, 5548.67, -12.427}
+};
+
+uint32 dummyparknpcs[DUMMY_PARK_NPCS][2] ={
+    {29312,66700},
+    {29337,66701},
+    {29437,66702},
+    {29461,66703},
+    {133929,66704},
+    {60062,66709}
+};
+
+bool GossipHello_npc_dummy_park(Player *player, Creature *creature)
+{
+    if (player->isGameMaster())
+    {
+        player->ADD_GOSSIP_ITEM(0, DUMMY_PARK_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(0, DUMMY_PARK_OFF, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
+    }
+    return true;
+}
+
+bool GossipSelect_npc_dummy_park(Player *player, Creature *creature, uint32 sender, uint32 action)
+{
+    if (player->isGameMaster())
+    {
+        if(action == GOSSIP_ACTION_INFO_DEF+1)
+        {
+            creature->Whisper("Preparing dummy park!",player->GetGUID());
+            GameObject* gob;
+            for (uint8 i = 0 ; i < DUMMY_PARK_OBJECTS ; i++)
+            {
+                gob = NULL;
+                gob = player->GetMap()->GetGameObject(MAKE_NEW_GUID(dummyparkobjects[i][0], dummyparkobjects[i][1], HIGHGUID_GAMEOBJECT));
+                if (gob)
+                {
+                    Map* map = gob->GetMap();
+                    gob->Relocate(dummyparkobjectlocs[i][0], dummyparkobjectlocs[i][1], dummyparkobjectlocs[i][2], gob->GetOrientation());
+                    gob->SetFloatValue(GAMEOBJECT_POS_X, dummyparkobjectlocs[i][0]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Y, dummyparkobjectlocs[i][1]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Z, dummyparkobjectlocs[i][2]);
+                    gob->SaveToDB();
+                    gob->Refresh();
+                }
+            }
+            Creature* mCreature;
+            for (uint8 i = 0 ; i < DUMMY_PARK_NPCS ; i++)
+            {
+
+                mCreature = NULL;
+                mCreature = player->GetMap()->GetCreature(MAKE_NEW_GUID(dummyparknpcs[i][0],dummyparknpcs[i][1],HIGHGUID_UNIT));
+                if (mCreature)
+                {
+                    Map* map = mCreature->GetMap();
+                    mCreature->SetHomePosition(dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], mCreature->GetOrientation());
+                    map->CreatureRelocation(mCreature,dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], mCreature->GetOrientation());
+                }
+                GameDataDatabase.PExecuteLog("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'",
+                    dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], dummyparknpcs[i][0]);
+            }
+        }
+        else if(action == GOSSIP_ACTION_INFO_DEF+2)
+        {
+            creature->Whisper("Removing dummy park!",player->GetGUID());
+            GameObject* gob;
+            for (uint8 i = 0 ; i < DUMMY_PARK_OBJECTS ; i++)
+            {
+                gob = NULL;
+                gob = player->GetMap()->GetGameObject(MAKE_NEW_GUID(dummyparkobjects[i][0], dummyparkobjects[i][1], HIGHGUID_GAMEOBJECT));
+                if (gob)
+                {
+                    Map* map = gob->GetMap();
+                    gob->Relocate(dummyparkstorage[0], dummyparkstorage[1], dummyparkstorage[2], gob->GetOrientation());
+                    gob->SetFloatValue(GAMEOBJECT_POS_X, dummyparkstorage[0]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Y, dummyparkstorage[1]);
+                    gob->SetFloatValue(GAMEOBJECT_POS_Z, dummyparkstorage[2]);
+                    gob->SaveToDB();
+                    gob->Refresh();
+                }
+            }
+            Creature* mCreature;
+            for (uint8 i = 0 ; i < DUMMY_PARK_NPCS ; i++)
+            {
+                mCreature = NULL;
+                mCreature = player->GetMap()->GetCreature(MAKE_NEW_GUID(dummyparknpcs[i][0],dummyparknpcs[i][1],HIGHGUID_UNIT));
+                if (mCreature)
+                {
+                    Map* map = mCreature->GetMap();
+                    mCreature->SetHomePosition(dummyparknpclocs[i][0], dummyparknpclocs[i][1], dummyparknpclocs[i][2], mCreature->GetOrientation());
+                    map->CreatureRelocation(mCreature,dummyparkstorage[0], dummyparkstorage[1], dummyparkstorage[2], mCreature->GetOrientation());
+                }
+                GameDataDatabase.PExecuteLog("UPDATE creature SET position_x = '%f', position_y = '%f', position_z = '%f' WHERE guid = '%u'",
+                    dummyparkstorage[0], dummyparkstorage[1], dummyparkstorage[2], dummyparknpcs[i][0]);
+            }
+        }
+    }
+    return true;
 }
 
 void AddSC_npcs_special()
@@ -2839,5 +3201,32 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_resurrect";
     newscript->GetAI = &GetAI_npc_resurrect;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_target_dummy";
+    newscript->GetAI = &GetAI_npc_target_dummy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_explosive_sheep";
+    newscript->GetAI = &GetAI_npc_explosive_sheep;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_meridith_the_mermaiden";
+    newscript->pGossipHello = &GossipHello_npc_meridith_the_mermaiden;
+    newscript->pGossipSelect = &GossipSelect_npc_meridith_the_mermaiden;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_gnomish_flame_turret";
+    newscript->GetAI = &GetAI_npc_gnomish_flame_turret;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_dummy_park_controller";
+    newscript->pGossipHello =  &GossipHello_npc_dummy_park;
+    newscript->pGossipSelect = &GossipSelect_npc_dummy_park;
     newscript->RegisterSelf();
 }

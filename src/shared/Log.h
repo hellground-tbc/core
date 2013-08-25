@@ -74,6 +74,8 @@ enum LogNames
     LOG_SESSION_DIFF    = 14,
     LOG_CRASH           = 15,
     LOG_DB_DIFF         = 16,
+    LOG_EXP             = 17,
+    LOG_TRADE           = 18,
 
     LOG_MAX_FILES
 };
@@ -128,6 +130,8 @@ class Log
         bool IsOutDebug() const { return m_logLevel > 2 || (m_logFileLevel > 2 && logFile[LOG_DEFAULT]); }
         bool IsOutCharDump() const { return m_charLog_Dump; }
         bool IsIncludeTime() const { return m_includeTime; }
+
+        bool IsLogEnabled(LogNames log) const { return logFile[log] != NULL; }
 
     private:
         FILE* openLogFile(LogNames log);

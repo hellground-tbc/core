@@ -75,7 +75,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(T &owner)
         }
 
         // to at _offset distance from target and _angle from target facing
-        _target->GetClosePoint(x, y, z, owner.GetObjectSize(), _offset, _angle);
+        _target->GetNearPoint(x, y, z, owner.GetObjectSize(), _offset, _angle);
     }
 
     if (!_path)

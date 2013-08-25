@@ -289,6 +289,7 @@ struct Loot
     void FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner, bool personal);
 
     void saveLootToDB(Player *owner);
+    void RemoveSavedLootFromDB();
 
     bool IsPlayerAllowedToLoot(Player *player, WorldObject *object);
 
@@ -312,6 +313,8 @@ struct Loot
     void RemoveQuestLoot(Player* player);
 
     private:
+        void RemoveSavedLootFromDB(Creature *pCreature);
+
         void FillNotNormalLootFor(Player* player);
         QuestItemList* FillFFALoot(Player* player);
         QuestItemList* FillQuestLoot(Player* player);

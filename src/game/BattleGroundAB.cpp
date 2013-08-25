@@ -492,6 +492,7 @@ void BattleGroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
         m_NodeTimers[node] = BG_AB_FLAG_CAPTURING_TIME;
         sprintf(buf, GetTrinityString(LANG_BG_AB_NODE_CLAIMED), _GetNodeName(node), (teamIndex == 0) ? GetTrinityString(LANG_BG_AB_ALLY) : GetTrinityString(LANG_BG_AB_HORDE));
         sound = SOUND_NODE_CLAIMED;
+        SendObjectiveComplete(BG_AB_CREDITMARKER[node], teamIndex,BG_AB_NodePositions[node][1],BG_AB_NodePositions[node][2]);
     }
     // If node is contested
     else if ((m_Nodes[node] == BG_AB_NODE_STATUS_ALLY_CONTESTED) || (m_Nodes[node] == BG_AB_NODE_STATUS_HORDE_CONTESTED))
@@ -509,6 +510,7 @@ void BattleGroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
             _SendNodeUpdate(node);
             m_NodeTimers[node] = BG_AB_FLAG_CAPTURING_TIME;
             sprintf(buf, GetTrinityString(LANG_BG_AB_NODE_ASSAULTED), _GetNodeName(node));
+            SendObjectiveComplete(BG_AB_CREDITMARKER[node], teamIndex,BG_AB_NodePositions[node][1],BG_AB_NodePositions[node][2]);
         }
         // If contested, change back to occupied
         else
@@ -542,6 +544,7 @@ void BattleGroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
         m_NodeTimers[node] = BG_AB_FLAG_CAPTURING_TIME;
         sprintf(buf, GetTrinityString(LANG_BG_AB_NODE_ASSAULTED), _GetNodeName(node));
         sound = (teamIndex == 0) ? SOUND_NODE_ASSAULTED_ALLIANCE : SOUND_NODE_ASSAULTED_HORDE;
+        SendObjectiveComplete(BG_AB_CREDITMARKER[node], teamIndex,BG_AB_NodePositions[node][1],BG_AB_NodePositions[node][2]);
     }
     WorldPacket data;
     ChatHandler::FillMessageData(&data, source->GetSession(), type, LANG_UNIVERSAL, NULL, source->GetGUID(), buf, NULL);

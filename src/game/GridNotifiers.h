@@ -33,6 +33,7 @@
 #include "Player.h"
 #include "Unit.h"
 #include "CreatureAI.h"
+#include "SpellAuras.h"
 
 class Player;
 //class Map;
@@ -373,7 +374,7 @@ namespace Hellground
             NearestGameObjectEntryInObjectRangeCheck(WorldObject const& obj,uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
             bool operator()(GameObject* go)
             {
-                if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range))
+                if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range) && go->getLootState() == GO_READY)
                 {
                     i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
                     return true;
@@ -650,7 +651,7 @@ namespace Hellground
         public:
             explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool force = false) : m_creature(creature), m_force(force)
             {
-                m_range = (dist == 0 ? 9999 : dist);
+                m_range = (dist == 0 ? 80.0f : dist);
             }
             bool operator()(Unit* u)
             {
@@ -767,10 +768,10 @@ namespace Hellground
     class AnyPlayerInObjectRangeCheck
     {
     public:
-        AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
+        AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range, bool alive = true) : i_obj(obj), i_range(range), i_alive(alive) {}
         bool operator()(Player* u)
         {
-            if (u->isAlive() && i_obj->IsWithinDistInMap(u, i_range))
+            if ((i_alive && u->isAlive() || !i_alive && !u->isAlive()) && i_obj->IsWithinDistInMap(u, i_range))
                 return true;
 
             return false;
@@ -778,6 +779,7 @@ namespace Hellground
     private:
         WorldObject const* i_obj;
         float i_range;
+        bool i_alive;
     };
 
     // Searchers used by ScriptedAI

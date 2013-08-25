@@ -44,34 +44,42 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -248,7 +256,7 @@
       </Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalOptions>/MP -Zm113 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/MP -Zm1000 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\..\dep\include\;..\..\src\scripts\scripts\npc;..\..\src\shared\;..\..\src\shared\Database;..\..\src\framework\;..\..\src\game\;..\..\src\scripts\include\;..\..\src\scripts\scripts\npc\;..\..\dep\ACE_wrappers;..\..\src\scripts\system;..\..\src\game\movemap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;THIS_IS_SCRIPT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -490,6 +498,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\alterac_valley\boss_galvangar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\alterac_valley\boss_vanndar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\instance_mana_tombs.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\mana_tombs.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\aunchindoun\sethekk_halls\boss_anzu.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\azshara\azshara.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\azshara\boss_azuregos.cpp" />
@@ -497,7 +506,9 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\arathi_highlands\arathi_highlands.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_depths\boss_coren_direbrew.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_depths\boss_theldren.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\blackrock_spire\instance_blackrock_spire.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\serpent_shrine\serpent_shrine_trash.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\slave_pens\slave_pens_trash.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\deadmines\deadmines.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\desolace\desolace.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\dun_morogh\dun_morogh.cpp" />
@@ -642,6 +653,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\westfall\westfall.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\wetlands\wetlands.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\winterspring\winterspring.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\instance_zul_farrak.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulfarrak\zulfarrak.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulgurub\boss_arlokk.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\zulgurub\boss_gahzranka.cpp" />
@@ -700,6 +712,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\magtheridons_lair\boss_magtheridon.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\magtheridons_lair\instance_magtheridons_lair.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\boss_omor_the_unscarred.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\instance_hellfire_ramparts.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\boss_vazruden_the_herald.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\hellfire_ramparts\boss_watchkeeper_gargolmar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\hellfire_citadel\shattered_halls\boss_blood_guard_porung.cpp" />
@@ -855,6 +868,7 @@
     <ClInclude Include="..\..\src\scripts\scripts\creature\simple_ai.h" />
     <ClInclude Include="..\..\src\scripts\scripts\guard\guard_ai.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\aunchindoun\mana_tombs\def_mana_tombs.h" />
+    <ClInclude Include="..\..\src\scripts\scripts\zone\blackrock_spire\def_blackrock_spire.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\deadmines\def_deadmines.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\gruuls_lair\def_gruuls_lair.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\karazhan\chess_event.h" />
@@ -868,6 +882,7 @@
     <ClInclude Include="..\..\src\scripts\scripts\zone\stratholme\def_stratholme.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\temple_of_ahnqiraj\def_temple_of_ahnqiraj.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\wailing_caverns\def_wailing_caverns.h" />
+    <ClInclude Include="..\..\src\scripts\scripts\zone\zulfarrak\def_zul_farrak.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\zulgurub\def_zulgurub.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\aunchindoun\sethekk_halls\def_sethekk_halls.h" />
     <ClInclude Include="..\..\src\scripts\scripts\zone\aunchindoun\shadow_labyrinth\def_shadow_labyrinth.h" />

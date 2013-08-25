@@ -149,7 +149,7 @@ bool GossipHello_npc_thrall(Player *player, Creature *_Creature)
         uint32 AzgalorEvent  = ai->GetInstanceData(DATA_AZGALOREVENT);
         if(KazrogalEvent == NOT_STARTED)
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_BEGIN_HORDE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        else if(KazrogalEvent == DONE && AzgalorEvent == NOT_STARTED)
+        else if(KazrogalEvent == DONE && AzgalorEvent != DONE && AzgalorEvent != IN_PROGRESS)
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_AZGALOR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
         else if(AzgalorEvent == DONE)
             player->ADD_GOSSIP_ITEM( 0, GOSSIP_ITEM_RETREAT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);

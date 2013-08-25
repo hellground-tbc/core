@@ -102,7 +102,7 @@ enum IllidanSpell
     SPELL_ILLIDAN_ENRAGE                 = 40683,
 
     // Phase 2 spells
-    SPELL_ILLIDAN_THROW_GLAIVE           = 39635,
+    SPELL_ILLIDAN_THROW_GLAIVE           = 39849,
     SPELL_ILLIDAN_GLAIVE_RETURN          = 39873,
     SPELL_ILLIDAN_FIREBALL               = 40598,
     SPELL_ILLIDAN_DARK_BARRAGE           = 40585,
@@ -163,12 +163,13 @@ enum IllidanEvent
 
     // Phase: Maiev summon
     EVENT_ILLIDAN_SUMMON_MAIEV           = 28,
-    EVENT_ILLIDAN_CAGE_TRAP              = 29,
+    EVENT_ILLIDAN_INPRISON_RAID          = 29,
+    EVENT_ILLIDAN_CAGE_TRAP              = 30,
 
-    EVENT_ILLIDAN_KILL                   = 30,
-    EVENT_ILLIDAN_DEATH_SPEECH           = 31,
+    EVENT_ILLIDAN_KILL                   = 31,
+    EVENT_ILLIDAN_DEATH_SPEECH           = 32,
 
-    EVENT_ILLIDAN_FLAME_DEATH            = 32,
+    EVENT_ILLIDAN_FLAME_DEATH            = 33,
 
     EVENT_ILLIDAN_RANDOM_YELL
 };
@@ -213,10 +214,7 @@ class GlaiveTargetRespawner
         void operator()(Creature* u) const
         {
             if (u->GetEntry() == GLAIVE_TARGET)
-            {
-                u->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
                 u->Respawn();
-            }
         }
         void operator()(GameObject* u) const { }
         void operator()(WorldObject*) const {}
@@ -387,7 +385,7 @@ struct boss_illidan_stormrageAI : public BossAI
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
 
-                ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, CAST_SELF, YELL_ILLIDAN_INPRISON_RAID);
+                events.ScheduleEvent(EVENT_ILLIDAN_INPRISON_RAID, 500, m_phase);
                 events.ScheduleEvent(EVENT_ILLIDAN_SUMMON_MAIEV, 6000, m_phase);
                 break;
             }
@@ -526,7 +524,7 @@ struct boss_illidan_stormrageAI : public BossAI
             if (Creature *pGlaive = GetClosestCreatureWithEntry(pTrigger, GLAIVE_TARGET, 70.0f, true))
             {
                 WorldLocation final;
-                pTrigger->GetClosePoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
+                pTrigger->GetNearPoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
                 final.coord_z = 354.519f;
                 pTrigger->SetSpeed(MOVE_RUN, 1.0f);
                 pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z, UNIT_ACTION_CONTROLLED);
@@ -564,15 +562,14 @@ struct boss_illidan_stormrageAI : public BossAI
                 {
                     me->SetLevitate(false);
                     me->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetReactState(REACT_AGGRESSIVE);
                     ChangePhase(PHASE_THREE);
                     break;
                 }
                 case EVENT_ILLIDAN_RETURN_GLAIVE:
                 {
-                    // implement SPELL_ILLIDAN_GLAIVE_RETURN visual
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    summons.Cast(BLADE_OF_AZZINOTH, SPELL_ILLIDAN_GLAIVE_RETURN, me);
                     summons.DespawnEntry(BLADE_OF_AZZINOTH);
                     events.ScheduleEvent(EVENT_ILLIDAN_LAND, 1000, m_phase);
                     break;
@@ -732,6 +729,11 @@ struct boss_illidan_stormrageAI : public BossAI
         {
             switch (eventId)
             {
+                case EVENT_ILLIDAN_INPRISON_RAID:
+                {
+                    ForceSpellCastWithScriptText(SPELL_ILLIDAN_INPRISON_RAID, CAST_SELF, YELL_ILLIDAN_INPRISON_RAID, INTERRUPT_AND_CAST_INSTANTLY, true);
+                    break;
+                }
                 case EVENT_ILLIDAN_SUMMON_MAIEV:
                 {
                     ForceSpellCast(me, SPELL_ILLIDAN_SUMMON_MAIEV);
@@ -928,10 +930,10 @@ struct boss_illidan_stormrageAI : public BossAI
         if (!UpdateVictim())
             return;
 
+        DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.5f);
+
         if (m_combatTimer < diff)
         {
-            DoSpecialThings(diff, DO_EVERYTHING, 200.0f, 2.5f);
-
             if (Creature *pAkama = instance->GetCreature(instance->GetData64(DATA_AKAMA)))
                 DoModifyThreatPercent(pAkama, -101);
 
@@ -1257,7 +1259,7 @@ struct boss_illidan_akamaAI : public BossAI
                 if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                 {
                     float x,y,z;
-                    pIllidan->GetClosePoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                    pIllidan->GetNearPoint(x, y, z, 0.0f, 8.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
 
                     me->Relocate(x, y, z);
                     me->SendHeartBeat();
@@ -1331,6 +1333,7 @@ struct boss_illidan_akamaAI : public BossAI
                         me->SetSelection(pIllidan->GetGUID());
                         pIllidan->SetSelection(me->GetGUID());
                         pIllidan->RemoveAurasDueToSpell(SPELL_ILLIDAN_KNEEL_INTRO);
+                        me->SetFacingToObject(pIllidan);
                         DoScriptText(SAY_ILLIDAN_NO1, pIllidan);
                     }
 
@@ -1479,7 +1482,7 @@ struct boss_illidan_maievAI : public BossAI
                     if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                     {
                         float x, y, z;
-                        pIllidan->GetClosePoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
+                        pIllidan->GetNearPoint(x, y, z, 0.0f, 45.0f, -pIllidan->GetAngle(CENTER_X, CENTER_Y));
                         z = 354.519;
 
                         me->Relocate(x, y, z);
@@ -1509,7 +1512,7 @@ struct boss_illidan_maievAI : public BossAI
                 me->GetMotionMaster()->Clear(false);
 
                 float x, y, z;
-                me->GetClosePoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
+                me->GetNearPoint(x, y, z, 0.0f, 25.0f, frand(0, 2*M_PI));
                 z = 354.519;
 
                 me->Relocate(x, y, z);
@@ -1530,7 +1533,7 @@ struct boss_illidan_maievAI : public BossAI
                 if (Creature *pIllidan = instance->GetCreature(instance->GetData64(DATA_ILLIDANSTORMRAGE)))
                 {
                     float x, y, z;
-                    pIllidan->GetClosePoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
+                    pIllidan->GetNearPoint(x, y, z, 0.0f, 7.0f, pIllidan->GetOrientation());
                     z = 354.519;
 
                     me->Relocate(x, y, z);

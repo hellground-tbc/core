@@ -1109,6 +1109,8 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
     Creature* pCreature = getSelectedCreature();
 
+    float o = m_session->GetPlayer()->GetOrientation();
+
     if (!pCreature)
     {
         // number or [name] Shift-click form |color|Hcreature:creature_guid|h[name]|h|r
@@ -1118,34 +1120,30 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
         lowguid = atoi(cId);
 
-        /* FIXME: impossibel without entry
-        if (lowguid)
-            pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HIGHGUID_UNIT));
-        */
-
         // Attempting creature load from DB data
-        if (!pCreature)
+        CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
+        if (!data)
         {
-            CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
-            if (!data)
-            {
-                PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
-                SetSentErrorMessage(true);
-                return false;
-            }
+            PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
+            SetSentErrorMessage(true);
+            return false;
+        }
 
-            uint32 map_id = data->mapid;
+        o = data->orientation;// .npc move guid should not change orientation
 
-            if (m_session->GetPlayer()->GetMapId()!=map_id)
-            {
-                PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
-                SetSentErrorMessage(true);
-                return false;
-            }
+        uint32 map_id = data->mapid;
+        if (m_session->GetPlayer()->GetMapId()!=map_id)
+        {
+            PSendSysMessage(LANG_COMMAND_CREATUREATSAMEMAP, lowguid);
+            SetSentErrorMessage(true);
+            return false;
         }
         else
         {
-            lowguid = pCreature->GetDBTableGUIDLow();
+            Map* pMap = sMapMgr.FindMap(map_id,m_session->GetPlayer()->GetInstanceId());
+            if (pMap)
+                pCreature = pMap->GetCreature(MAKE_NEW_GUID(lowguid,data->id,HIGHGUID_UNIT));
+            //not sure how MAKE_NEW_GUID does what it does, and FIXME: does not work in instances
         }
     }
     else
@@ -1156,17 +1154,16 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     float x = m_session->GetPlayer()->GetPositionX();
     float y = m_session->GetPlayer()->GetPositionY();
     float z = m_session->GetPlayer()->GetPositionZ();
-    float o = m_session->GetPlayer()->GetOrientation();
 
+    if (CreatureData const* data = sObjectMgr.GetCreatureData(lowguid))
+    {
+        const_cast<CreatureData*>(data)->posX = x;
+        const_cast<CreatureData*>(data)->posY = y;
+        const_cast<CreatureData*>(data)->posZ = z;
+        const_cast<CreatureData*>(data)->orientation = o;
+    }
     if (pCreature)
     {
-        if (CreatureData const* data = sObjectMgr.GetCreatureData(pCreature->GetDBTableGUIDLow()))
-        {
-            const_cast<CreatureData*>(data)->posX = x;
-            const_cast<CreatureData*>(data)->posY = y;
-            const_cast<CreatureData*>(data)->posZ = z;
-            const_cast<CreatureData*>(data)->orientation = o;
-        }
         Map *pMap = pCreature->GetMap();
         pMap->CreatureRelocation(pCreature,x, y, z,o);
         pCreature->GetMotionMaster()->Initialize();
@@ -1620,6 +1617,31 @@ bool ChatHandler::HandleNpcFlagCommand(const char* args)
     return true;
 }
 
+//set field flags of creature
+bool ChatHandler::HandleNpcFieldFlagCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    uint32 Flags = (uint32) atoi((char*)args);
+
+    Creature* pCreature = getSelectedCreature();
+
+    if (!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    pCreature->SetUInt32Value(UNIT_FIELD_FLAGS, Flags);
+
+    GameDataDatabase.PExecuteLog("UPDATE creature_template SET unit_flags = '%u' WHERE entry = '%u'", Flags, pCreature->GetEntry());
+
+    SendSysMessage(LANG_VALUE_SAVED_REJOIN);
+
+    return true;
+}
 //set model of creature
 bool ChatHandler::HandleNpcSetModelCommand(const char* args)
 {
@@ -1733,7 +1755,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
         }
 
         if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD))
-            sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
+            sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, 0, player->GetName(), kicker.c_str(), reason.c_str());
         else
             PSendSysMessage(LANG_COMMAND_KICKMESSAGE, player->GetName(), kicker.c_str(), reason.c_str());
 
@@ -1774,7 +1796,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
         if (sWorld.KickPlayer(name.c_str()))
         {
             if (sWorld.getConfig(CONFIG_SHOW_KICK_IN_WORLD))
-                sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, name.c_str(), kicker.c_str(), reason.c_str());
+                sWorld.SendWorldText(LANG_COMMAND_KICKMESSAGE, 0, name.c_str(), kicker.c_str(), reason.c_str());
             else
                 PSendSysMessage(LANG_COMMAND_KICKMESSAGE, name.c_str(), kicker.c_str(), reason.c_str());
         }
@@ -2118,7 +2140,7 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     Player* player = m_session->GetPlayer();
     Map *map = player->GetMap();
 
-    GameDataDatabase.PExecuteLog("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, move_flag, delay) VALUES ('%u','%u','%f', '%f', '%f', '%u', '%u')",
+    GameDataDatabase.PExecuteLog("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z, move_type, delay) VALUES ('%u','%u','%f', '%f', '%f', '%u', '%u')",
         pathid, point+1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), moveflag, delay);
 
     PSendSysMessage("%s%s%u%s%u%s|r", "|cff00ff00", "PathID: |r|cff00ffff", pathid, "|r|cff00ff00: Waypoint |r|cff00ffff", point,"|r|cff00ff00 created. ");
@@ -2474,7 +2496,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
     // Check
     // Remember: "show" must also be the name of a column!
     if ((show != "delay") && (show != "action") && (show != "action_chance")
-        && (show != "move_flag") && (show != "del") && (show != "move") && (show != "wpadd")
+        && (show != "move_type") && (show != "del") && (show != "move") && (show != "wpadd")
       )
     {
         return false;
@@ -2720,7 +2742,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             return false;
         }
 
-        QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id, point, delay, move_flag, action, action_chance FROM waypoint_data WHERE wpguid = '%u'", target->GetDBTableGUIDLow());
+        QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT id, point, delay, move_type, action, action_chance FROM waypoint_data WHERE wpguid = '%u'", target->GetDBTableGUIDLow());
 
         if (!result)
 
@@ -3910,6 +3932,40 @@ bool ChatHandler::HandleGameObjectActivateCommand(const char *args)
     obj->UseDoorOrButton(10000);
 
     PSendSysMessage("Object activated!");
+
+    return true;
+}
+
+bool ChatHandler::HandleGameObjectResetCommand(const char *args)
+{
+    if (!*args)
+        return false;
+
+    char* cId = extractKeyFromLink((char*)args,"Hgameobject");
+    if (!cId)
+        return false;
+
+    uint32 lowguid = atoi(cId);
+    if (!lowguid)
+        return false;
+
+    GameObject* obj = NULL;
+
+    // by DB guid
+    if (GameObjectData const* go_data = sObjectMgr.GetGOData(lowguid))
+        obj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid,go_data->id);
+
+    if (!obj)
+    {
+        PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, lowguid);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // Activate
+    obj->Reset();
+
+    PSendSysMessage("Object reset!");
 
     return true;
 }

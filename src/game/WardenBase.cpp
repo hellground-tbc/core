@@ -36,9 +36,12 @@ WardenBase::WardenBase() : iCrypto(16), oCrypto(16), m_WardenCheckTimer(10000/*1
 
 WardenBase::~WardenBase()
 {
-    delete[] Module->CompressedData;
-    delete Module;
-    Module = NULL;
+    if (Module != NULL)
+    {
+        delete[] Module->CompressedData;
+        delete Module;
+        Module = NULL;
+    }
     m_initialized = false;
 }
 
@@ -122,6 +125,7 @@ void WardenBase::RequestModule()
     WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenModuleUse));
     pkt.append((uint8*)&Request, sizeof(WardenModuleUse));
     Client->SendPacket(&pkt);
+    m_WardenDataSent = true;
 }
 
 void WardenBase::Update()

@@ -759,7 +759,9 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
     else if (bg_template->isArena())
     {
         bool hiddenEnabled = sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING);
-
+        bool stepbystepEnabled = sWorld.getConfig(CONFIG_ENABLE_ARENA_STEP_BY_STEP_MATCHING);
+        uint32 stepbystepTime = sWorld.getConfig(CONFIG_ARENA_STEP_BY_STEP_TIME);
+        uint32 stepbystepValue = sWorld.getConfig(CONFIG_ARENA_STEP_BY_STEP_VALUE);
         // found out the minimum and maximum ratings the newly added team should battle against
         // arenaRating is the rating of the latest joined team, or 0
         // 0 is on (automatic update call) and we must set it to team's with longest wait time
@@ -793,7 +795,7 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
         // (after what time the ratings aren't taken into account when making teams) then
         // the discard time is current_time - time_to_discard, teams that joined after that, will have their ratings taken into account
         // else leave the discard time on 0, this way all ratings will be discarded
-        uint32 discardTime = WorldTimer::getMSTime() - sBattleGroundMgr.GetRatingDiscardTimer();
+        uint32 discardTime = stepbystepEnabled ? WorldTimer::getMSTime() : (WorldTimer::getMSTime() - sBattleGroundMgr.GetRatingDiscardTimer());
 
         // we need to find 2 teams which will play next game
 
@@ -809,13 +811,28 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             {
                 uint32 arenaTeamRating = hiddenEnabled ? (*itr_team[i])->HiddenRating : (*itr_team[i])->ArenaTeamRating;
                 // if group match conditions, then add it to pool
-                if( !(*itr_team[i])->IsInvitedToBGInstanceGUID
-                    && ((arenaTeamRating >= arenaMinRating && arenaTeamRating <= arenaMaxRating)
-                        || (*itr_team[i])->JoinTime < discardTime) )
+                if (stepbystepEnabled)
                 {
-                    m_SelectionPools[i].AddGroup((*itr_team[i]), MaxPlayersPerTeam);
-                    // break for cycle to be able to start selecting another group from same faction queue
-                    break;
+                    uint32 stepbystepChange = stepbystepValue * (uint8)((discardTime - (*itr_team[i])->JoinTime)/stepbystepTime);
+                    if( !(*itr_team[i])->IsInvitedToBGInstanceGUID
+                        && (arenaTeamRating + stepbystepChange >= arenaMinRating
+                        && arenaTeamRating - stepbystepChange <= arenaMaxRating))
+                    {
+                        m_SelectionPools[i].AddGroup((*itr_team[i]), MaxPlayersPerTeam);
+                        // break for cycle to be able to start selecting another group from same faction queue
+                        break;
+                    }
+                }
+                else
+                {
+                    if( !(*itr_team[i])->IsInvitedToBGInstanceGUID
+                        && ((arenaTeamRating >= arenaMinRating && arenaTeamRating <= arenaMaxRating)
+                            || (*itr_team[i])->JoinTime < discardTime) )
+                    {
+                        m_SelectionPools[i].AddGroup((*itr_team[i]), MaxPlayersPerTeam);
+                        // break for cycle to be able to start selecting another group from same faction queue
+                        break;
+                    }
                 }
             }
         }
@@ -831,12 +848,28 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             {
                 uint32 arenaTeamRatingA = hiddenEnabled ? (*itr_team[BG_TEAM_ALLIANCE])->HiddenRating : (*itr_team[BG_TEAM_ALLIANCE])->ArenaTeamRating;
 
-                if( !(*itr_team[BG_TEAM_ALLIANCE])->IsInvitedToBGInstanceGUID
-                    && ((arenaTeamRatingA >= arenaMinRating && arenaTeamRatingA <= arenaMaxRating)
-                        || (*itr_team[BG_TEAM_ALLIANCE])->JoinTime < discardTime) )
+                if (stepbystepEnabled)
                 {
-                    m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*itr_team[BG_TEAM_ALLIANCE]), MaxPlayersPerTeam);
-                    break;
+                    uint32 stepbystepChange = stepbystepValue * (uint8)((discardTime - (*itr_team[BG_TEAM_ALLIANCE])->JoinTime)/stepbystepTime);
+                    if( !(*itr_team[BG_TEAM_ALLIANCE])->IsInvitedToBGInstanceGUID
+                        && (arenaTeamRatingA + stepbystepChange >= arenaMinRating
+                        && arenaTeamRatingA - stepbystepChange <= arenaMaxRating))
+                    {
+                        m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*itr_team[BG_TEAM_ALLIANCE]), MaxPlayersPerTeam);
+                        // break for cycle to be able to start selecting another group from same faction queue
+                        break;
+                    }
+                }
+                else
+                {
+                    if( !(*itr_team[BG_TEAM_ALLIANCE])->IsInvitedToBGInstanceGUID
+                        && ((arenaTeamRatingA >= arenaMinRating && arenaTeamRatingA <= arenaMaxRating)
+                            || (*itr_team[BG_TEAM_ALLIANCE])->JoinTime < discardTime) )
+                    {
+                        m_SelectionPools[BG_TEAM_ALLIANCE].AddGroup((*itr_team[BG_TEAM_ALLIANCE]), MaxPlayersPerTeam);
+                        // break for cycle to be able to start selecting another group from same faction queue
+                        break;
+                    }
                 }
             }
         }
@@ -849,12 +882,28 @@ void BattleGroundQueue::Update(BattleGroundTypeId bgTypeId, BattleGroundBracketI
             {
                 uint32 arenaTeamRatingH = hiddenEnabled ? (*itr_team[BG_TEAM_HORDE])->HiddenRating : (*itr_team[BG_TEAM_HORDE])->ArenaTeamRating;
 
-                if( !(*itr_team[BG_TEAM_HORDE])->IsInvitedToBGInstanceGUID
-                    && ((arenaTeamRatingH >= arenaMinRating && arenaTeamRatingH <= arenaMaxRating)
-                        || (*itr_team[BG_TEAM_HORDE])->JoinTime < discardTime) )
+                if (stepbystepEnabled)
                 {
-                    m_SelectionPools[BG_TEAM_HORDE].AddGroup((*itr_team[BG_TEAM_HORDE]), MaxPlayersPerTeam);
-                    break;
+                    uint32 stepbystepChange = stepbystepValue * (uint8)((discardTime - (*itr_team[BG_TEAM_HORDE])->JoinTime)/stepbystepTime);
+                    if( !(*itr_team[BG_TEAM_HORDE])->IsInvitedToBGInstanceGUID
+                        && (arenaTeamRatingH + stepbystepChange >= arenaMinRating
+                        && arenaTeamRatingH - stepbystepChange <= arenaMaxRating))
+                    {
+                        m_SelectionPools[BG_TEAM_HORDE].AddGroup((*itr_team[BG_TEAM_HORDE]), MaxPlayersPerTeam);
+                        // break for cycle to be able to start selecting another group from same faction queue
+                        break;
+                    }
+                }
+                else
+                {
+                    if( !(*itr_team[BG_TEAM_HORDE])->IsInvitedToBGInstanceGUID
+                        && ((arenaTeamRatingH >= arenaMinRating && arenaTeamRatingH <= arenaMaxRating)
+                            || (*itr_team[BG_TEAM_HORDE])->JoinTime < discardTime) )
+                    {
+                        m_SelectionPools[BG_TEAM_HORDE].AddGroup((*itr_team[BG_TEAM_HORDE]), MaxPlayersPerTeam);
+                        // break for cycle to be able to start selecting another group from same faction queue
+                        break;
+                    }
                 }
             }
         }
@@ -1111,7 +1160,7 @@ void BattleGroundMgr::Update(uint32 diff)
             {
                 if (!m_ApAnnounce)
                 {
-                    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, "Distributing arena points to players will be performed in 2 minutes.");
+                    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, 0, "Distributing arena points to players will be performed in 2 minutes.");
                     m_AutoDistributionTimeChecker = 120000;
                     m_ApAnnounce = true;
                     return;

@@ -40,11 +40,13 @@ struct boss_ramstein_the_gorgerAI : public ScriptedAI
 
     uint32 Trample_Timer;
     uint32 Knockout_Timer;
+    std::list<uint64> summons;
 
     void Reset()
     {
         Trample_Timer = 3000;
         Knockout_Timer = 12000;
+        summons.clear();
     }
 
     void EnterCombat(Unit *who)
@@ -57,7 +59,19 @@ struct boss_ramstein_the_gorgerAI : public ScriptedAI
             m_creature->SummonCreature(C_MINDLESS_UNDEAD,3969.35,-3391.87,119.11,5.91,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,1800000);
 
         if (pInstance)
-            pInstance->SetData(TYPE_RAMSTEIN,DONE);
+            pInstance->SetData(TYPE_RAMSTEIN,SPECIAL);
+    }
+
+    void JustSummoned(Creature* c)
+    {
+        c->AI()->DoZoneInCombat();
+        summons.push_back(c->GetGUID());
+    }
+
+    void SummonedCreatureDespawn(Creature*)
+    {
+        if (pInstance && pInstance->GetData(5) == SPECIAL && std::none_of(summons.begin(),summons.end(),[this](uint64 guid)-> bool {Creature *c = pInstance->GetCreature(guid) ; return c ? c->isAlive():false;}))
+            pInstance->SetData(5,DONE);
     }
 
     void UpdateAI(const uint32 diff)

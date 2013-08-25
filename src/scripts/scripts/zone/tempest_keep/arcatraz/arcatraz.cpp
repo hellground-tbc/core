@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Arcatraz
-SD%Complete: 60
-SDComment: Warden Mellichar, event controller for Skyriss event. Millhouse Manastorm. TODO: make better combatAI for Millhouse.
+SD%Complete: 90
+SDComment:
 SDCategory: Tempest Keep, The Arcatraz
 EndScriptData */
 
@@ -86,6 +86,8 @@ struct npc_millhouse_manastormAI : public ScriptedAI
         Pyroblast_Timer = 1000;
         Fireball_Timer = 2500;
 
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+
         if( pInstance )
         {
             if( pInstance->GetData(TYPE_WARDEN_2) == DONE )
@@ -93,34 +95,30 @@ struct npc_millhouse_manastormAI : public ScriptedAI
 
             if( pInstance->GetData(TYPE_HARBINGERSKYRISS) == DONE )
             {
-                DoScriptText(SAY_COMPLETE, m_creature);
+                DoScriptText(SAY_COMPLETE, me);
+                me->ForcedDespawn(20000);
             }
         }
     }
 
-    void AttackStart(Unit* who)
+    void MovementInform(uint32 type, uint32 id)
     {
-        if (m_creature->Attack(who, true))
-        {
-            m_creature->AddThreat(who, 0.0f);
+        if (type != POINT_MOTION_TYPE)
+            return;
 
-            //TODO: Make it so he moves when target out of range
-            DoStartNoMovement(who);
-        }
-    }
-
-    void EnterCombat(Unit *who)
-    {
+        me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 4.8f);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_2);
+        me->SetReactState(REACT_AGGRESSIVE);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), m_creature);
+        DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         /*for questId 10886 (heroic mode only)
         if( pInstance && pInstance->GetData(TYPE_HARBINGERSKYRISS) != DONE )
@@ -138,35 +136,35 @@ struct npc_millhouse_manastormAI : public ScriptedAI
                     switch( Phase )
                     {
                         case 1:
-                            DoScriptText(SAY_INTRO_1, m_creature);
+                            DoScriptText(SAY_INTRO_1, me);
                             EventProgress_Timer = 18000;
                             break;
                         case 2:
-                            DoScriptText(SAY_INTRO_2, m_creature);
+                            DoScriptText(SAY_INTRO_2, me);
                             EventProgress_Timer = 18000;
                             break;
                         case 3:
-                            DoScriptText(SAY_WATER, m_creature);
-                            DoCast(m_creature,SPELL_CONJURE_WATER);
+                            if( pInstance )
+                                pInstance->SetData(TYPE_WARDEN_2,DONE);
                             EventProgress_Timer = 7000;
                             break;
                         case 4:
-                            DoScriptText(SAY_BUFFS, m_creature);
-                            DoCast(m_creature,SPELL_ICE_ARMOR);
-                            EventProgress_Timer = 7000;
+                            DoScriptText(SAY_WATER, me);
+                            DoCast(me,SPELL_CONJURE_WATER);
+                            EventProgress_Timer = 10000;
                             break;
                         case 5:
-                             DoScriptText(SAY_DRINK, m_creature);
-                            DoCast(m_creature,SPELL_ARCANE_INTELLECT);
-                            EventProgress_Timer = 7000;
+                            DoScriptText(SAY_BUFFS, me);
+                            DoCast(me,SPELL_ICE_ARMOR);
+                            EventProgress_Timer = 10000;
                             break;
                         case 6:
-                              DoScriptText(SAY_READY, m_creature);
-                            EventProgress_Timer = 6000;
+                             DoScriptText(SAY_DRINK, me);
+                            DoCast(me,SPELL_ARCANE_INTELLECT);
+                            EventProgress_Timer = 7000;
                             break;
                         case 7:
-                            if( pInstance )
-                                pInstance->SetData(TYPE_WARDEN_2,DONE);
+                            DoScriptText(SAY_READY, me);
                             Init = true;
                             break;
                     }
@@ -178,30 +176,30 @@ struct npc_millhouse_manastormAI : public ScriptedAI
         if( !UpdateVictim() )
             return;
 
-        if( !LowHp && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) )
+        if( !LowHp && ((me->GetHealth()*100 / me->GetMaxHealth()) < 20) )
         {
-            DoScriptText(SAY_LOWHP, m_creature);
+            DoScriptText(SAY_LOWHP, me);
             LowHp = true;
         }
 
         if( Pyroblast_Timer < diff )
         {
-            if( m_creature->IsNonMeleeSpellCasted(false) )
+            if( me->IsNonMeleeSpellCasted(false) )
                 return;
 
-             DoScriptText(SAY_PYRO, m_creature);
+             DoScriptText(SAY_PYRO, me);
 
-            DoCast(m_creature->getVictim(),SPELL_PYROBLAST);
+            DoCast(me->getVictim(),SPELL_PYROBLAST);
             Pyroblast_Timer = 40000;
         }else Pyroblast_Timer -=diff;
 
         if( Fireball_Timer < diff )
         {
-            DoCast(m_creature->getVictim(),SPELL_FIREBALL);
+            DoCast(me->getVictim(),SPELL_FIREBALL);
             Fireball_Timer = 4000;
         }else Fireball_Timer -=diff;
 
-        DoMeleeAttackIfReady();
+        //DoMeleeAttackIfReady();
     }
 };
 
@@ -245,6 +243,8 @@ CreatureAI* GetAI_npc_millhouse_manastorm(Creature *_Creature)
 #define SPELL_TARGET_OMEGA  36852
 #define SPELL_BUBBLE_VISUAL 36849
 
+#define SPELL_ETHEREAL_TELEPORT 34427
+
 struct npc_warden_mellicharAI : public ScriptedAI
 {
     npc_warden_mellicharAI(Creature *c) : ScriptedAI(c)
@@ -268,43 +268,46 @@ struct npc_warden_mellicharAI : public ScriptedAI
         EventProgress_Timer = 22000;
         Phase = 1;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
-        DoCast(m_creature,SPELL_TARGET_OMEGA);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        DoCast(me,SPELL_TARGET_OMEGA);
 
-        if( pInstance )
+        if( pInstance && !(pInstance->GetData(TYPE_HARBINGERSKYRISS) == DONE))
             pInstance->SetData(TYPE_HARBINGERSKYRISS,NOT_STARTED);
+        if(Unit* millhouse = (Unit*)FindCreature(ENTRY_MILLHOUSE, 100, me))
+            millhouse->ToCreature()->ForcedDespawn(0);
     }
 
-    void AttackStart(Unit* who) { }
+    void AttackStart(Unit* who) {}
 
     void MoveInLineOfSight(Unit *who)
     {
         if( IsRunning )
             return;
 
-        if( !m_creature->getVictim() && who->isTargetableForAttack() && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlacefor(m_creature) )
+        if( !me->getVictim() && who->isTargetableForAttack() && ( me->IsHostileTo( who )) && who->isInAccessiblePlacefor(me) )
         {
-            if (!m_creature->CanFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
+            if (!me->CanFly() && me->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
                 return;
             if (who->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            float attackRadius = m_creature->GetAttackDistance(who)/10;
-            if( m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
+            float attackRadius = me->GetAttackDistance(who)/10;
+            if( me->IsWithinDistInMap(who, attackRadius) && me->IsWithinLOSInMap(who) )
                 EnterCombat(who);
         }
     }
 
     void EnterCombat(Unit *who)
     {
-        DoScriptText(YELL_INTRO1, m_creature);
-        DoCast(m_creature,SPELL_BUBBLE_VISUAL);
+        if (!IsRunning)
+        {
+            DoScriptText(YELL_INTRO1, me);
+            DoCast(me,SPELL_BUBBLE_VISUAL);
+        }
 
         if( pInstance )
         {
-            pInstance->SetData(TYPE_HARBINGERSKYRISS,IN_PROGRESS);
-            if (GameObject* Sphere = GameObject::GetGameObject(*m_creature,pInstance->GetData64(DATA_SPHERE_SHIELD)))
-                Sphere->SetGoState(GO_STATE_READY);
+            pInstance->HandleGameObject(pInstance->GetData64(DATA_SPHERE_SHIELD),false);
             IsRunning = true;
         }
     }
@@ -319,13 +322,9 @@ struct npc_warden_mellicharAI : public ScriptedAI
                 return true;
             if( Phase == 5 && pInstance->GetData(TYPE_WARDEN_2) == DONE )
                 return true;
-            if( Phase == 4 )
+            if( Phase == 4 || Phase == 1 || Phase == 2)
                 return true;
             if( Phase == 3 && pInstance->GetData(TYPE_WARDEN_1) == DONE )
-                return true;
-            if( Phase == 2 && pInstance->GetData(TYPE_HARBINGERSKYRISS) == IN_PROGRESS )
-                return true;
-            if( Phase == 1 && pInstance->GetData(TYPE_HARBINGERSKYRISS) == IN_PROGRESS )
                 return true;
             return false;
         }
@@ -336,31 +335,30 @@ struct npc_warden_mellicharAI : public ScriptedAI
     {
         if( pInstance )
         {
-            m_creature->InterruptNonMeleeSpells(true);
-            m_creature->RemoveSpellsCausingAura(SPELL_AURA_DUMMY);
+            me->InterruptNonMeleeSpells(true);
+            me->RemoveSpellsCausingAura(SPELL_AURA_DUMMY);
 
             switch( Phase )
             {
                 case 2:
-                    DoCast(m_creature,SPELL_TARGET_ALPHA);
-                    pInstance->SetData(TYPE_WARDEN_1,IN_PROGRESS);
-                    if (GameObject *Sphere = GameObject::GetGameObject(*m_creature,pInstance->GetData64(DATA_SPHERE_SHIELD)))
-                        Sphere->SetGoState(GO_STATE_READY);
+                    DoCast(me,SPELL_TARGET_ALPHA);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_A),true);
                     break;
                 case 3:
-                    DoCast(m_creature,SPELL_TARGET_BETA);
-                    pInstance->SetData(TYPE_WARDEN_2,IN_PROGRESS);
+                    DoCast(me,SPELL_TARGET_BETA);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_B),true);
                     break;
                 case 5:
-                    DoCast(m_creature,SPELL_TARGET_DELTA);
-                    pInstance->SetData(TYPE_WARDEN_3,IN_PROGRESS);
+                    DoCast(me,SPELL_TARGET_DELTA);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_D),true);
                     break;
                 case 6:
-                    DoCast(m_creature,SPELL_TARGET_GAMMA);
-                    pInstance->SetData(TYPE_WARDEN_4,IN_PROGRESS);
+                    DoCast(me,SPELL_TARGET_GAMMA);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_G),true);
                     break;
                 case 7:
-                    pInstance->SetData(TYPE_WARDEN_5,IN_PROGRESS);
+                    pInstance->HandleGameObject(pInstance->GetData64(DATA_POD_O),true);
+                    pInstance->SetData(TYPE_HARBINGERSKYRISS,IN_PROGRESS);
                     break;
             }
             CanSpawn = true;
@@ -384,28 +382,42 @@ struct npc_warden_mellicharAI : public ScriptedAI
             {
                 //continue beam omega pod, unless we are about to summon skyriss
                 if( Phase != 7 )
-                    DoCast(m_creature,SPELL_TARGET_OMEGA);
+                    DoCast(me,SPELL_TARGET_OMEGA);
 
                 switch( Phase )
                 {
                     case 2:
-                        m_creature->SummonCreature(RAND(ENTRY_TRICKSTER, ENTRY_PH_HUNTER), 478.326, -148.505, 42.56, 3.19, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                        if (Creature* temp = me->SummonCreature(RAND(ENTRY_TRICKSTER, ENTRY_PH_HUNTER), 478.326, -148.505, 42.56, 3.19, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000))
+                            temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
                         break;
                     case 3:
-                        m_creature->SummonCreature(ENTRY_MILLHOUSE,413.292,-148.378,42.56,6.27,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
+                        if (Creature* temp = me->SummonCreature(ENTRY_MILLHOUSE,413.292,-148.378,42.56,6.27,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000))
+                        {
+                            temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
+                            temp->SetReactState(REACT_PASSIVE);
+                        }
                         break;
                     case 4:
-                       DoScriptText(YELL_RELEASE2B, m_creature);
+                        DoScriptText(YELL_RELEASE2B, me);
                         break;
                     case 5:
-                        m_creature->SummonCreature(RAND(ENTRY_AKKIRIS, ENTRY_SULFURON), 420.179, -174.396, 42.58, 0.02, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                        if (Creature* temp = me->SummonCreature(RAND(ENTRY_AKKIRIS, ENTRY_SULFURON), 420.179, -174.396, 42.58, 0.02, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000))
+                           temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
                         break;
                     case 6:
-                        m_creature->SummonCreature(RAND(ENTRY_TW_DRAK,ENTRY_BL_DRAK), 471.795, -174.58, 42.58, 3.06, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
+                        if (Creature* temp = me->SummonCreature(RAND(ENTRY_TW_DRAK,ENTRY_BL_DRAK), 471.795, -174.58, 42.58, 3.06, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000))
+                            temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
+
+                        if (Creature* millhouse = GetClosestCreatureWithEntry(me, ENTRY_MILLHOUSE, 100))
+                        {
+                            millhouse->SetWalk(true);
+                            millhouse->GetMotionMaster()->MovePoint(0, 445.55f, -157.658f, 43.06f);
+                        }
                         break;
                     case 7:
-                        m_creature->SummonCreature(ENTRY_SKYRISS,445.763,-191.639,44.64,1.60,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000);
-                        DoScriptText(YELL_WELCOME, m_creature);
+                        if (Creature* temp = me->SummonCreature(ENTRY_SKYRISS,445.763,-191.639,44.64,1.60,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,600000))
+                            temp->CastSpell(temp, SPELL_ETHEREAL_TELEPORT, false);
+                        DoScriptText(YELL_WELCOME, me);
                         break;
                 }
                 CanSpawn = false;
@@ -416,17 +428,17 @@ struct npc_warden_mellicharAI : public ScriptedAI
                 switch( Phase )
                 {
                     case 1:
-                        DoScriptText(YELL_INTRO2, m_creature);
+                        DoScriptText(YELL_INTRO2, me);
                         EventProgress_Timer = 10000;
                         ++Phase;
                         break;
                     case 2:
-                        DoScriptText(YELL_RELEASE1, m_creature);
+                        DoScriptText(YELL_RELEASE1, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 7000;
                         break;
                     case 3:
-                        DoScriptText(YELL_RELEASE2A, m_creature);
+                        DoScriptText(YELL_RELEASE2A, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 10000;
                         break;
@@ -435,12 +447,12 @@ struct npc_warden_mellicharAI : public ScriptedAI
                         EventProgress_Timer = 15000;
                         break;
                     case 5:
-                        DoScriptText(YELL_RELEASE3, m_creature);
+                        DoScriptText(YELL_RELEASE3, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 15000;
                         break;
                     case 6:
-                        DoScriptText(YELL_RELEASE4, m_creature);
+                        DoScriptText(YELL_RELEASE4, me);
                         DoPrepareForPhase();
                         EventProgress_Timer = 15000;
                         break;
@@ -453,33 +465,168 @@ struct npc_warden_mellicharAI : public ScriptedAI
         } else EventProgress_Timer -= diff;
     }
 };
+
 CreatureAI* GetAI_npc_warden_mellichar(Creature *_Creature)
 {
     return new npc_warden_mellicharAI (_Creature);
 }
 
-/*#####
-# mob_zerekethvoidzone (this script probably not needed in future -> `creature_template_addon`.`auras`='36120 0')
-#####*/
+/*######
+## npc_felfire_wave
+######*/
 
-#define SPELL_VOID_ZONE_DAMAGE 36120
+#define SPELL_FELFIRE          35769
 
-struct mob_zerekethvoidzoneAI : public Scripted_NoMovementAI
+struct npc_felfire_waveAI : public ScriptedAI
 {
-    mob_zerekethvoidzoneAI(Creature *c) : Scripted_NoMovementAI(c) {}
+    npc_felfire_waveAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 Burn;
+
+    void IsSummonedBy(Unit *summoner)
+    {
+        Burn = 0;
+        float x, y, z;
+        me->SetSpeed(MOVE_RUN, 1.1);
+        me->GetNearPoint(x, y, z, 0, 20, summoner->GetAngle(me));
+        me->UpdateAllowedPositionZ(x, y, z);
+        me->GetMotionMaster()->MovePoint(1, x, y, z);
+    }
+
+    void AttackStart(Unit* who) {}
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE || id != 1)
+            return;
+
+        me->ForcedDespawn(5000);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(Burn < diff)
+        {
+            DoCast(me, SPELL_FELFIRE, true);
+            Burn = 450;
+        }
+        else
+            Burn -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_felfire_wave(Creature* _Creature)
+{
+    return new npc_felfire_waveAI(_Creature);
+}
+
+#define SPELL_AURA   (HeroicMode ? 38828 : 36716)
+
+struct npc_arcatraz_sentinelAI : public ScriptedAI
+{
+    npc_arcatraz_sentinelAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+        HeroicMode = me->GetMap()->IsHeroic();
+    }
+
+    uint32 Reset_Timer;
+
+    ScriptedInstance *pInstance;
+    bool HeroicMode;
 
     void Reset()
     {
-        m_creature->SetUInt32Value(UNIT_NPC_FLAGS,0);
-        m_creature->setFaction(16);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 32);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 7);
+        DoCast(me, SPELL_AURA);
+        Reset_Timer = 10000;
+    }
 
-        DoCast(m_creature,SPELL_VOID_ZONE_DAMAGE);
+    void EnterCombat(Unit *who)
+    {
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
+        uint32 hp = (me->GetMaxHealth()*40)/100;
+        if (hp)
+            me->SetHealth(hp);
+    }
+
+    void EnterEvadeMode()
+    {
+        me->RemoveAllAuras();
+        me->DeleteThreatList();
+        me->CombatStop();
+        
+        if (!me->isAlive())
+            return;    
+
+        me->GetMotionMaster()->MoveTargetedHome();
+    }
+
+    void JustReachedHome()
+    {
+        Reset();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!UpdateVictim())
+            return;
+
+        if( Reset_Timer < diff )
+        {
+            DoResetThreat();
+            Reset_Timer = 10000;
+
+        }else Reset_Timer -=diff;
+
+        DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_mob_zerekethvoidzoneAI(Creature *_Creature)
+
+CreatureAI* GetAI_npc_arcatraz_sentinel(Creature *_Creature)
 {
-    return new mob_zerekethvoidzoneAI (_Creature);
+    return new npc_arcatraz_sentinelAI (_Creature);
+}
+
+#define SPELL_SUMMON   36593
+
+struct npc_warder_corpseAI : public ScriptedAI
+{
+    npc_warder_corpseAI(Creature *c) : ScriptedAI(c)
+    {
+        pInstance = (c->GetInstanceData());
+    }
+
+    ScriptedInstance *pInstance;
+
+    bool summon;
+
+    void Reset()
+    {
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 32);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 7);
+        summon = false;
+    }
+
+    void EnterCombat(Unit *who) {}
+    void AttackStart(Unit* who) {}
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        if (who->GetTypeId() == TYPEID_PLAYER && me->IsWithinMeleeRange(who) && !summon) //no GM support they fail last days :P
+        {
+            DoCast(me, SPELL_SUMMON, true);
+            summon = true;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_warder_corpse(Creature *_Creature)
+{
+    return new npc_warder_corpseAI (_Creature);
 }
 
 void AddSC_arcatraz()
@@ -497,8 +644,18 @@ void AddSC_arcatraz()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name="mob_zerekethvoidzone";
-    newscript->GetAI = &GetAI_mob_zerekethvoidzoneAI;
+    newscript->Name="npc_felfire_wave";
+    newscript->GetAI = &GetAI_npc_felfire_wave;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="arcatraz_sentinel";
+    newscript->GetAI = &GetAI_npc_arcatraz_sentinel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="warder_corpse";
+    newscript->GetAI = &GetAI_npc_warder_corpse;
     newscript->RegisterSelf();
 }
 

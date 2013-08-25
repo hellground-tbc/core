@@ -90,6 +90,7 @@ class WardenBase
 {
     friend class WardenWin;
     friend class WardenMac;
+    friend class WardenChat;
 
     public:
         WardenBase();

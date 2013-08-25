@@ -32,8 +32,8 @@ enum eEscortState
 {
     STATE_ESCORT_NONE       = 0x000,                        //nothing in progress
     STATE_ESCORT_ESCORTING  = 0x001,                        //escort are in progress
-    STATE_ESCORT_RETURNING  = 0x002,                        //escort is returning after being in combat
-    STATE_ESCORT_PAUSED     = 0x004                         //will not proceed with waypoints before state is removed
+    STATE_ESCORT_INCOMBAT   = 0x002,                        //escort is in combat
+    STATE_ESCORT_PAUSED     = 0x004,                        //will not proceed with waypoints before state is removed
 };
 
 struct npc_escortAI : public ScriptedAI
@@ -82,6 +82,7 @@ struct npc_escortAI : public ScriptedAI
         bool GetAttack() { return IsActiveAttacker; }//used in EnterEvadeMode override
         void SetCanAttack(bool attack) { IsActiveAttacker = attack; }
         uint64 GetEventStarterGUID() { return PlayerGUID; }
+        void SetClearWaypoints(bool clear) { ClearWaypoints = clear; }
 
     protected:
         Player* GetPlayerForEscort() { return (Player*)Unit::GetUnit(*m_creature, PlayerGUID); }
@@ -104,7 +105,6 @@ struct npc_escortAI : public ScriptedAI
 
         std::list<Escort_Waypoint> WaypointList;
         std::list<Escort_Waypoint>::iterator CurrentWP;
-        std::list<Escort_Waypoint>::iterator ReachedLastWP;
 
         bool IsActiveAttacker;                           //obsolete, determined by faction.
         bool IsRunning;                                  //all creatures are walking by default (has flag MOVEMENTFLAG_WALK)
@@ -113,5 +113,6 @@ struct npc_escortAI : public ScriptedAI
         bool DespawnAtEnd;
         bool DespawnAtFar;
         bool ScriptWP;
+        bool ClearWaypoints;                             //clear WaypointList and drop escort if DespawnAtEnd is off
 };
 #endif

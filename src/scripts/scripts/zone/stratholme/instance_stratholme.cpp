@@ -16,7 +16,7 @@
 
 /* ScriptData
 SDName: instance_stratholme
-SD%Complete: 50
+SD%Complete: 60
 SDComment: In progress. Undead side 75% implemented. Save/load not implemented.
 SDCategory: Stratholme
 EndScriptData */
@@ -45,6 +45,7 @@ EndScriptData */
 #define C_ABOM_VENOM            10417
 #define C_BLACK_GUARD           10394
 #define C_YSIDA                 16031
+#define C_ACOLYTE               10399
 
 #define ENCOUNTERS              6
 
@@ -73,8 +74,11 @@ struct instance_stratholme : public ScriptedInstance
     uint64 baronGUID;
     uint64 ysidaTriggerGUID;
     uint64 ysidaGUID;
-    std::set<uint64> crystalsGUID;
+    uint64 CrystalsGUID[3];
     std::set<uint64> abomnationGUID;
+    std::list<uint64> acolyte1GUID;
+    std::list<uint64> acolyte2GUID;
+    std::list<uint64> acolyte3GUID;
 
     void Initialize()
     {
@@ -82,7 +86,10 @@ struct instance_stratholme : public ScriptedInstance
             Encounter[i] = NOT_STARTED;
 
         for(uint8 i = 0; i < 5; i++)
-            IsSilverHandDead[5] = false;
+            IsSilverHandDead[i] = false;
+
+        for(uint8 i = 0; i < 3; i++)
+            CrystalsGUID[i] = 0;
 
         BaronRun_Timer = 0;
         SlaugtherSquare_Timer = 0;
@@ -100,8 +107,10 @@ struct instance_stratholme : public ScriptedInstance
 
         baronGUID = 0;
         ysidaTriggerGUID = 0;
-        crystalsGUID.clear();
         abomnationGUID.clear();
+        acolyte1GUID.clear();
+        acolyte2GUID.clear();
+        acolyte3GUID.clear();
     }
 
     Player* GetPlayerInMap()
@@ -123,8 +132,7 @@ struct instance_stratholme : public ScriptedInstance
 
     bool StartSlaugtherSquare()
     {
-        //change to DONE when crystals implemented
-        if (Encounter[1] == IN_PROGRESS && Encounter[2] == IN_PROGRESS && Encounter[3] == IN_PROGRESS)
+        if (Encounter[1] == DONE && Encounter[2] == DONE && Encounter[3] == DONE)
         {
             UpdateGoState(portGauntletGUID,0,false);
             UpdateGoState(portSlaugtherGUID,0,false);
@@ -158,10 +166,29 @@ struct instance_stratholme : public ScriptedInstance
         {
         case C_BARON:           baronGUID = creature->GetGUID(); break;
         case C_YSIDA_TRIGGER:   ysidaTriggerGUID = creature->GetGUID(); break;
-        case C_CRYSTAL:         crystalsGUID.insert(creature->GetGUID()); break;
+        case C_CRYSTAL:
+            {
+                if (creature->GetPositionX() > 4000)
+                    CrystalsGUID[2] = creature->GetGUID();
+                else if (creature->GetPositionY() < -3600)
+                    CrystalsGUID[0] = creature->GetGUID();
+                else
+                    CrystalsGUID[1] = creature->GetGUID();
+                break;
+            }
         case C_ABOM_BILE:
         case C_ABOM_VENOM:      abomnationGUID.insert(creature->GetGUID()); break;
         case C_YSIDA:           ysidaGUID = creature->GetGUID(); break;
+        case C_ACOLYTE:
+            {
+                if (creature->GetPositionX() > 4000)
+                    acolyte3GUID.push_back(creature->GetGUID());
+                else if (creature->GetPositionY() < -3600)
+                    acolyte1GUID.push_back(creature->GetGUID());
+                else
+                    acolyte2GUID.push_back(creature->GetGUID());
+                break;
+            }
         }
     }
 
@@ -184,6 +211,15 @@ struct instance_stratholme : public ScriptedInstance
         case GO_PORT_SLAUGTHER:     portSlaugtherGUID = go->GetGUID(); break;
         case GO_PORT_ELDERS:        portElderGUID = go->GetGUID(); break;
         }
+    }
+
+    bool IsEncounterInProgress() const
+    {
+        for (uint8 i = 1; i < ENCOUNTERS; ++i) // do not check baron run event
+            if (Encounter[i] == IN_PROGRESS)
+                return true;
+
+        return false;
     }
 
     void SetData(uint32 type, uint32 data)
@@ -218,23 +254,23 @@ struct instance_stratholme : public ScriptedInstance
             break;
         case TYPE_BARONESS:
             Encounter[1] = data;
-            if (data == IN_PROGRESS)
+            if (data == SPECIAL)
                 UpdateGoState(ziggurat1GUID,0,false);
-            if (data == IN_PROGRESS)                    //change to DONE when crystals implemented
+            if (data == DONE)
                 StartSlaugtherSquare();
             break;
         case TYPE_NERUB:
             Encounter[2] = data;
-            if (data == IN_PROGRESS)
+            if (data == SPECIAL)
                 UpdateGoState(ziggurat2GUID,0,false);
-            if (data == IN_PROGRESS)                    //change to DONE when crystals implemented
+            if (data == DONE)
                 StartSlaugtherSquare();
             break;
         case TYPE_PALLID:
             Encounter[3] = data;
-            if (data == IN_PROGRESS)
+            if (data == SPECIAL)
                 UpdateGoState(ziggurat3GUID,0,false);
-            if (data == IN_PROGRESS)                    //change to DONE when crystals implemented
+            if (data == DONE)
                 StartSlaugtherSquare();
             break;
         case TYPE_RAMSTEIN:
@@ -261,10 +297,15 @@ struct instance_stratholme : public ScriptedInstance
                     debug_log("TSCR: Instance Stratholme: Ramstein spawned.");
                 } else debug_log("TSCR: Instance Stratholme: %u Abomnation left to kill.",count);
             }
-            if (data == DONE)
+            if (data == SPECIAL)
             {
                 SlaugtherSquare_Timer = 300000;
                 debug_log("TSCR: Instance Stratholme: Slaugther event will continue in 5 minutes.");
+            }
+            if (data == DONE)
+            {
+                SlaugtherSquare_Timer = 10000;
+                debug_log("TSCR: Instance Stratholme: Skeletons died, slaughter event will continue");
             }
             Encounter[4] = data;
             break;
@@ -326,6 +367,30 @@ struct instance_stratholme : public ScriptedInstance
         case TYPE_SH_VICAR:
             IsSilverHandDead[4] = (data) ? true : false;
             break;
+        case TYPE_GAUNTLET_MOB:
+            if (data != 1)
+                break;
+            if (GetData(TYPE_NERUB) != DONE && std::none_of(acolyte2GUID.begin(),acolyte2GUID.end(),[this](uint64 guid)-> bool {Creature *c = GetCreature(guid) ; return c ? c->isAlive():false;}))
+            {
+                Creature *c = GetCreature(CrystalsGUID[1]);
+                if(c && c->isAlive())
+                    c->Kill(c,false);
+                SetData(TYPE_NERUB,DONE);
+            }
+            if (GetData(TYPE_BARONESS) != DONE && std::none_of(acolyte1GUID.begin(),acolyte1GUID.end(),[this](uint64 guid)-> bool {Creature *c = GetCreature(guid) ; return c ? c->isAlive():false;}))
+            {
+                Creature *c = GetCreature(CrystalsGUID[0]);
+                if(c && c->isAlive())
+                    c->Kill(c,false);
+                SetData(TYPE_BARONESS,DONE);
+            }
+            if (GetData(TYPE_PALLID) != DONE && std::none_of(acolyte3GUID.begin(),acolyte3GUID.end(),[this](uint64 guid)-> bool {Creature *c = GetCreature(guid) ; return c ? c->isAlive():false;}))
+            {
+                Creature *c = GetCreature(CrystalsGUID[2]);
+                if(c && c->isAlive())
+                    c->Kill(c,false);
+                SetData(TYPE_PALLID,DONE);
+            }
         }
     }
 

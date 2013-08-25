@@ -13,9 +13,12 @@
 #define TYPE_WARDEN_2           6
 #define TYPE_WARDEN_3           7
 #define TYPE_WARDEN_4           8
-#define TYPE_WARDEN_5           9
-#define DATA_MELLICHAR          10
-#define TYPE_SHIELD_OPEN        11
-#define DATA_SPHERE_SHIELD      12
+#define DATA_MELLICHAR          9
+#define DATA_SPHERE_SHIELD      10
+#define DATA_POD_A              11
+#define DATA_POD_B              12
+#define DATA_POD_D              13
+#define DATA_POD_G              14
+#define DATA_POD_O              15
 #endif
 

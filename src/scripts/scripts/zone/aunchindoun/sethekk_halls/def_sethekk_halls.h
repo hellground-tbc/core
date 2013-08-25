@@ -5,8 +5,9 @@
 #ifndef DEF_SETHEKK_HALLS_H
 #define DEF_SETHEKK_HALLS_H
 
-#define DATA_IKISSEVENT 1
-#define DATA_ANZUEVENT 2
-#define DATA_DARKWEAVEREVENT 3
+#define DATA_IKISSEVENT         1
+#define DATA_ANZUEVENT          2
+#define DATA_DARKWEAVEREVENT    3
+#define DATA_LAKKA              4
 #endif
 

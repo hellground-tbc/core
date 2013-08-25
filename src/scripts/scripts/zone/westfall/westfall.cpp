@@ -336,7 +336,7 @@ bool QuestAccept_npc_defias_traitor(Player* player, Creature* creature, Quest co
     if (quest->GetQuestId() == QUEST_DEFIAS_BROTHERHOOD)
     {
         if (npc_escortAI* pEscortAI = CAST_AI(npc_defias_traitorAI, creature->AI()))
-            pEscortAI->Start(true, true, player->GetGUID(), quest);
+            pEscortAI->Start(true, true, player->GetGUID(), quest, true);
         DoScriptText(SAY_START, creature, player);
     }
 

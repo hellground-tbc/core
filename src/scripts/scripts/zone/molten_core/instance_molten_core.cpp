@@ -248,15 +248,7 @@ struct instance_molten_core : public ScriptedInstance
                 break;
         }
 
-        const CreatureData *tmp = creature->GetLinkedRespawnCreatureData();
-        if (!tmp)
-            return;
-
-        if (GetEncounterForEntry(tmp->id) && creature->isAlive() && GetData(GetEncounterForEntry(tmp->id)) == DONE)
-        {
-            creature->setDeathState(JUST_DIED);
-            creature->RemoveCorpse();
-        }
+        HandleInitCreatureState(creature);
     }
 
     uint64 GetData64 (uint32 identifier)
@@ -372,7 +364,7 @@ struct instance_molten_core : public ScriptedInstance
     std::string GetSaveData()
     {
         OUT_SAVE_INST_DATA;
-        
+
         std::ostringstream stream;
         stream << Encounter[0] << " ";
         stream << Encounter[1] << " ";

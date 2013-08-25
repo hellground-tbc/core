@@ -109,7 +109,7 @@ struct boss_general_angerforgeAI : public ScriptedAI
         //MightyBlow_Timer
         if (MightyBlow_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MIGHTYBLOW);
+            DoCast(me->getVictim(),SPELL_MIGHTYBLOW);
             MightyBlow_Timer = 18000;
         }
         else
@@ -118,7 +118,7 @@ struct boss_general_angerforgeAI : public ScriptedAI
         //HamString_Timer
         if (HamString_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_HAMSTRING);
+            DoCast(me->getVictim(),SPELL_HAMSTRING);
             HamString_Timer = 15000;
         }
         else
@@ -127,21 +127,21 @@ struct boss_general_angerforgeAI : public ScriptedAI
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCast(me->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 9000;
         }
         else
             Cleave_Timer -= diff;
 
         //Adds_Timer
-        if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 21 )
+        if ( me->GetHealth()*100 / me->GetMaxHealth() < 21 )
         {
             if (Adds_Timer < diff)
             {
                 // summon 3 Adds every 25s
-                SummonAdds(m_creature->getVictim());
-                SummonAdds(m_creature->getVictim());
-                SummonAdds(m_creature->getVictim());
+                SummonAdds(me->getVictim());
+                SummonAdds(me->getVictim());
+                SummonAdds(me->getVictim());
 
                 Adds_Timer = 25000;
             }
@@ -150,19 +150,19 @@ struct boss_general_angerforgeAI : public ScriptedAI
         }
 
         //Summon Medics
-        if ( !Medics && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 21 )
+        if ( !Medics && me->GetHealth()*100 / me->GetMaxHealth() < 21 )
         {
-            SummonMedics(m_creature->getVictim());
-            SummonMedics(m_creature->getVictim());
+            SummonMedics(me->getVictim());
+            SummonMedics(me->getVictim());
             Medics = true;
         }
 
         DoMeleeAttackIfReady();
     }
 };
-CreatureAI* GetAI_boss_general_angerforge(Creature *_Creature)
+CreatureAI* GetAI_boss_general_angerforge(Creature *creature)
 {
-    return new boss_general_angerforgeAI (_Creature);
+    return new boss_general_angerforgeAI (creature);
 }
 
 void AddSC_boss_general_angerforge()

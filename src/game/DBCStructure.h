@@ -792,6 +792,61 @@ struct SpellEntry
         return false;
     }
 
+    bool IsDestTargetEffect(uint8 eff) const
+    {
+        switch (EffectImplicitTargetA[eff])
+        {
+            case TARGET_DST_HOME:
+            case TARGET_DST_DB:
+            case TARGET_DST_CASTER:
+            case TARGET_DEST_DYNOBJ_ENEMY:
+            case TARGET_DEST_DYNOBJ_ALLY:
+            case TARGET_UNIT_AREA_ALLY_DST:
+            case TARGET_UNIT_AREA_PARTY_DST:
+            case TARGET_DEST_CASTER_RANDOM_UNKNOWN:
+            case TARGET_DEST_CASTER_FRONT_LEFT:
+            case TARGET_DEST_CASTER_BACK_LEFT:
+            case TARGET_DEST_CASTER_BACK_RIGHT:
+            case TARGET_DEST_CASTER_FRONT_RIGHT:
+            case TARGET_DST_NEARBY_ENTRY:
+            case TARGET_DEST_CASTER_FRONT:
+            case TARGET_DEST_CASTER_BACK:
+            case TARGET_DEST_CASTER_RIGHT:
+            case TARGET_DEST_CASTER_LEFT:
+            case TARGET_DST_TARGET_ENEMY:
+            case TARGET_DEST_CASTER_FRONT_LEAP:
+            case TARGET_DEST_TARGET_ANY:
+            case TARGET_DEST_TARGET_FRONT:
+            case TARGET_DEST_TARGET_BACK:
+            case TARGET_DEST_TARGET_RIGHT:
+            case TARGET_DEST_TARGET_LEFT:
+            case TARGET_DEST_TARGET_FRONT_LEFT:
+            case TARGET_DEST_TARGET_BACK_LEFT:
+            case TARGET_DEST_TARGET_BACK_RIGHT:
+            case TARGET_DEST_TARGET_FRONT_RIGHT:
+            case TARGET_DEST_CASTER_RANDOM:
+            case TARGET_DEST_CASTER_RADIUS:
+            case TARGET_DEST_TARGET_RANDOM:
+            case TARGET_DEST_TARGET_RADIUS:
+            case TARGET_DEST_CHANNEL:
+            case TARGET_DEST_DEST_FRONT:
+            case TARGET_DEST_DEST_BACK:
+            case TARGET_DEST_DEST_RIGHT:
+            case TARGET_DEST_DEST_LEFT:
+            case TARGET_DEST_DEST_FRONT_LEFT:
+            case TARGET_DEST_DEST_BACK_LEFT:
+            case TARGET_DEST_DEST_BACK_RIGHT:
+            case TARGET_DEST_DEST_FRONT_RIGHT:
+            case TARGET_DEST_DEST_RANDOM:
+            case TARGET_DEST_DEST:
+            case TARGET_DEST_DYNOBJ_NONE:
+            case TARGET_DEST_TRAJ:
+                return true;
+        }
+
+        return false;
+    }
+
     bool NeedFillTargetMapForTargets(uint8 eff) const
     {
         // check combinations A <> B of implicit targets

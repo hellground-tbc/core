@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 
-#define SPELL_ARCANEMISSILES           22272
+#define SPELL_ARCANEMISSILES           15791
 #define SPELL_SHADOWSHIELD             22417                //Not right ID. But 12040 is wrong either.
 #define SPELL_CURSE                    18702
 

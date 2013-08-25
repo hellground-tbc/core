@@ -261,7 +261,10 @@ void BattleGround::Update(uint32 diff)
         {
             m_PrematureCountDown = true;
             m_PrematureCountDownTimer = sBattleGroundMgr.GetPrematureFinishTime();
-            SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
+            if( sBattleGroundMgr.IsPrematureFinishTimerEnabled())
+                PrepareMessageToAll("Not enough players. This battleground will close in %u min.",m_PrematureCountDownTimer / 60000);
+            else
+                SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
         }
         else if (m_PrematureCountDownTimer < diff)
         {
@@ -274,7 +277,10 @@ void BattleGround::Update(uint32 diff)
             uint32 newtime = m_PrematureCountDownTimer - diff;
             // announce every minute
             if (m_PrematureCountDownTimer != sBattleGroundMgr.GetPrematureFinishTime() && newtime / 60000 != m_PrematureCountDownTimer / 60000)
-                SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
+                if( sBattleGroundMgr.IsPrematureFinishTimerEnabled())
+                    PrepareMessageToAll("Not enough players. This battleground will close in %u min.",m_PrematureCountDownTimer / 60000);
+                else
+                    SendMessageToAll(LANG_BATTLEGROUND_PREMATURE_FINISH_WARNING);
             m_PrematureCountDownTimer = newtime;
         }
     }
@@ -297,11 +303,10 @@ void BattleGround::Update(uint32 diff)
 
     if (isArena() && GetStatus() == STATUS_IN_PROGRESS)
     {
-        uint8 dct = 5;
-        if (GetMapId() == 559 && dct && dct < (time(NULL) - m_progressStart))
+        if (GetMapId() == 559 && BG_NA_DOOR_DESPAWN_TIMER < (time(NULL) - m_progressStart))
         {
             for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; i++)
-                DelObject(i);
+                DelObject(i, false);
         }
     }
 }
@@ -872,7 +877,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if (isArena())
             {
                 plr->RemoveArenaAuras(true);    // removes debuffs / dots etc., we don't want the player to die after porting out
-                plr->GetMotionMaster()->MoveIdle();
+                plr->GetMotionMaster()->MovementExpired();
 
                 bgTypeId=BATTLEGROUND_AA;       // set the bg type to all arenas (it will be used for queue refreshing)
 
@@ -1208,6 +1213,8 @@ void BattleGround::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
             break;
         case SCORE_DEATHS:                                  // Deaths
             itr->second->Deaths += value;
+            if (itr->second->Deaths >= 50)
+                Source->ToUnit()->WorthHonor = true;
             break;
         case SCORE_HONORABLE_KILLS:                         // Honorable kills
             itr->second->HonorableKills += value;
@@ -1500,7 +1507,7 @@ bool BattleGround::DelCreature(uint32 type)
     return true;
 }
 
-bool BattleGround::DelObject(uint32 type)
+bool BattleGround::DelObject(uint32 type, bool setGoState)
 {
     Map * map = GetMap();
     if (!map)
@@ -1516,7 +1523,7 @@ bool BattleGround::DelObject(uint32 type)
         return false;
     }
     obj->SetRespawnTime(0);                                 // not save respawn time
-    obj->Delete();
+    obj->Delete(setGoState);
     m_BgObjects[type] = 0;
     return true;
 }
@@ -1572,6 +1579,16 @@ void BattleGround::SendMessageToAll(char const* text)
     WorldPacket data;
     ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
     SendPacketToAll(&data);
+}
+
+void BattleGround::PrepareMessageToAll(char const *format, ...)
+{
+    va_list ap;
+    char str [1024];
+    va_start(ap, format);
+    vsnprintf(str,1024,format, ap);
+    va_end(ap);
+    SendMessageToAll(str);
 }
 
 void BattleGround::SendMessageToAll(int32 entry)
@@ -1677,7 +1694,9 @@ void BattleGround::HandleKillPlayer(Player *player, Player *killer)
     // add +1 kills to group and +1 killing_blows to killer
     if (killer)
     {
-        UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
+        if (!player->ToUnit()->WorthHonor)
+            UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
+
         UpdatePlayerScore(killer, SCORE_KILLING_BLOWS, 1);
 
         for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -1687,7 +1706,7 @@ void BattleGround::HandleKillPlayer(Player *player, Player *killer)
             if (!plr || plr == killer)
                 continue;
 
-            if (plr->GetTeam() == killer->GetTeam() && plr->IsAtGroupRewardDistance(player))
+            if (plr->GetTeam() == killer->GetTeam() && plr->IsAtGroupRewardDistance(player) && !player->ToUnit()->WorthHonor)
                 UpdatePlayerScore(plr, SCORE_HONORABLE_KILLS, 1);
         }
     }
@@ -1806,4 +1825,30 @@ void BattleGround::SetStatus(uint32 Status)
     m_Status = Status;
     if (Status == STATUS_IN_PROGRESS)
         m_progressStart = time(NULL);
+}
+
+void BattleGround::SendObjectiveComplete(uint32 id, uint32 TeamID, float x, float y)
+{
+    float distance =45.0f;
+    distance= distance*distance;
+    for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        Player *plr = sObjectMgr.GetPlayer(itr->first);
+
+        if (!plr)
+        {
+            sLog.outDebug("BattleGround: Player " UI64FMTD " not found!", itr->first);
+            continue;
+        }
+
+        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        if (!team) team = plr->GetTeam();
+
+        if (team == TeamID && plr->IsInWorld())
+        {
+            float dist = (plr->GetPositionX() - x)*(plr->GetPositionX() - x)+(plr->GetPositionY() - y)*(plr->GetPositionY() - y);
+            if (dist < distance)
+                plr->KilledMonster(id, 0);
+        }
+    }
 }

@@ -330,6 +330,7 @@ class Spell
         void EffectSummonCritter(uint32 i);
         void EffectKnockBack(uint32 i);
         void EffectPlayerPull(uint32 i);
+        void EffectSuspendGravity(uint32 i);
         void EffectDispelMechanic(uint32 i);
         void EffectSummonDeadPet(uint32 i);
         void EffectDestroyAllTotems(uint32 i);
@@ -630,6 +631,10 @@ class Spell
         uint32 m_timer;
 
         Position m_cast;
+
+        bool IsTriggeredSpell() const { return m_IsTriggeredSpell; }
+        bool IsAutoShootSpell() const { return IsAutoRepeat() && IsRangedSpell(); }
+
         bool m_IsTriggeredSpell;
 
         // if need this can be replaced by Aura copy

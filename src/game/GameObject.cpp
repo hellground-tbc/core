@@ -332,7 +332,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     if (!ok)
                         Cell::VisitWorldObjects(this, checker, radius);
                 }
-                else                                        // environmental trap
+                else if (isSpawnedByDefault())                                        // environmental trap
                 {
                     // affect only players
                     Player* p_ok = NULL;
@@ -438,6 +438,11 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                         m_lootState = GO_JUST_DEACTIVATED;
                     break;
                 }
+                default:
+                {
+                    m_lootState = GO_JUST_DEACTIVATED;
+                    break;
+                }
             }
             break;
         }
@@ -501,11 +506,13 @@ void GameObject::AddUniqueUse(Player* player)
     m_unique_users.insert(player->GetGUIDLow());
 }
 
-void GameObject::Delete()
+void GameObject::Delete(bool setGoState)
 {
     SendObjectDeSpawnAnim(GetGUID());
 
-    SetGoState(GO_STATE_READY);
+    if (setGoState)
+        SetGoState(GO_STATE_READY);
+
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
 
     uint16 poolid = sPoolMgr.IsPartOfAPool<GameObject>(GetGUIDLow());
@@ -835,7 +842,11 @@ void GameObject::Reset()
     m_usetimes = 0;
     loot.clear();
     SetUInt32Value(GAMEOBJECT_FLAGS, GetGOInfo()->flags);
+    SetGoState(GetGOData() ? GetGOData()->go_state : GO_STATE_READY);
     SetLootState(GO_READY);
+    if (!GetDespawnPossibility())
+        SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NODESPAWN);// this flag is set in LoadFromDB() for some objects
+
 }
 
 void GameObject::Despawn()
@@ -1099,6 +1110,8 @@ void GameObject::Use(Unit* user)
             // triggering linked GO
             if (uint32 trapEntry = GetGOInfo()->spellFocus.linkedTrapId)
                 TriggeringLinkedGameObject(trapEntry, user);
+            Activate();
+            SetGoState(GO_STATE_ACTIVE);
             return;
         case GAMEOBJECT_TYPE_GOOBER:                        //10
         {
@@ -1265,10 +1278,15 @@ void GameObject::Use(Unit* user)
             m_lootState = GO_ACTIVATED;
 
             AddUniqueUse(pPlayer);
-            if(info->summoningRitual.animSpell)
+            if (info->summoningRitual.animSpell)
                 pPlayer->CastSpell(pPlayer, info->summoningRitual.animSpell, false);
             else
-                pPlayer->CastSpell(pPlayer, 32783, false);
+            {
+                if (m_spellId == 29893)
+                    pPlayer->CastSpell(pPlayer, 43897, false);
+                else
+                    pPlayer->CastSpell(pPlayer, 32783, false);
+            }
 
             if(m_unique_users.size() == GetGOInfo()->summoningRitual.reqParticipants)
             {
@@ -1446,6 +1464,13 @@ void GameObject::CastSpell(Unit* target, uint32 spell)
         return;
     }
 
+    if (target)
+    {
+        const SpellEntry* spellInfo = sSpellStore.LookupEntry(spell);
+        if (SpellMgr::isSpellBreakStealth(spellInfo))
+            target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
+    }
+
     if (Unit *owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
@@ -1530,7 +1555,7 @@ void GameObject::HandleNonDbcSpell(uint32 spellId, Player* pUser)
             uint32 entry = spellId == 37639 ? 20021 : 21729;
 
             float x, y, z;
-            pUser->GetClosePoint(x, y, z, 0.0f, 3.0f, frand(0, 2*M_PI));
+            pUser->GetNearPoint(x, y, z, 0.0f, 3.0f, frand(0, 2*M_PI));
             if (Creature *pSummon = pUser->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
                 pSummon->AI()->AttackStart(pUser);
 

@@ -112,11 +112,15 @@ void WardenMac::RequestHash()
     WorldPacket pkt(SMSG_WARDEN_DATA, sizeof(WardenHashRequest));
     pkt.append((uint8*)&Request, sizeof(WardenHashRequest));
     Client->SendPacket(&pkt);
+    
+    m_initialized = true;
+    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 void WardenMac::HandleHashResult(ByteBuffer &buff)
 {
-
+    m_WardenDataSent = false;
+    m_WardenKickTimer = 0;
     // test
     int keyIn[4];
 
@@ -172,10 +176,6 @@ void WardenMac::HandleHashResult(ByteBuffer &buff)
 
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
-
-    m_initialized = true;
-
-    m_WardenTimer = WorldTimer::getMSTime();
 }
 
 void WardenMac::RequestData()

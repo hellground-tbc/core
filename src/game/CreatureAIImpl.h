@@ -539,16 +539,20 @@ inline bool CreatureAI::UpdateVictim()
     if (!me->isInCombat() || !me->isAlive())
         return false;
 
-    if (me->hasUnitState(UNIT_STAT_LOST_CONTROL))
+    bool outofthreat = me->IsOutOfThreatArea(me->getVictim());
+    if (me->hasUnitState(UNIT_STAT_LOST_CONTROL) && !outofthreat)
+    {
+        me->SetSelection(0);
         return me->getVictim();
+    }
 
-    if (me->getVictim())
+    if (me->getVictim() && !outofthreat)
     {
         if (me->IsNonMeleeSpellCasted(false))
             return true;
         else
         {
-            if (!me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID())
+            if (!me->hasUnitState(UNIT_STAT_CANNOT_TURN) && !me->HasReactState(REACT_PASSIVE) && me->GetSelection() != me->getVictimGUID() && !me->hasIgnoreVictimSelection())
                 me->SetSelection(me->getVictimGUID());
         }
     }
@@ -558,7 +562,7 @@ inline bool CreatureAI::UpdateVictim()
         if (Unit *pVictim = me->SelectVictim())
             AttackStart(pVictim);
     }
-    else if (me->getThreatManager().isThreatListEmpty())
+    else if (me->getThreatManager().isThreatListEmpty() || outofthreat)
     {
         EnterEvadeMode();
         me->SetReactState(REACT_PASSIVE);
@@ -631,14 +635,14 @@ inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, 
 inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
 {
     WorldLocation pos;
-    obj->GetClosePoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
+    obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
 inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
 {
     WorldLocation pos;
-    obj->GetClosePoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
+    obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
     pos.coord_z += _fZ;
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }

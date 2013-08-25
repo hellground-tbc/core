@@ -919,50 +919,29 @@ void BattleGroundEY::FillInitialWorldStates(WorldPacket& data)
 
 WorldSafeLocsEntry const *BattleGroundEY::GetClosestGraveYard(float x, float y, float z, uint32 team)
 {
-    uint32 g_id = 0;
-
-    if (team == ALLIANCE)
-        g_id = EY_GRAVEYARD_MAIN_ALLIANCE;
-    else if (team == HORDE)
-        g_id = EY_GRAVEYARD_MAIN_HORDE;
-    else
-        return NULL;
-
-    float distance, nearestDistance;
-
-    WorldSafeLocsEntry const* entry = NULL;
-    WorldSafeLocsEntry const* nearestEntry = NULL;
-    entry = sWorldSafeLocsStore.LookupEntry(g_id);
-    nearestEntry = entry;
-
-    if (!entry)
-    {
-        sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Not found the main team graveyard. Graveyard system isn't working!");
-        return NULL;
-    }
-
-    distance = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y) + (entry->z - z)*(entry->z - z);
-    nearestDistance = distance;
-
+    WorldSafeLocsEntry const* good_entry = NULL;
+    float mindist = 999999.0f;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
-        if (m_PointOwnedByTeam[i]==team && m_PointState[i]==EY_POINT_UNDER_CONTROL)
+        WorldSafeLocsEntry const*entry = sWorldSafeLocsStore.LookupEntry(i+EY_GRAVEYARD_FEL_REALVER);
+        if (!entry || !(m_PointOwnedByTeam[i]==team) || !(m_PointState[i]==EY_POINT_UNDER_CONTROL))
+            continue;
+        float dist = (entry->x - x)*(entry->x - x)+(entry->y - y)*(entry->y - y)+(entry->z - z)*(entry->z - z);
+        if (mindist > dist)
         {
-            entry = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[i].GraveYardId);
-            if (!entry)
-                sLog.outLog(LOG_DEFAULT, "ERROR: BattleGroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
-            else
-            {
-                distance = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y) + (entry->z - z)*(entry->z - z);
-                if (distance < nearestDistance)
-                {
-                    nearestDistance = distance;
-                    nearestEntry = entry;
-                }
-            }
+            mindist = dist;
+            good_entry = entry;
         }
     }
+    // If not, place ghost on starting location
+    if (!good_entry)
+    {
+        if (team== ALLIANCE)
+        good_entry = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_ALLIANCE);
+        else
+        good_entry = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_HORDE);
+    }
 
-    return nearestEntry;
+    return good_entry;
 }
 

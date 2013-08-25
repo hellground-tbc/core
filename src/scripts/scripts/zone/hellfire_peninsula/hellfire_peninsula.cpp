@@ -445,7 +445,7 @@ struct npc_demoniac_scryerAI : public ScriptedAI
         }
 
         float fX, fY, fZ;
-        me->GetNearPoint(me, fX, fY, fZ, 0.0f, 5.0f, fAngle);
+        me->GetNearPoint(fX, fY, fZ, 0.0f, 5.0f, fAngle);
 
         uint32 m_Time = TIME_TOTAL - (SpawnButtressTimer * ButtressCount);
         me->SummonCreature(NPC_BUTTRESS, fX, fY, fZ, me->GetAngle(fX, fY), TEMPSUMMON_TIMED_DESPAWN, m_Time);
@@ -1024,7 +1024,7 @@ void SendActionMenu_go_ice_stone(Player *player, GameObject* go, uint32 action)
     player->CLOSE_GOSSIP_MENU();
 
     float x,y,z;
-    player->GetClosePoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+    player->GetNearPoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
 
     switch(action)
     {
@@ -1251,12 +1251,14 @@ struct npc_anchorite_baradaAI : public ScriptedAI
 
     uint32 StepsTimer;
     uint32 Steps;
+    uint64 PlayerGUID;
 
     void Reset()
     {
         Exorcim = false;
         StepsTimer = 0;
         Steps = 0;
+        PlayerGUID = 0;
     }
 
     void AttackedBy(Unit* who) {}
@@ -1269,95 +1271,103 @@ struct npc_anchorite_baradaAI : public ScriptedAI
 
     uint32 NextStep(uint32 Steps)
     {
-        Creature* Colonel = GetClosestCreatureWithEntry(me, NPC_COLONEL_JULES, 15);
-
-        switch(Steps)
+        if (Creature* Colonel = GetClosestCreatureWithEntry(me, NPC_COLONEL_JULES, 15))
         {
-            case 1:me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                   me->SetStandState(UNIT_STAND_STATE_STAND);return 2000;
-            case 2:DoScriptText(SAY_BARADA1, me,0);return 5000;
-            case 3:DoScriptText(SAY_BARADA2, me,0);return 3000;
-            case 4:DoScriptText(SAY_COLONEL1, Colonel, 0);return 3000;
-            case 5:me->SetWalk(true);;return 3000;
-            case 6:me->GetMotionMaster()->MovePoint(0, P[7].x, P[7].y, P[7].z);return 2000;
-            case 7:me->GetMotionMaster()->MovePoint(0, P[8].x, P[8].y, P[8].z);return 2100;
-            case 8:me->SetFacingToObject(Colonel);return 2000;
-            case 9:me->CastSpell(me, SPELL_EXORCIM , false);return 10000;
-            case 10:DoScriptText(SAY_BARADA3, me,0); return 10000;
-            case 11:DoScriptText(SAY_COLONEL2, Colonel, 0);return 8000;
-            case 12:me->RemoveAllAuras();
-            case 13:me->CastSpell(me, SPELL_EXORCIM2 , false);
-            case 14:Colonel->CastSpell(Colonel, SPELL_COLONEL1, false);
-            case 15:Colonel->SetSpeed(MOVE_FLIGHT, 0.15f);
-                    Colonel->SetLevitate(true);
-                    Colonel->GetMotionMaster()->MovePoint(0, P[1].x, P[1].y, P[1].z);
-                    Colonel->CastSpell(Colonel, SPELL_COLONEL3, false);return 14000;
-            case 16:DoScriptText(SAY_COLONEL3, Colonel, 0);
-                    DoSpawnDarkness();
-                    DoSpawnDarkness();return 14000;
-            case 17:DoScriptText(SAY_BARADA4, me, 0);
-                    DoSpawnDarkness();
-                    DoSpawnDarkness();return 14000;
-            case 18:DoScriptText(SAY_COLONEL4, Colonel, 0);
-                    DoSpawnDarkness();return 14000;
-            case 19:DoScriptText(SAY_BARADA5, me, 0); return 14000;
-            case 20:Colonel->CastSpell(Colonel, SPELL_COLONEL4, false);
-                    Colonel->CastSpell(Colonel, SPELL_COLONEL2, false);
-                    DoSpawnDarkness();return 1500;
-            case 21:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);return 7000;
-            case 22:DoScriptText(SAY_COLONEL5, Colonel, 0);return 1000;
-            case 23:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);
-                    DoSpawnDarkness();return 5000;
-            case 24:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);
-                    Colonel->CastSpell(me,SPELL_COLONEL5, false);return 3500;
-            case 25:DoScriptText(SAY_BARADA6, me, 0);
-            case 26:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);
-                    DoSpawnDarkness();return 2000;
-            case 27:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[4].z);return 4000;
-            case 28:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);
-                    DoScriptText(SAY_COLONEL6, Colonel, 0);
-                    DoSpawnDarkness();return 4000;
-            case 29:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);return 4000;
-            case 30:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);return 4000;
-            case 31: DoScriptText(SAY_BARADA7, me, 0); return 0;
-            case 32:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);
-                    DoSpawnDarkness();return 4000;
-            case 33:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);return 4000;
-            case 34:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);
-                    DoScriptText(SAY_COLONEL7, Colonel, 0);
-                    DoSpawnDarkness();return 4000;
-            case 35:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);return 4000;
-            case 36:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);
-                    DoSpawnDarkness();return 4000;
-            case 37:DoScriptText(SAY_BARADA6, me, 0);
-            case 38:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);return 2500;
-            case 39:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);return 4000;
-            case 40:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);
-                    DoScriptText(SAY_COLONEL8, Colonel, 0);return 4000;
-            case 41:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);return 4000;
-            case 42:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);return 4000;
-            case 43:DoScriptText(SAY_BARADA6, me, 0); return 1000;
-            case 44:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);return 4000;
-            case 45:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);
-                    Colonel->CastSpell(Colonel, SPELL_COLONEL8, false);return 4000;
-            case 46:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);
-                    Colonel->CastSpell(Colonel, SPELL_COLONEL7, false);return 4000;
-            case 47:Colonel->GetMotionMaster()->MovePoint(0, P[6].x, P[6].y, P[6].z);return 5000;
-            case 48:DoScriptText(SAY_BARADA8, me, 0); return 1000;
-            case 49:Colonel->GetMotionMaster()->MovePoint(0, P[0].x, P[0].y, P[0].z);return 3000;
-            case 50:Colonel->RemoveAllAuras();
-            case 51:me->RemoveAllAuras();return 2000;
-            case 52:me->SetWalk(true);return 2000;
-            case 53:me->GetMotionMaster()->MovePoint(0, P[9].x, P[9].y, P[9].z);return 2200;
-            case 54:me->GetMotionMaster()->MovePoint(0, P[10].x, P[10].y, P[10].z);return 7000;
-            case 55:me->SetStandState(UNIT_STAND_STATE_KNEEL);
-                    me->CombatStop();return 3000;
-            case 56:Colonel->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);return 20000;
-            case 57:me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-                    Colonel->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-            case 58:Reset();
-        default: return 0;
+            switch(Steps)
+            {
+                case 1:me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        me->SetStandState(UNIT_STAND_STATE_STAND);return 2000;
+                case 2:DoScriptText(SAY_BARADA1, me,0);return 5000;
+                case 3:DoScriptText(SAY_BARADA2, me,0);return 3000;
+                case 4:DoScriptText(SAY_COLONEL1, Colonel, 0);return 3000;
+                case 5:me->SetWalk(true);;return 3000;
+                case 6:me->GetMotionMaster()->MovePoint(0, P[7].x, P[7].y, P[7].z);return 2000;
+                case 7:me->GetMotionMaster()->MovePoint(0, P[8].x, P[8].y, P[8].z);return 2100;
+                case 8:me->SetFacingToObject(Colonel);return 2000;
+                case 9:me->CastSpell(me, SPELL_EXORCIM , false);return 10000;
+                case 10:DoScriptText(SAY_BARADA3, me,0); return 10000;
+                case 11:DoScriptText(SAY_COLONEL2, Colonel, 0);return 8000;
+                case 12:me->RemoveAllAuras();
+                case 13:me->CastSpell(me, SPELL_EXORCIM2 , false);
+                case 14:Colonel->CastSpell(Colonel, SPELL_COLONEL1, false);
+                case 15:Colonel->SetSpeed(MOVE_FLIGHT, 0.15f);
+                        Colonel->SetLevitate(true);
+                        Colonel->GetMotionMaster()->MovePoint(0, P[1].x, P[1].y, P[1].z);
+                        Colonel->CastSpell(Colonel, SPELL_COLONEL3, false);return 14000;
+                case 16:DoScriptText(SAY_COLONEL3, Colonel, 0);
+                        DoSpawnDarkness();
+                        DoSpawnDarkness();return 14000;
+                case 17:DoScriptText(SAY_BARADA4, me, 0);
+                        DoSpawnDarkness();
+                        DoSpawnDarkness();return 14000;
+                case 18:DoScriptText(SAY_COLONEL4, Colonel, 0);
+                        DoSpawnDarkness();return 14000;
+                case 19:DoScriptText(SAY_BARADA5, me, 0); return 14000;
+                case 20:Colonel->CastSpell(Colonel, SPELL_COLONEL4, false);
+                        Colonel->CastSpell(Colonel, SPELL_COLONEL2, false);
+                        DoSpawnDarkness();return 1500;
+                case 21:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);return 7000;
+                case 22:DoScriptText(SAY_COLONEL5, Colonel, 0);return 1000;
+                case 23:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);
+                        DoSpawnDarkness();return 5000;
+                case 24:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);
+                        Colonel->CastSpell(me,SPELL_COLONEL5, false);return 3500;
+                case 25:DoScriptText(SAY_BARADA6, me, 0);
+                case 26:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);
+                        DoSpawnDarkness();return 2000;
+                case 27:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[4].z);return 4000;
+                case 28:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);
+                        DoScriptText(SAY_COLONEL6, Colonel, 0);
+                        DoSpawnDarkness();return 4000;
+                case 29:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);return 4000;
+                case 30:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);return 4000;
+                case 31: DoScriptText(SAY_BARADA7, me, 0); return 0;
+                case 32:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);
+                        DoSpawnDarkness();return 4000;
+                case 33:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);return 4000;
+                case 34:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);
+                        DoScriptText(SAY_COLONEL7, Colonel, 0);
+                        DoSpawnDarkness();return 4000;
+                case 35:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);return 4000;
+                case 36:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);
+                        DoSpawnDarkness();return 4000;
+                case 37:DoScriptText(SAY_BARADA6, me, 0);
+                case 38:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);return 2500;
+                case 39:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);return 4000;
+                case 40:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);
+                        DoScriptText(SAY_COLONEL8, Colonel, 0);return 4000;
+                case 41:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);return 4000;
+                case 42:Colonel->GetMotionMaster()->MovePoint(0, P[2].x, P[2].y, P[2].z);return 4000;
+                case 43:DoScriptText(SAY_BARADA6, me, 0); return 1000;
+                case 44:Colonel->GetMotionMaster()->MovePoint(0, P[3].x, P[3].y, P[3].z);return 4000;
+                case 45:Colonel->GetMotionMaster()->MovePoint(0, P[4].x, P[4].y, P[4].z);
+                        Colonel->CastSpell(Colonel, SPELL_COLONEL8, false);return 4000;
+                case 46:Colonel->GetMotionMaster()->MovePoint(0, P[5].x, P[5].y, P[5].z);
+                        Colonel->CastSpell(Colonel, SPELL_COLONEL7, false);return 4000;
+                case 47:Colonel->GetMotionMaster()->MovePoint(0, P[6].x, P[6].y, P[6].z);return 5000;
+                case 48:DoScriptText(SAY_BARADA8, me, 0); return 1000;
+                case 49:Colonel->GetMotionMaster()->MovePoint(0, P[0].x, P[0].y, P[0].z);return 3000;
+                case 50:Colonel->RemoveAllAuras();
+                case 51:me->RemoveAllAuras();return 2000;
+                case 52:me->SetWalk(true);return 2000;
+                case 53:me->GetMotionMaster()->MovePoint(0, P[9].x, P[9].y, P[9].z);return 2200;
+                case 54:me->GetMotionMaster()->MovePoint(0, P[10].x, P[10].y, P[10].z);return 7000;
+                case 55:me->SetStandState(UNIT_STAND_STATE_KNEEL);
+                        me->CombatStop();return 3000;
+                case 56:Colonel->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);return 20000;
+                case 57:me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                        Colonel->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                case 58:
+                    {
+                        if (Player* plr = Unit::GetPlayer(PlayerGUID))
+                            if (plr->IsInRange(me,0,15))
+                                plr->GroupEventHappens(QUEST_THE_EXORCIM ,me);
+                    Reset();
+                    }
+            default: return 0;
+            }
         }
+        return 0;
     }
 
     void JustDied(Unit* who)
@@ -1397,6 +1407,7 @@ bool GossipSelect_npc_anchorite_barada(Player* player, Creature* creature, uint3
 {
     if (action == GOSSIP_ACTION_INFO_DEF+1)
     {
+        ((npc_anchorite_baradaAI*)creature->AI())->PlayerGUID = player->GetGUID();
         ((npc_anchorite_baradaAI*)creature->AI())->Exorcim = true;
         player->CLOSE_GOSSIP_MENU();
     }
@@ -2114,6 +2125,190 @@ CreatureAI* GetAI_npc_deranged_helboar(Creature* creature)
     return new npc_deranged_helboarAI(creature);
 }
 
+/*###
+# Quest 10792 "Zeth'Gor Must Burn!" (Horde) - Visual Effect
+####*/
+
+enum Quest10792
+{
+    SPELL_FIRE                  = 35724,
+    GO_FIRE                     = 183816
+};
+struct npc_east_hovelAI : public ScriptedAI
+{
+    npc_east_hovelAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Summon;
+    uint32 ResetTimer;
+    void Reset()
+    {
+        Summon = true;
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_FIRE)
+        {
+			if(Summon)
+            {
+                me->SummonGameObject(GO_FIRE, -934.393005, 1934.01001, 82.031601, 3.35103, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -927.877991, 1927.44995, 81.048897, 5.25344, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -935.54303, 1921.160034, 82.4132, 2.67035, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -944.015015, 1928.160034, 82.105499, 5.98648, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
+    }
+};
+CreatureAI* GetAI_npc_east_hovel(Creature* creature)
+{
+    return new npc_east_hovelAI(creature);
+}
+
+struct npc_west_hovelAI : public ScriptedAI
+{
+    npc_west_hovelAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Summon;
+    uint32 ResetTimer;
+    void Reset()
+    {
+        Summon = true;
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_FIRE)
+        {
+			if(Summon)
+            {
+                me->SummonGameObject(GO_FIRE, -1145.410034, 2064.830078, 80.782600, 5.044, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1156.839966, 2060.870117, 79.176399, 3.83972, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1152.719971, 2073.5, 80.622902, 2.00713, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
+    }
+};
+CreatureAI* GetAI_npc_west_hovel(Creature* creature)
+{
+    return new npc_west_hovelAI(creature);
+}
+
+struct npc_stableAI : public ScriptedAI
+{
+    npc_stableAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Summon;
+    uint32 ResetTimer;
+    void Reset()
+    {
+        Summon = true;
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_FIRE)
+        {
+			if(Summon)
+            {
+                me->SummonGameObject(GO_FIRE, -1067.280029, 1998.949951, 76.286301, 5.86431, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1052.189941, 2012.099976, 80.946198, 5.95157, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1043.439941, 2002.140015, 76.030502, 2.00713, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1052.26001, 1996.339966, 79.377502, 0.628319, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
+    }
+};
+CreatureAI* GetAI_npc_stable(Creature* creature)
+{
+    return new npc_stableAI(creature);
+}
+
+struct npc_barracksAI : public ScriptedAI
+{
+    npc_barracksAI(Creature* creature) : ScriptedAI(creature) {}
+
+    bool Summon;
+    uint32 ResetTimer;
+    void Reset()
+    {
+        Summon = true;
+    }
+
+    void SpellHit(Unit* caster, const SpellEntry* spell)
+    {
+        if(spell->Id == SPELL_FIRE)
+        {
+			if(Summon)
+            {
+                me->SummonGameObject(GO_FIRE, -1176.709961, 1972.189941, 107.182999, 5.18363, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1120.219971, 1929.890015, 92.360901, 0.89011, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1137.099976, 1951.25, 94.115898, 2.32129, 0, 0, 0, 0, 15);
+                me->SummonGameObject(GO_FIRE, -1152.890015, 1961.48999, 92.9795, 0.994838, 0, 0, 0, 0, 15);
+                ResetTimer = 15000;
+                Summon = false;
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if(!Summon)
+        {
+            if (ResetTimer <= diff)
+            {
+                Summon = true;
+            }
+            else ResetTimer -= diff;
+        }
+    }
+};
+CreatureAI* GetAI_npc_barracks(Creature* creature)
+{
+    return new npc_barracksAI(creature);
+}
+
 void AddSC_hellfire_peninsula()
 {
     Script *newscript;
@@ -2246,5 +2441,25 @@ void AddSC_hellfire_peninsula()
     newscript = new Script;
     newscript->Name = "npc_deranged_helboar";
     newscript->GetAI = &GetAI_npc_deranged_helboar;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_east_hovel";
+    newscript->GetAI = &GetAI_npc_east_hovel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_west_hovel";
+    newscript->GetAI = &GetAI_npc_west_hovel;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_stable";
+    newscript->GetAI = &GetAI_npc_stable;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_barracks";
+    newscript->GetAI = &GetAI_npc_barracks;
     newscript->RegisterSelf();
 }

@@ -34,6 +34,7 @@
 #include "revision.h"
 #include "Util.h"
 #include "GameEvent.h"
+#include "BattleGroundMgr.h"
 
 bool ChatHandler::HandleAccountXPToggleCommand(const char* args)
 {
@@ -128,15 +129,11 @@ bool ChatHandler::HandleAccountBattleGroundAnnCommand(const char* args)
             if (session->IsAccountFlagged(ACC_DISABLED_BGANN))
             {
                 session->RemoveAccountFlag(ACC_DISABLED_BGANN);
-
-                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags & '%u' WHERE account_id = '%u'", ~ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("BattleGround announces have been enabled for this account.");
             }
             else
             {
                 session->AddAccountFlag(ACC_DISABLED_BGANN);
-
-                AccountsDatabase.PExecute("UPDATE account SET account_flags = account_flags | '%u' WHERE account_id = '%u'", ACC_DISABLED_GANN, account_id);
                 PSendSysMessage("BattleGround announces have been disabled for this account.");
             }
         }
@@ -146,6 +143,22 @@ bool ChatHandler::HandleAccountBattleGroundAnnCommand(const char* args)
         PSendSysMessage("Specified account not found.");
         SetSentErrorMessage(true);
         return false;
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleAccountAnnounceBroadcastCommand(const char* args)
+{
+    if (m_session->IsAccountFlagged(ACC_DISABLED_BROADCAST))
+    {
+        m_session->RemoveAccountFlag(ACC_DISABLED_BROADCAST);
+        PSendSysMessage("AutoBroadcast announces have been enabled for this account.");
+    }
+    else
+    {
+        m_session->AddAccountFlag(ACC_DISABLED_BROADCAST);
+        PSendSysMessage("AutoBroadcast announces have been disabled for this account.");
     }
 
     return true;
@@ -235,10 +248,12 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     uint32 maxQueuedClientsNum = sWorld.GetMaxQueuedSessionCount();
     std::string str = secsToTimeString(sWorld.GetUptime());
     uint32 updateTime = sWorld.GetUpdateTime();
+    std::string str2 = TimeToTimestampStr(sWorld.GetGameTime());
 
-    PSendSysMessage("Hellground.pl - rev: " _REVISION);
+    PSendSysMessage("HellGround.net - rev: %s",_REVISION);
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
+    PSendSysMessage("Current time: %s", str2.c_str());
     PSendSysMessage("Update time diff: %u.", updateTime);
 
     if (sWorld.IsShutdowning())
@@ -385,3 +400,69 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleServerPVPCommand(const char* /*args*/)
+{
+    Player *player=m_session->GetPlayer();
+
+    if (!sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
+    {
+        PSendSysMessage("Battleground queue info is disabled");
+        return true;
+    }
+
+    if (!(player->InBattleGroundQueue()))
+        PSendSysMessage("You aren't in any battleground queue");
+    else
+    {
+        BattleGroundQueueTypeId qtype;
+        BattleGroundTypeId bgtype;
+        bool isbg;
+        for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
+        {
+            qtype = player->GetBattleGroundQueueTypeId(i);
+            isbg = false;
+            switch (qtype)
+            {
+            case BATTLEGROUND_QUEUE_AB:
+                {
+                    PSendSysMessage("You are queued for Arathi Basin");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_AB;
+                    break;
+                }
+            case BATTLEGROUND_QUEUE_AV:
+                {
+                    PSendSysMessage("You are queued for Alterac Valley");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_AV;
+                    break;
+                }
+            case BATTLEGROUND_QUEUE_WS:
+                {
+                    PSendSysMessage("You are queued for Warsong Gulch");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_WS;
+                    break;
+                }
+            case BATTLEGROUND_QUEUE_EY:
+                {
+                    PSendSysMessage("You are queued for Eye of the storm");
+                    isbg = true;
+                    bgtype = BATTLEGROUND_EY;
+                    break;
+                }
+            default:
+                break;
+            }
+
+            if (isbg)
+            {
+                uint32 minPlayers = sBattleGroundMgr.GetBattleGroundTemplate(bgtype)->GetMinPlayersPerTeam();
+                uint32 queuedHorde = sBattleGroundMgr.m_BattleGroundQueues[qtype].GetQueuedPlayersCount(BG_TEAM_HORDE, player->GetBattleGroundBracketIdFromLevel(bgtype));
+                uint32 queuedAlliance = sBattleGroundMgr.m_BattleGroundQueues[qtype].GetQueuedPlayersCount(BG_TEAM_ALLIANCE, player->GetBattleGroundBracketIdFromLevel(bgtype));
+                PSendSysMessage("Horde queued: %u, Alliance queued: %u. Minimum per team: %u", queuedHorde, queuedAlliance, minPlayers);
+            }
+        }
+    }
+    return true;
+}

@@ -24,7 +24,7 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_arcatraz.h"
 
-#define ENCOUNTERS 9
+#define ENCOUNTERS 8
 
 #define CONTAINMENT_CORE_SECURITY_FIELD_ALPHA 184318        //door opened when Wrath-Scryer Soccothrates dies
 #define CONTAINMENT_CORE_SECURITY_FIELD_BETA  184319        //door opened when Dalliah the Doomsayer dies
@@ -33,7 +33,6 @@ EndScriptData */
 #define POD_DELTA   183964                                  //pod third boss wave
 #define POD_GAMMA   183962                                  //pod fourth boss wave
 #define POD_OMEGA   183965                                  //pod fifth boss wave
-#define WARDENS_SHIELD  184802                              // warden shield
 #define SEAL_SPHERE 184802                                  //shield 'protecting' mellichar
 
 #define MELLICHAR   20904                                   //skyriss will kill this unit
@@ -54,12 +53,11 @@ struct instance_arcatraz : public ScriptedInstance
 
     uint64 Containment_Core_Security_Field_Alpha;
     uint64 Containment_Core_Security_Field_Beta;
-    GameObject *Pod_Alpha;
-    GameObject *Pod_Gamma;
-    GameObject *Pod_Beta;
-    GameObject *Pod_Delta;
-    GameObject *Pod_Omega;
-    GameObject *Wardens_Shield;
+    uint64 Pod_Alpha;
+    uint64 Pod_Gamma;
+    uint64 Pod_Beta;
+    uint64 Pod_Delta;
+    uint64 Pod_Omega;
 
     uint64 GoSphereGUID;
     uint64 MellicharGUID;
@@ -68,12 +66,11 @@ struct instance_arcatraz : public ScriptedInstance
     {
         Containment_Core_Security_Field_Alpha = 0;
         Containment_Core_Security_Field_Beta  = 0;
-        Pod_Alpha = NULL;
-        Pod_Beta  = NULL;
-        Pod_Delta = NULL;
-        Pod_Gamma = NULL;
-        Pod_Omega = NULL;
-        Wardens_Shield = NULL;
+        Pod_Alpha = 0;
+        Pod_Beta  = 0;
+        Pod_Delta = 0;
+        Pod_Gamma = 0;
+        Pod_Omega = 0;
 
         GoSphereGUID = 0;
         MellicharGUID = 0;
@@ -106,12 +103,11 @@ struct instance_arcatraz : public ScriptedInstance
                     HandleGameObject(0, true, go);
                 break;
             case SEAL_SPHERE: GoSphereGUID = go->GetGUID(); break;
-            case POD_ALPHA: Pod_Alpha = go; break;
-            case POD_BETA:  Pod_Beta =  go; break;
-            case POD_DELTA: Pod_Delta = go; break;
-            case POD_GAMMA: Pod_Gamma = go; break;
-            case POD_OMEGA: Pod_Omega = go; break;
-            //case WARDENS_SHIELD: Wardens_Shield = go; break;
+            case POD_ALPHA: Pod_Alpha = go->GetGUID(); break;
+            case POD_BETA:  Pod_Beta =  go->GetGUID(); break;
+            case POD_DELTA: Pod_Delta = go->GetGUID(); break;
+            case POD_GAMMA: Pod_Gamma = go->GetGUID(); break;
+            case POD_OMEGA: Pod_Omega = go->GetGUID(); break;
         }
     }
 
@@ -148,50 +144,32 @@ struct instance_arcatraz : public ScriptedInstance
                     Encounter[5] = NOT_STARTED;
                     Encounter[6] = NOT_STARTED;
                     Encounter[7] = NOT_STARTED;
-                    Encounter[8] = NOT_STARTED;
+                    HandleGameObject(Pod_Alpha,false);
+                    HandleGameObject(Pod_Beta,false);
+                    HandleGameObject(Pod_Gamma,false);
+                    HandleGameObject(Pod_Delta,false);
+                    HandleGameObject(Pod_Omega,false);
+                    HandleGameObject(GoSphereGUID,true);
+                    if (GetCreature(MellicharGUID) && GetCreature(MellicharGUID)->isDead())
+                        GetCreature(MellicharGUID)->Respawn();
                 }
                 Encounter[3] = data;
                 break;
 
-            case TYPE_WARDEN_1:
-                if (data == IN_PROGRESS)
-                    if (Pod_Alpha)
-                        Pod_Alpha->UseDoorOrButton();
+            case TYPE_WARDEN_1:;
                 Encounter[4] = data;
                 break;
 
-            case TYPE_WARDEN_2:
-                if ( data == IN_PROGRESS )
-                    if (Pod_Beta)
-                        Pod_Beta->UseDoorOrButton();
+            case TYPE_WARDEN_2:;
                 Encounter[5] = data;
                 break;
 
             case TYPE_WARDEN_3:
-                if (data == IN_PROGRESS)
-                    if (Pod_Delta)
-                        Pod_Delta->UseDoorOrButton();
                 Encounter[6] = data;
                 break;
 
             case TYPE_WARDEN_4:
-                if (data == IN_PROGRESS)
-                    if (Pod_Gamma)
-                        Pod_Gamma->UseDoorOrButton();
                 Encounter[7] = data;
-                break;
-
-            case TYPE_WARDEN_5:
-                if (data == IN_PROGRESS)
-                    if (Pod_Omega)
-                        Pod_Omega->UseDoorOrButton();
-                Encounter[8] = data;
-                break;
-
-            case TYPE_SHIELD_OPEN:
-                if (data == IN_PROGRESS)
-                    if (Wardens_Shield)
-                        Wardens_Shield->UseDoorOrButton();
                 break;
         }
 
@@ -211,8 +189,7 @@ struct instance_arcatraz : public ScriptedInstance
         stream << Encounter[4]  << " ";
         stream << Encounter[5]  << " ";
         stream << Encounter[6]  << " ";
-        stream << Encounter[7]  << " ";
-        stream << Encounter[8];
+        stream << Encounter[7];
 
         OUT_SAVE_INST_DATA_COMPLETE;
 
@@ -229,7 +206,7 @@ struct instance_arcatraz : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
         std::istringstream stream(in);
         stream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4] >> Encounter[5] >> Encounter[6]
-            >> Encounter[7] >> Encounter[8];
+            >> Encounter[7];
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             if(Encounter[i] == IN_PROGRESS)
                 Encounter[i] = NOT_STARTED;
@@ -259,8 +236,6 @@ struct instance_arcatraz : public ScriptedInstance
                 return Encounter[6];
             case TYPE_WARDEN_4:
                 return Encounter[7];
-            case TYPE_WARDEN_5:
-                return Encounter[8];
         }
         return 0;
     }
@@ -273,6 +248,16 @@ struct instance_arcatraz : public ScriptedInstance
                 return MellicharGUID;
             case DATA_SPHERE_SHIELD:
                 return GoSphereGUID;
+            case DATA_POD_A:
+                return Pod_Alpha;
+            case DATA_POD_B:
+                return Pod_Beta;
+            case DATA_POD_D:
+                return Pod_Delta;
+            case DATA_POD_G:
+                return Pod_Gamma;
+            case DATA_POD_O:
+                return Pod_Omega;
         }
         return 0;
     }

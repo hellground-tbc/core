@@ -334,8 +334,6 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     m_atLoginFlags = AT_LOGIN_NONE;
 
-    m_dontMove = false;
-
     pTrader = 0;
 
     ClearTrade();
@@ -455,6 +453,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     _preventSave = false;
     _preventUpdate = false;
+
+    positionStatus.Reset(0);
 }
 
 Player::~Player ()
@@ -496,8 +496,6 @@ Player::~Player ()
             itr->second.save->RemovePlayer(this);
 
     delete m_declinedname;
-
-    sWorldEventProcessor.DestroyEvents(GetGUID());
 
     DeleteCharmAI();
 }
@@ -1169,6 +1167,8 @@ void Player::Update(uint32 update_diff, uint32 p_time)
         else
             m_AC_timer -= update_diff;
     }
+
+    positionStatus.Update(update_diff);
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -1935,22 +1935,12 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetFallInformation(0, final_z);
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
-
-            // move packet sent by client always after far teleport
-            // SetPosition(final_x, final_y, final_z, final_o, true);
-            SetDontMove(true);
-            // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
         }
         else
             return false;
     }
 
     return true;
-}
-
-void Player::SetDontMove(bool dontMove)
-{
-    m_dontMove = dontMove;
 }
 
 void Player::AddToWorld()
@@ -3535,6 +3525,14 @@ bool Player::resetTalents(bool no_cost)
                             if (spellInfo->Effect[i] == SPELL_EFFECT_TRIGGER_SPELL && HasAura(spellInfo->EffectTriggerSpell[i]))
                                 RemoveAurasDueToSpell(spellInfo->EffectTriggerSpell[i]);
                         }
+                    // for dual wield
+                    if (itrFirstId == 30798)
+                        if (Item* item = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND)) // off hand here needed
+                        {
+                            uint16 dest;
+                            if (CanEquipItem(EQUIPMENT_SLOT_OFFHAND, dest, item, false, false) != EQUIP_ERR_OK)
+                            _ApplyItemMods(item,EQUIPMENT_SLOT_OFFHAND, false);
+                        }
                     removeSpell(itr->first,!SpellMgr::IsPassiveSpell(itr->first));
                     itr = GetSpellMap().begin();
                     continue;
@@ -4550,6 +4548,7 @@ void Player::TeleportToNearestGraveyard()
             case BATTLEGROUND_AB:
             case BATTLEGROUND_EY:
             case BATTLEGROUND_AV:
+            case BATTLEGROUND_WS:
                 ClosestGrave = bg->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetTeam());
                 break;
             default:
@@ -5091,7 +5090,7 @@ bool Player::UpdateSkill(uint32 skill_id, uint32 step)
     if ((!max) || (!value) || (value >= max))
         return false;
 
-    if (value*512 < max*urand(0,512))
+    //if (value*512 < max*urand(0,512))
     {
         uint32 new_value = value+step;
         if (new_value > max)
@@ -5232,10 +5231,6 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
 
 void Player::UpdateWeaponSkill (WeaponAttackType attType)
 {
-    // no skill gain in pvp
-    Unit *pVictim = getVictim();
-    if (pVictim && pVictim->isCharmedOwnedByPlayerOrPlayer())
-        return;
 
     if (IsInFeralForm(true))
         return;                                             // always maximized SKILL_FERAL_COMBAT in fact
@@ -5269,28 +5264,22 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
     UpdateAllCritPercentages();
 }
 
-void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence)
+void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool defence) //if defense than pVictim == attacker
 {
-    uint32 plevel = getLevel();                             // if defense than pVictim == attacker
-    //uint32 greylevel = Hellground::XP::GetGrayLevel(plevel);
+    if (pVictim->isCharmedOwnedByPlayerOrPlayer()) // no skill ups in pvp
+        return;
+
+    uint32 plevel = getLevel();
     uint32 moblevel = pVictim->getLevelForTarget(this);
-    //if (moblevel < greylevel)
-    //    return;
 
     if (moblevel > plevel + 5)
         moblevel = plevel + 5;
 
-    uint32 lvldif = 0;
+    float lvldif = 1.5f;
     if (moblevel >= plevel)
     {
         lvldif = moblevel - plevel;
         if (lvldif < 3)
-            lvldif = 3;
-    }
-    else
-    {
-        lvldif = plevel - moblevel;
-        if (lvldif > 3)
             lvldif = 3;
     }
 
@@ -5298,11 +5287,14 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool de
     if (skilldif <= 0)
         return;
 
-    float chance = float(3 * lvldif * skilldif) / plevel;
+    float chance = (float(3 * lvldif * skilldif) / plevel) * 0.5f;
     if (!defence)
-        chance *= 0.1f * GetStat(STAT_INTELLECT);
+        chance += 0.02f * GetStat(STAT_INTELLECT);
 
     chance = chance < 1.0f ? 1.0f : chance;                 //minimum chance to increase skill is 1%
+
+    if (!defence)
+        SendCombatStats("Weapon skill update [ skill: %u, chance %f, skilldif: %u ]", pVictim, attType, chance, skilldif);
 
     if (roll_chance_f(chance))
     {
@@ -5311,8 +5303,6 @@ void Player::UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, bool de
         else
             UpdateWeaponSkill(attType);
     }
-    else
-        return;
 }
 
 void Player::ModifySkillBonus(uint32 skillid,int32 val, bool talent)
@@ -5661,20 +5651,26 @@ void Player::removeActionButton(uint8 button)
 
 bool Player::SetPosition(float x, float y, float z, float orientation, bool teleport)
 {
+    bool groupUpdate = (GetGroup() && (teleport || abs(GetPositionX() - x) > 1.0f || abs(GetPositionY() - y) > 1.0f));
     if (!Unit::SetPosition(x, y, z, orientation, teleport))
         return false;
 
-    // group update
-    if (GetGroup())
-        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
+    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5.0f))
+        GetSession()->SendCancelTrade();
+
+    if (!positionStatus.Passed())
+        return true;
+
+    positionStatus.Reset(100);
 
     // code block for underwater state update
     // Unit::SetPosition() checks for validity and updates our coordinates
     // so we re-fetch them instead of using "raw" coordinates from function params
     UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
 
-    if(GetTrader() && !IsWithinDistInMap(GetTrader(), 5))
-        GetSession()->SendCancelTrade();
+    // group update
+    if (groupUpdate)
+        SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
     CheckAreaExploreAndOutdoor();
     return true;
@@ -5884,7 +5880,7 @@ int32 Player::CalculateReputationGain(ReputationSource source, int32 rep, int32 
         percent *= repRate;
     }
 
-    return int32(sWorld.getRate(RATE_REPUTATION_GAIN)*rep*percent/100.0f);
+    return int32(0.01f + sWorld.getRate(RATE_REPUTATION_GAIN)*rep*percent/100.0f);
 }
 
 //Calculates how many reputation points player gains in victim's enemy factions
@@ -6082,7 +6078,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     if (honor <= 0)
     {
-        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT))
+        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT) || uVictim->WorthHonor || uVictim->HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
             return false;
 
         victim_guid = uVictim->GetGUID();
@@ -6191,7 +6187,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     if (sWorld.getConfig(CONFIG_PVP_TOKEN_ENABLE) && pvptoken)
     {
-        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT))
+        if (!uVictim || uVictim == this || uVictim->HasAuraType(SPELL_AURA_NO_PVP_CREDIT) || uVictim->WorthHonor || uVictim->HasAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS))
             return true;
 
         if (uVictim->GetTypeId() == TYPEID_PLAYER)
@@ -6642,15 +6638,19 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if (slot >= INVENTORY_SLOT_BAG_END || !item)
         return;
 
-    // not apply/remove mods for broken item (_ApplyItemMods is used before setting durability to 0 when item
-    // loss durability so there is no need to check for 'apply' (prevent bug abuse by stats stacking))
-    if (item->IsBroken())
-        return;
-
     ItemPrototype const *proto = item->GetProto();
 
     if (!proto)
         return;
+
+    // not apply/remove mods for broken item (_ApplyItemMods is used before setting durability to 0 when item
+    // loss durability so there is no need to check for 'apply' (prevent bug abuse by stats stacking))
+    if (item->IsBroken())
+    {
+        if (proto->Socket[0].Color)
+            CorrectMetaGemEnchants(slot, apply);
+        return;
+    }
 
     sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
 
@@ -7073,7 +7073,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                             default: slot = EQUIPMENT_SLOT_END; break;
                         }
 
-                        if (attType == RANGED_ATTACK && slot == EQUIPMENT_SLOT_MAINHAND)
+                        if (attType == RANGED_ATTACK && i == EQUIPMENT_SLOT_MAINHAND)
                         {
                             // exception for Righteous Weapon Coating, enchant on main hand should also proc from ranged attacks
                             if(uint32 enchant_id = item->GetEnchantmentId(EnchantmentSlot(TEMP_ENCHANTMENT_SLOT)))
@@ -7082,7 +7082,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                                 if(pEnchant && pEnchant->ID == 3266) // Blessed Weapon Coating
                                 {
                                     ((Player*)this)->CastItemCombatSpell(target, attType, procVictim, procEx, item, proto, spellInfo);
-                                    break;
+                                    continue;
                                 }
                             }
                         }
@@ -10621,7 +10621,7 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
                     m_weaponChangeTimer = spellProto->StartRecoveryTime;
 
                     if (getClass() != CLASS_ROGUE)
-                        GetGlobalCooldownMgr().AddGlobalCooldown(spellProto, m_weaponChangeTimer);
+                        GetCooldownMgr().AddGlobalCooldown(spellProto, m_weaponChangeTimer);
 
                     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4);
                     data << uint64(GetGUID());
@@ -11991,15 +11991,16 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
     if (!ignore_condition && pEnchant->EnchantmentCondition && !((Player*)this)->EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
-    if (!item->IsBroken())
-    for (int s=0; s<3; s++)
+    if (!item->IsBroken() || !apply)
     {
-        uint32 enchant_display_type = pEnchant->type[s];
-        uint32 enchant_amount = pEnchant->amount[s];
-        uint32 enchant_spell_id = pEnchant->spellid[s];
-
-        switch (enchant_display_type)
+        for (int s=0; s<3; s++)
         {
+            uint32 enchant_display_type = pEnchant->type[s];
+            uint32 enchant_amount = pEnchant->amount[s];
+            uint32 enchant_spell_id = pEnchant->spellid[s];
+
+            switch (enchant_display_type)
+            {
             case ITEM_ENCHANTMENT_TYPE_NONE:
                 break;
             case ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL:
@@ -12017,8 +12018,47 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                 if (enchant_spell_id)
                 {
                     SpellEntry const *temp = sSpellStore.LookupEntry(enchant_spell_id);
-                    if (!temp)
-                        break;
+                    if (!temp) // unsupported enchant support
+                    {
+                        switch(enchant_spell_id)
+                        {
+                            case 22841: //arcanum of rapidity
+                                {
+                                    enchant_spell_id=13928;
+                                    break;
+                                }
+                            case 22847: //arcanum of protection
+                                {
+                                    enchant_spell_id=13669;
+                                    break;
+                                }
+                            case 22755: //elemental sharpening stone
+                                {
+                                    enchant_spell_id=7598;
+                                    break;
+                                }
+                            case 22843: //arcanum of focus
+                                {
+                                    enchant_spell_id=9398;
+                                    break;
+                                }
+                            case 28162: //savage guard
+                                {
+                                    enchant_spell_id=14630;
+                                    break;
+                                }
+                            case 28164: //ice guard
+                                {
+                                    enchant_spell_id=14550;
+                                    break;
+                                }
+                            case 28166: //shadow guard 
+                                {
+                                    enchant_spell_id=14673;
+                                    break;
+                                }
+                        }
+                    }
 
                     if (apply)
                     {
@@ -12070,26 +12110,26 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                 HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + enchant_spell_id), TOTAL_VALUE, float(enchant_amount), apply);
                 break;
             case ITEM_ENCHANTMENT_TYPE_STAT:
-            {
-                if (!enchant_amount)
                 {
-                    ItemRandomSuffixEntry const *item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(item->GetItemRandomPropertyId()));
-                    if (item_rand_suffix)
+                    if (!enchant_amount)
                     {
-                        for (int k=0; k<3; k++)
+                        ItemRandomSuffixEntry const *item_rand_suffix = sItemRandomSuffixStore.LookupEntry(abs(item->GetItemRandomPropertyId()));
+                        if (item_rand_suffix)
                         {
-                            if (item_rand_suffix->enchant_id[k] == enchant_id)
+                            for (int k=0; k<3; k++)
                             {
-                                enchant_amount = uint32((item_rand_suffix->prefix[k]*item->GetItemSuffixFactor()) / 10000);
-                                break;
+                                if (item_rand_suffix->enchant_id[k] == enchant_id)
+                                {
+                                    enchant_amount = uint32((item_rand_suffix->prefix[k]*item->GetItemSuffixFactor()) / 10000);
+                                    break;
+                                }
                             }
                         }
                     }
-                }
 
-                sLog.outDebug("Adding %u to stat nb %u",enchant_amount,enchant_spell_id);
-                switch (enchant_spell_id)
-                {
+                    sLog.outDebug("Adding %u to stat nb %u",enchant_amount,enchant_spell_id);
+                    switch (enchant_spell_id)
+                    {
                     case ITEM_MOD_AGILITY:
                         sLog.outDebug("+ %u AGILITY",enchant_amount);
                         HandleStatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, float(enchant_amount), apply);
@@ -12155,32 +12195,32 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u SPELL_CRIT", enchant_amount);
                         break;
-//                    Values from ITEM_STAT_MELEE_HA_RATING to ITEM_MOD_HASTE_RANGED_RATING are never used
-//                    in Enchantments
-//                    case ITEM_MOD_HIT_TAKEN_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HIT_TAKEN_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HIT_TAKEN_SPELL_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_SPELL_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HASTE_MELEE_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_HASTE_RANGED_RATING:
-//                        ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
-//                        break;
+                        //                    Values from ITEM_STAT_MELEE_HA_RATING to ITEM_MOD_HASTE_RANGED_RATING are never used
+                        //                    in Enchantments
+                        //                    case ITEM_MOD_HIT_TAKEN_MELEE_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HIT_TAKEN_RANGED_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HIT_TAKEN_SPELL_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_MELEE_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_RANGED_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_SPELL_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HASTE_MELEE_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_HASTE_RANGED_RATING:
+                        //                        ((Player*)this)->ApplyRatingMod(CR_HASTE_RANGED, enchant_amount, apply);
+                        //                        break;
                     case ITEM_MOD_HASTE_SPELL_RATING:
                         ((Player*)this)->ApplyRatingMod(CR_HASTE_SPELL, enchant_amount, apply);
                         break;
@@ -12196,17 +12236,17 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         //((Player*)this)->ApplyRatingMod(CR_CRIT_SPELL, enchant_amount, apply);
                         sLog.outDebug("+ %u CRITICAL", enchant_amount);
                         break;
-//                    Values ITEM_MOD_HIT_TAKEN_RATING and ITEM_MOD_CRIT_TAKEN_RATING are never used in Enchantment
-//                    case ITEM_MOD_HIT_TAKEN_RATING:
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
-//                    case ITEM_MOD_CRIT_TAKEN_RATING:
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
-//                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
-//                        break;
+                        //                    Values ITEM_MOD_HIT_TAKEN_RATING and ITEM_MOD_CRIT_TAKEN_RATING are never used in Enchantment
+                        //                    case ITEM_MOD_HIT_TAKEN_RATING:
+                        //                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_HIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
+                        //                    case ITEM_MOD_CRIT_TAKEN_RATING:
+                        //                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
+                        //                          ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
+                        //                        break;
                     case ITEM_MOD_RESILIENCE_RATING:
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_MELEE, enchant_amount, apply);
                         ((Player*)this)->ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
@@ -12225,32 +12265,33 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                         break;
                     default:
                         break;
+                    }
+                    break;
                 }
-                break;
-            }
             case ITEM_ENCHANTMENT_TYPE_TOTEM:               // Shaman Rockbiter Weapon
-            {
-                if (getClass() == CLASS_SHAMAN)
                 {
-                    float addValue = 0.0f;
-                    if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                    if (getClass() == CLASS_SHAMAN)
                     {
-                        addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
-                        HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, addValue, apply);
+                        float addValue = 0.0f;
+                        if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                        {
+                            addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
+                            HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, addValue, apply);
+                        }
+                        else if (item->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
+                        {
+                            addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
+                            HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, addValue, apply);
+                        }
                     }
-                    else if (item->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
-                    {
-                        addValue = float(enchant_amount * item->GetProto()->Delay/1000.0f);
-                        HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, addValue, apply);
-                    }
+                    break;
                 }
-                break;
-            }
             default:
                 sLog.outLog(LOG_DEFAULT, "ERROR: Unknown item enchantment display type: %d",enchant_display_type);
                 break;
-        }                                                   /*switch (enchant_display_type)*/
-    }                                                       /*for*/
+            }                                                   /*switch (enchant_display_type)*/
+        }                                                       /*for*/
+    }
 
     // visualize enchantment at player and equipped items
     if (slot < MAX_INSPECTED_ENCHANTMENT_SLOT)
@@ -13207,6 +13248,9 @@ bool Player::SatisfyQuestExclusiveGroup(Quest const* qInfo, bool msg)
     if (qInfo->GetExclusiveGroup() <= 0)
         return true;
 
+    if (qInfo->IsDaily() && !sWorld.getConfig(CONFIG_DAILY_BLIZZLIKE))
+        return true;
+
     ObjectMgr::ExclusiveQuestGroups::iterator iter = sObjectMgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
     ObjectMgr::ExclusiveQuestGroups::iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
 
@@ -13304,7 +13348,7 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
         return true;
 
     bool have_slot = false;
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
     {
         uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
         if (qInfo->GetQuestId()==id)
@@ -15415,7 +15459,7 @@ void Player::_LoadQuestStatus(QueryResultAutoPtr result)
 
 void Player::_LoadDailyQuestStatus(QueryResultAutoPtr result)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
 
     //QueryResultAutoPtr result = CharacterDatabase.PQuery("SELECT quest,time FROM character_queststatus_daily WHERE guid = '%u'", GetGUIDLow());
@@ -15426,7 +15470,7 @@ void Player::_LoadDailyQuestStatus(QueryResultAutoPtr result)
 
         do
         {
-            if (quest_daily_idx >= PLAYER_MAX_DAILY_QUESTS)  // max amount with exist data in query
+            if (quest_daily_idx >= sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY))  // max amount with exist data in query
             {
                 sLog.outLog(LOG_DEFAULT, "ERROR: Player (GUID: %u) have more 25 daily quest records in `charcter_queststatus_daily`",GetGUIDLow());
                 break;
@@ -16498,7 +16542,7 @@ void Player::_SaveDailyQuestStatus()
     SqlStatement stmt = RealmDataDatabase.CreateStatement(deleteDailies, "DELETE FROM character_queststatus_daily WHERE guid = ?");
     stmt.PExecute(GetGUIDLow());
 
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
     {
         if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
         {
@@ -16902,8 +16946,11 @@ void Player::UpdatePvPFlag(time_t currTime)
 
 void Player::SetFFAPvP(bool state)
 {
-    if (state)
+    if (state){
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+        if (sWorld.getConfig(CONFIG_FFA_DISALLOWGROUP) && !GetMap()->IsBattleGroundOrArena())
+            RemoveFromGroup();
+    }
     else
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 }
@@ -18341,9 +18388,6 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
 {
     if (BattleGround *bg = GetBattleGround())
     {
-        if (InArena() && isInCombat() && bg->GetStatus() == STATUS_IN_PROGRESS)
-            return;
-
         if (bg->isArena() && !isGameMaster())
         {
             SetVisibility(VISIBILITY_ON);
@@ -19154,7 +19198,7 @@ void Player::SendAuraDurationsForTarget(Unit* target)
 
 void Player::SetDailyQuestStatus(uint32 quest_id)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
     {
         if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
         {
@@ -19168,7 +19212,7 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
 
 void Player::ResetDailyQuestStatus()
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < sWorld.getConfig(CONFIG_DAILY_MAX_PER_DAY); ++quest_daily_idx)
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx,0);
 
     // DB data deleted in caller
@@ -19325,15 +19369,47 @@ void Player::UpdateForQuestsGO()
     SendPacketToSelf(&packet);
 }
 
+bool Player::CanBeSummonedBy(const Unit * summoner)
+{
+    if (!summoner)
+        return false;
+
+    // if summoning to instance
+    if (summoner->GetMap()->IsDungeon())
+    {
+        // check for permbinded id's
+        InstanceSave * tmpInst = GetInstanceSave(summoner->GetMapId());
+        if (tmpInst)
+        {
+            if (tmpInst->GetInstanceId() != summoner->GetInstanceId())
+                return false;
+        }
+        // check for temp id's
+        else if (GetMap()->IsDungeon() && GetMapId() == summoner->GetMapId() && GetInstanceId() != summoner->GetInstanceId())
+            return false;
+    }
+
+    return true;
+}
+
+bool Player::CanBeSummonedBy(uint64 summoner)
+{
+    return CanBeSummonedBy(GetUnit(summoner));
+}
+
 void Player::SummonIfPossible(bool agree, uint64 summonerGUID)
 {
-    if(Unit* summoner = GetUnit(summonerGUID))
+    Unit* summoner = GetUnit(summonerGUID);
+    if (summoner)
     {
         if (summoner->m_currentSpells[CURRENT_CHANNELED_SPELL])
         {
             summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
             summoner->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
         }
+
+        if (!CanBeSummonedBy(summoner))
+            return;
     }
 
     if (!agree)
@@ -19783,6 +19859,7 @@ void Player::UpdateAreaDependentAuras(uint32 newArea)
         case 3966:
         case 3939:
         case 3965:
+        case 3967:
             if (GetDummyAura(40214))
             {
                 if (!HasAura(40216,0))

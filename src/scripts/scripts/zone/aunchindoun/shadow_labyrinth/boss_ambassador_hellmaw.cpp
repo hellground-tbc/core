@@ -50,7 +50,7 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
     boss_ambassador_hellmawAI(Creature *c) : ScriptedAI(c)
     {
         pInstance = (c->GetInstanceData());
-        HeroicMode = m_creature->GetMap()->IsHeroic();
+        HeroicMode = me->GetMap()->IsHeroic();
     }
 
     ScriptedInstance* pInstance;
@@ -80,7 +80,7 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
         {
             if (pInstance->GetData(TYPE_HELLMAW) ==  NOT_STARTED)
             {
-                DoCast(m_creature,SPELL_BANISH, true);
+                DoCast(me,SPELL_BANISH, true);
                 IsBanished = true;
             }
         }
@@ -88,10 +88,10 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
 
     void DoIntro()
     {
-        DoScriptText(SAY_INTRO, m_creature);
+        DoScriptText(SAY_INTRO, me);
 
-        if (m_creature->HasAura(SPELL_BANISH,0))
-            m_creature->RemoveAurasDueToSpell(SPELL_BANISH);
+        if (me->HasAura(SPELL_BANISH,0))
+            me->RemoveAurasDueToSpell(SPELL_BANISH);
 
         IsBanished = false;
         Intro = true;
@@ -105,18 +105,18 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
         if(IsBanished)
             EnterEvadeMode();
 
-        m_creature->GetMotionMaster()->Clear();
-        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), m_creature);
+        me->GetMotionMaster()->Clear();
+        DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
     }
 
     void KilledUnit(Unit *victim)
     {
-        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), m_creature);
+        DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
     }
 
     void JustDied(Unit *victim)
     {
-        DoScriptText(SAY_DEATH, m_creature);
+        DoScriptText(SAY_DEATH, me);
 
         if (pInstance)
             pInstance->SetData(TYPE_HELLMAW, DONE);
@@ -131,7 +131,7 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
         {
              if(Banish_Timer < diff)
              {
-                 DoCast(m_creature,SPELL_BANISH, true);
+                 DoCast(me,SPELL_BANISH, true);
                  Banish_Timer = 40000;
              }
              else
@@ -153,16 +153,16 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
                 EventCheck_Timer -= diff;
         }
 
-        if (!m_creature->isInCombat() && !IsBanished && !OnPath_Delay)
+        if (!me->isInCombat() && !IsBanished && !OnPath_Delay)
         {
-            m_creature->GetMotionMaster()->MovePath(PATH_PATROL, false);
+            me->GetMotionMaster()->MovePath(PATH_PATROL, false);
             OnPath_Delay = 55000;
             patrol = false;
         }
 
-        if (!m_creature->isInCombat() && !patrol && OnPath_Delay < diff)
+        if (!me->isInCombat() && !patrol && OnPath_Delay < diff)
         {
-            m_creature->GetMotionMaster()->MovePath(PATH_FINAL, true);
+            me->GetMotionMaster()->MovePath(PATH_FINAL, true);
             patrol = true;
         }
         else
@@ -173,7 +173,7 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
 
         if (CorrosiveAcid_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CORROSIVE_ACID);
+            DoCast(me->getVictim(),SPELL_CORROSIVE_ACID);
             CorrosiveAcid_Timer = 25000;
         }
         else
@@ -181,7 +181,7 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
 
         if (Fear_Timer < diff)
         {
-            DoCast(m_creature,SPELL_FEAR);
+            DoCast(me,SPELL_FEAR);
             Fear_Timer = 25000;
         }
         else
@@ -191,7 +191,7 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
         {
             if (Enrage_Timer < diff)
             {
-                DoCast(m_creature,SPELL_ENRAGE);
+                DoCast(me,SPELL_ENRAGE);
                 Enrage_Timer = 5*MINUTE*1000;
             }
             else

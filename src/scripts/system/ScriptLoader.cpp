@@ -72,6 +72,7 @@ extern void AddSC_boss_nexusprince_shaffar();
 extern void AddSC_boss_pandemonius();
 extern void AddSC_boss_yor();
 extern void AddSC_instance_mana_tombs();
+extern void AddSC_mana_tombs();
 
 //--Sekketh Halls
 extern void AddSC_boss_darkweaver_syth();
@@ -144,6 +145,7 @@ extern void AddSC_boss_quatermasterzigris();
 extern void AddSC_boss_pyroguard_emberseer();
 extern void AddSC_boss_gyth();
 extern void AddSC_boss_rend_blackhand();
+extern void AddSC_instance_blackrock_spire();
 
 //Blackwing lair
 extern void AddSC_boss_razorgore();
@@ -210,6 +212,7 @@ extern void AddSC_serpent_shrine_trash();
 extern void AddSC_boss_lord_ahune();
 extern void AddSC_boss_mennu_the_betrayer();
 extern void AddSC_instance_slave_pens();
+extern void AddSC_slave_pens_trash();
 
 //--Steam Vault
 extern void AddSC_boss_hydromancer_thespia();
@@ -286,6 +289,7 @@ extern void AddSC_boss_warchief_kargath_bladefist();
 extern void AddSC_instance_shattered_halls();
 
 //--Ramparts
+extern void AddSC_instance_ramparts();
 extern void AddSC_boss_watchkeeper_gargolmar();
 extern void AddSC_boss_omor_the_unscarred();
 extern void AddSC_boss_vazruden_the_herald();
@@ -570,6 +574,7 @@ extern void AddSC_ungoro_crater();
 //Upper blackrock spire
 //Wailing caverns
 extern void AddSC_wailing_caverns();
+extern void AddSC_instance_wailing_caverns();
 
 //Western plaguelands
 extern void AddSC_western_plaguelands();
@@ -587,6 +592,7 @@ extern void AddSC_zangarmarsh();
 
 //Zul'Farrak
 extern void AddSC_zulfarrak();
+extern void AddSC_instance_zul_farrak();
 
 //Zul'Gurub
 extern void AddSC_boss_jeklik();
@@ -687,6 +693,7 @@ void AddScripts()
     AddSC_boss_pandemonius();
     AddSC_boss_yor();
     AddSC_instance_mana_tombs();
+    AddSC_mana_tombs();
 
     //--Sekketh Halls
     AddSC_boss_darkweaver_syth();
@@ -756,7 +763,8 @@ void AddScripts()
     AddSC_boss_pyroguard_emberseer();
     AddSC_boss_gyth();
     AddSC_boss_rend_blackhand();
-
+    AddSC_instance_blackrock_spire();
+    
     //Blackwing lair
     AddSC_boss_razorgore();
     AddSC_boss_vael();
@@ -822,6 +830,7 @@ void AddScripts()
     AddSC_boss_lord_ahune();
     AddSC_boss_mennu_the_betrayer();
     AddSC_instance_slave_pens();
+    AddSC_slave_pens_trash();
 
     //--Steam Vault
     AddSC_boss_hydromancer_thespia();
@@ -898,6 +907,7 @@ void AddScripts()
     AddSC_instance_shattered_halls();
 
     //--Ramparts
+    AddSC_instance_ramparts();
     AddSC_boss_watchkeeper_gargolmar();
     AddSC_boss_omor_the_unscarred();
     AddSC_boss_vazruden_the_herald();
@@ -1183,6 +1193,7 @@ void AddScripts()
     //Upper blackrock spire
     //Wailing caverns
     AddSC_wailing_caverns();
+    AddSC_instance_wailing_caverns();
 
     //Western plaguelands
     AddSC_western_plaguelands();
@@ -1200,6 +1211,7 @@ void AddScripts()
 
     //Zul'Farrak
     AddSC_zulfarrak();
+    AddSC_instance_zul_farrak();
 
     //Zul'Gurub
     AddSC_boss_jeklik();

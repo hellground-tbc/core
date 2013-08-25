@@ -142,6 +142,7 @@ enum WorldConfigs
     CONFIG_INSTANCE_RESET_TIME_HOUR,
     CONFIG_INSTANCE_UNLOAD_DELAY,
     CONFIG_CAST_UNSTUCK,
+    CONFIG_RABBIT_DAY,
     CONFIG_MAX_PRIMARY_TRADE_SKILL,
     CONFIG_MIN_PETITION_SIGNS,
     CONFIG_GM_LOGIN_STATE,
@@ -203,7 +204,8 @@ enum WorldConfigs
     CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE,
     CONFIG_DEATH_BONES_WORLD,
     CONFIG_DEATH_BONES_BG_OR_ARENA,
-    CONFIG_THREAT_RADIUS,
+    CONFIG_EVADE_HOMEDIST,
+    CONFIG_EVADE_TARGETDIST,
     CONFIG_INSTANT_LOGOUT,
     CONFIG_GROUPLEADER_RECONNECT_PERIOD,
     CONFIG_DISABLE_BREATHING,
@@ -218,11 +220,16 @@ enum WorldConfigs
     CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS,
     CONFIG_ARENA_LOG_EXTENDED_INFO,
 
+    CONFIG_ENABLE_ARENA_STEP_BY_STEP_MATCHING,
+    CONFIG_ARENA_STEP_BY_STEP_TIME,
+    CONFIG_ARENA_STEP_BY_STEP_VALUE,
+
     CONFIG_BATTLEGROUND_INVITATION_TYPE,
     CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH,
     CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER,
     CONFIG_BATTLEGROUND_ANNOUNCE_START,
     CONFIG_BATTLEGROUND_QUEUE_INFO,
+    CONFIG_BATTLEGROUND_TIMER_INFO,
 
     CONFIG_MAX_WHO,
     CONFIG_BG_START_MUSIC,
@@ -318,7 +325,11 @@ enum WorldConfigs
     CONFIG_COREBALANCER_INTERVAL,
     CONFIG_COREBALANCER_VISIBILITY_PENALTY,
 
+    CONFIG_DAILY_BLIZZLIKE,
+    CONFIG_DAILY_MAX_PER_DAY,
+
     CONFIG_CREATURE_RESTORE_STATE,
+    CONFIG_FFA_DISALLOWGROUP,
 
     CONFIG_VALUE_COUNT
 };
@@ -452,6 +463,7 @@ enum RealmZone
 #define SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT   17              // datalong scriptid, lowguid datalong2, dataint table
 #define SCRIPT_COMMAND_PLAY_SOUND           18              // source = any object, target=any/player, datalong (sound_id), datalong2 (bitmask: 0/1=anyone/target, 0/2=with distance dependent, so 1|2 = 3 is target with distance dependent)
 #define SCRIPT_COMMAND_KILL                 19              // datalong removecorpse
+#define SCRIPT_COMMAND_SET_INST_DATA        20              // source = any, datalong = type, datalong2 = data
 
 
 /// Storage class for commands issued for delayed execution
@@ -676,7 +688,7 @@ class HELLGROUND_EXPORT World
         void QueueGuildAnnounce(uint32 guildid, uint32 team, std::string &msg);
         void SendGuildAnnounce(uint32 team, ...);
 
-        void SendWorldText(int32 string_id, ...);
+        void SendWorldText(int32 string_id, uint32 preventFlags, ...);
         void SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 preventFlags, int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);

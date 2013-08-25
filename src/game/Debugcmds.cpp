@@ -672,6 +672,8 @@ bool ChatHandler::HandleDebugUnitState(const char * /*args*/)
 {
     Player* player = m_session->GetPlayer();
     PSendSysMessage("You have state: %u", player->m_state);
+    if (player->IsBeingTeleported())
+        PSendSysMessage("If You see this line and cannot move please report it");
     return true;
 }
 

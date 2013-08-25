@@ -61,7 +61,6 @@ struct PlayerAI;
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS       127
-#define PLAYER_MAX_DAILY_QUESTS 25
 
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
@@ -957,6 +956,8 @@ class HELLGROUND_EXPORT Player : public Unit
             m_summon_z = z;
         }
         void SummonIfPossible(bool agree, uint64 summonerGUID);
+        bool CanBeSummonedBy(uint64 summoner);
+        bool CanBeSummonedBy(const Unit * summoner);
 
         bool Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
 
@@ -1489,7 +1490,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void RemoveSpellMods(Spell const* spell);
         void RestoreSpellMods(Spell const* spell);
 
-        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
+        CooldownMgr& GetCooldownMgr() { return m_CooldownMgr; }
 
         bool HasSpellCooldown(uint32 spell_id) const
         {
@@ -1755,9 +1756,6 @@ class HELLGROUND_EXPORT Player : public Unit
         bool HasSkill(uint32 skill) const;
         void learnSkillRewardedSpells(uint32 id);
         void learnSkillRewardedSpells();
-
-        void SetDontMove(bool dontMove);
-        bool GetDontMove() const { return m_dontMove; }
 
         void CheckAreaExploreAndOutdoor(void);
 
@@ -2211,6 +2209,7 @@ class HELLGROUND_EXPORT Player : public Unit
         Camera& GetCamera() { return m_camera; }
 
     protected:
+        TimeTrackerSmall positionStatus;
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
@@ -2353,8 +2352,6 @@ class HELLGROUND_EXPORT Player : public Unit
         typedef std::list<Channel*> JoinedChannelsList;
         JoinedChannelsList m_channels;
 
-        bool m_dontMove;
-
         bool m_cinematic;
         uint32 m_watchingCinematicId;
 
@@ -2473,7 +2470,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_temporaryUnsummonedPetNumber;
         uint32 m_oldpetspell;
 
-        GlobalCooldownMgr m_GlobalCooldownMgr;
+        CooldownMgr m_CooldownMgr;
 
         ReputationMgr  m_reputationMgr;
 

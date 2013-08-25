@@ -203,7 +203,7 @@ bool ChatHandler::HandleNameAnnounceCommand(const char* args)
         return false;
     //char str[1024];
     //sprintf(str, GetTrinityString(LANG_ANNOUNCE_COLOR), m_session->GetPlayer()->GetName(), args);
-    sWorld.SendWorldText(LANG_ANNOUNCE_COLOR, m_session->GetPlayer()->GetName(), args);
+    sWorld.SendWorldText(LANG_ANNOUNCE_COLOR, 0, m_session->GetPlayer()->GetName(), args);
     return true;
 }
 
@@ -223,7 +223,7 @@ bool ChatHandler::HandleAnnounceCommand(const char* args)
     if (!*args)
         return false;
 
-    sWorld.SendWorldText(LANG_SYSTEMMESSAGE,args);
+    sWorld.SendWorldText(LANG_SYSTEMMESSAGE, 0, args);
     return true;
 }
 
@@ -954,7 +954,7 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(_player->GetMapId());
-    PSendSysMessage("MapId: %u, Name: %s", _player->GetMapId(), mapEntry->name);
+    PSendSysMessage("MapId: %u, Name: /", _player->GetMapId() /*, mapEntry->name*/);
     PSendSysMessage("- cached data -");
 
     const AreaTableEntry* zEntry = GetAreaEntryByAreaID(_player->GetCachedZone());
@@ -962,8 +962,8 @@ bool ChatHandler::HandleInfoCommand(const char* args)
     if (!aEntry || !zEntry)
         return false;
 
-    PSendSysMessage("*zone: %s [%u]", zEntry->area_name, _player->GetCachedZone());
-    PSendSysMessage("*area: %s [%u]", aEntry->area_name, _player->GetCachedArea());
+    PSendSysMessage("*zone: / [%u]",/* zEntry->area_name,*/ _player->GetCachedZone());
+    PSendSysMessage("*area: / [%u]", /*aEntry->area_name,*/ _player->GetCachedArea());
 
     const AreaTableEntry* zEntry2 = GetAreaEntryByAreaID(_player->GetZoneId());
     const AreaTableEntry* aEntry2 = GetAreaEntryByAreaID(_player->GetAreaId());
@@ -971,14 +971,14 @@ bool ChatHandler::HandleInfoCommand(const char* args)
         return false;
 
     PSendSysMessage("- real data -");
-    PSendSysMessage("*zone: %s [%u]", zEntry2->area_name, _player->GetZoneId());
-    PSendSysMessage("*area: %s [%u]", aEntry2->area_name, _player->GetAreaId());
+    PSendSysMessage("*zone: / [%u]", /*zEntry2->area_name,*/ _player->GetZoneId());
+    PSendSysMessage("*area: / [%u]", /*aEntry2->area_name,*/ _player->GetAreaId());
 
     TerrainInfo const *terrain = _player->GetTerrain();
     PSendSysMessage("- terrain data -");
 
-    PSendSysMessage("*ground Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), MAX_HEIGHT));
-    PSendSysMessage("*floor Z: %u", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()));
+    PSendSysMessage("*ground Z: %f", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), MAX_HEIGHT));
+    PSendSysMessage("*floor Z: %f", terrain->GetHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()));
     PSendSysMessage("*los: %s", terrain->IsLineOfSightEnabled() ? "enabled" : "disabled");
     PSendSysMessage("*mmaps: %s", terrain->IsPathFindingEnabled() ? "enabled" : "disabled");
     PSendSysMessage("*outdoors: %s", terrain->IsOutdoors(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ()) ? "yes" : "no");
@@ -1061,11 +1061,11 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             ChatHandler(target).PSendSysMessage(LANG_SUMMONED_BY, GetName());
 
         // stop flight if need
-        m_session->GetPlayer()->InterruptTaxiFlying();
+        target->InterruptTaxiFlying();
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,target->GetObjectSize());
+        m_session->GetPlayer()->GetNearPoint(x,y,z,target->GetObjectSize());
         target->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,target->GetOrientation());
     }
     else if (uint64 guid = sObjectMgr.GetPlayerGUIDByName(name))
@@ -1844,7 +1844,7 @@ bool ChatHandler::HandleModifyFlyCommand(const char* args)
 
     float FSpeed = (float)atof((char*)args);
 
-    if (FSpeed > 10.0f || FSpeed < 0.1f)
+    if (FSpeed > 30.0f || FSpeed < 0.1f)
     {
         SendSysMessage(LANG_BAD_VALUE);
         SetSentErrorMessage(true);
@@ -2766,7 +2766,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
         // before GM
         float x,y,z;
-        m_session->GetPlayer()->GetClosePoint(x,y,z,pl->GetObjectSize());
+        m_session->GetPlayer()->GetNearPoint(x,y,z,pl->GetObjectSize());
         pl->TeleportTo(m_session->GetPlayer()->GetMapId(),x,y,z,pl->GetOrientation());
     }
 

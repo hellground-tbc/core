@@ -35,6 +35,7 @@ class HELLGROUND_IMPORT_EXPORT ZoneScript
         virtual uint32 GetGameObjectEntry(uint32 guidlow, uint32 entry) { return entry; }
 
         virtual void OnCreatureCreate(Creature *, bool add) {}
+        virtual void OnCreatureDeath(Creature* /*creature*/) {}
         virtual void OnGameObjectCreate(GameObject *go, bool add) {}
 
         //All-purpose data storage 64 bit
