@@ -27,7 +27,7 @@
 class WorldSession;
 class WardenBase;
 
-class WardenMac : WardenBase
+class WardenMac : public WardenBase
 {
     public:
         WardenMac();

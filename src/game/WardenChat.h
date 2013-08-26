@@ -26,7 +26,7 @@ class BigNumber;
 class WardenBase;
 class WorldSession;
 
-class WardenChat : WardenBase
+class WardenChat : public WardenBase
 {
     public:
         WardenChat();

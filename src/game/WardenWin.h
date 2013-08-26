@@ -82,7 +82,7 @@ struct WardenInitModuleRequest
 class WorldSession;
 class WardenBase;
 
-class WardenWin : WardenBase
+class WardenWin : public WardenBase
 {
     public:
         WardenWin();

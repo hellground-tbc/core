@@ -777,14 +777,14 @@ void WorldSession::InitWarden(BigNumber *K, uint8& OperatingSystem)
     switch (OperatingSystem)
     {
         case CLIENT_OS_WIN:
-            m_Warden = (WardenBase*)new WardenWin();
+            m_Warden = new WardenWin();
             break;
         case CLIENT_OS_OSX:
-//            m_Warden = (WardenBase*)new WardenMac();
+//            m_Warden = new WardenMac();
             sLog.outLog(LOG_WARDEN, "Client %u got OSX client operating system (%i)", GetAccountId(), OperatingSystem);
             break;
         case CLIENT_OS_CHAT:
-            m_Warden = (WardenBase*)new WardenChat();
+            m_Warden = new WardenChat();
             break;
         default:
             sLog.outLog(LOG_WARDEN, "Client %u got unsupported operating system (%i)", GetAccountId(), OperatingSystem);
