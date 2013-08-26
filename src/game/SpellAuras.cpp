@@ -302,7 +302,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleComprehendLanguage,                        //244 Comprehend language
     &Aura::HandleUnused,                                    //245 SPELL_AURA_MOD_DURATION_OF_MAGIC_EFFECTS
     &Aura::HandleUnused,                                    //246 unused
-    &Aura::HandleUnused,                                    //247 unused
+    &Aura::HandleAuraMirrorImage,                           //247 SPELL_AURA_MIRROR_IMAGE                     target to become a clone of the caster
     &Aura::HandleNoImmediateEffect,                         //248 SPELL_AURA_MOD_COMBAT_RESULT_CHANCE         implemented in Unit::RollMeleeOutcomeAgainst
     &Aura::HandleNULL,                                      //249
     &Aura::HandleAuraModIncreaseHealth,                     //250 SPELL_AURA_MOD_INCREASE_HEALTH_2
@@ -8030,6 +8030,44 @@ void Aura::HandleArenaPreparation(bool apply, bool Real)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
     else
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
+}
+
+void Aura::HandleAuraMirrorImage(bool apply, bool Real)
+{
+    if (!Real)
+        return;
+
+    // Target of aura should always be creature (ref Spell::CheckCast)
+    Creature* pCreature = (Creature*)GetTarget();
+
+    // Caster can be player or creature, the unit who pCreature will become an clone of.
+    Unit* caster = GetCaster();
+
+    if (apply)
+    {
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 0, caster->getRace());
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 1, caster->getClass());
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 2, caster->getGender());
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 3, caster->getPowerType());
+
+        pCreature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_CLONED);
+
+        pCreature->SetDisplayId(caster->GetNativeDisplayId());
+    }
+    else
+    {
+        const CreatureInfo* cinfo = pCreature->GetCreatureInfo();
+        const CreatureModelInfo* minfo = sObjectMgr.GetCreatureModelInfo(pCreature->GetNativeDisplayId());
+
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 0, 0);
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 1, cinfo->classNum);
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+        pCreature->SetByteValue(UNIT_FIELD_BYTES_0, 3, 0);
+
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_CLONED);
+
+        pCreature->SetDisplayId(pCreature->GetNativeDisplayId());
+    }
 }
 
 void Aura::HandleAuraMeleeAPAttackerBonus(bool apply, bool Real)

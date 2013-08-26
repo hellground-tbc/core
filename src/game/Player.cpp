@@ -8729,6 +8729,16 @@ Item* Player::GetItemByPos(uint8 bag, uint8 slot) const
     return NULL;
 }
 
+uint32 Player::GetItemDisplayIdInSlot(uint8 bag, uint8 slot) const
+{
+    const Item* pItem = GetItemByPos(bag, slot);
+
+    if (!pItem)
+        return 0;
+
+    return pItem->GetProto()->DisplayInfoID;
+}
+
 Item* Player::GetWeaponForAttack(WeaponAttackType attackType, bool useable) const
 {
     uint16 slot;
