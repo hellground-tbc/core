@@ -209,7 +209,6 @@ void AuthSocket::OnAccept()
 /// Read the packet from the client
 void AuthSocket::OnRead()
 {
-    printf("%s\n", __FUNCTION__);
     uint8 _cmd;
     while (1)
     {
@@ -251,7 +250,6 @@ void AuthSocket::OnRead()
 /// Make the SRP6 calculation from hash in dB
 void AuthSocket::_SetVSFields(const std::string& rI)
 {
-    printf("%s\n", __FUNCTION__);
     s.SetRand(s_BYTE_SIZE * 8);
 
     BigNumber I;
@@ -285,7 +283,6 @@ void AuthSocket::_SetVSFields(const std::string& rI)
 
 void AuthSocket::SendProof(Sha1Hash sha)
 {
-    printf("%s\n", __FUNCTION__);
     switch(_build)
     {
         case 5875:                                          // 1.12.1
@@ -329,7 +326,6 @@ PatternList AuthSocket::pattern_banned = PatternList();
 /// Logon Challenge command handler
 bool AuthSocket::_HandleLogonChallenge()
 {
-    printf("%s\n", __FUNCTION__);
     DEBUG_LOG("Entering _HandleLogonChallenge");
     if (recv_len() < sizeof(sAuthLogonChallenge_C))
         return false;
@@ -417,8 +413,6 @@ bool AuthSocket::_HandleLogonChallenge()
     AccountsDatabase.escape_string(address);
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT * FROM ip_banned WHERE ip = '%s'", address.c_str());
 
-    printf("%s: 1\n", __FUNCTION__);
-
     if (result) // ip banned
     {
         sLog.outBasic("[AuthChallenge] Banned ip %s tries to login!", get_remote_address().c_str());
@@ -427,7 +421,6 @@ bool AuthSocket::_HandleLogonChallenge()
         return true;
     }
 
-    printf("%s: 2\n", __FUNCTION__);
     ///- Get the account details from the account table
     // No SQL injection (escaped user name)
 
@@ -442,7 +435,6 @@ bool AuthSocket::_HandleLogonChallenge()
         send((char const*)pkt.contents(), pkt.size());
         return true;
     }
-    printf("%s: 3\n", __FUNCTION__);
 
     Field * fields = result->Fetch();
 
@@ -476,7 +468,6 @@ bool AuthSocket::_HandleLogonChallenge()
             DEBUG_LOG("[AuthChallenge] Account '%s' is not locked to ip or frozen", _login.c_str());
             break;
     }
-    printf("%s: 4\n", __FUNCTION__);
 
     ///- If the account is banned, reject the logon attempt
     QueryResultAutoPtr  banresult = AccountsDatabase.PQuery("SELECT punishment_date, expiration_date "
@@ -499,7 +490,6 @@ bool AuthSocket::_HandleLogonChallenge()
         send((char const*)pkt.contents(), pkt.size());
         return true;
     }
-    printf("%s: 5\n", __FUNCTION__);
 
     QueryResultAutoPtr  emailbanresult = AccountsDatabase.PQuery("SELECT email FROM email_banned WHERE email = '%s'", (*result)[7].GetString());
     if (emailbanresult)
@@ -510,7 +500,6 @@ bool AuthSocket::_HandleLogonChallenge()
         send((char const*)pkt.contents(), pkt.size());
         return true;
     }
-    printf("%s: 6\n", __FUNCTION__);
 
     ///- Get the password from the account table, upper it, and make the SRP6 calculation
     std::string rI = fields[0].GetCppString();
@@ -529,7 +518,6 @@ bool AuthSocket::_HandleLogonChallenge()
         s.SetHexStr(databaseS.c_str());
         v.SetHexStr(databaseV.c_str());
     }
-    printf("%s: 7\n", __FUNCTION__);
 
     b.SetRand(19 * 8);
     BigNumber gmod = g.ModExp(b, N);
@@ -587,7 +575,6 @@ bool AuthSocket::_HandleLogonChallenge()
 /// Logon Proof command handler
 bool AuthSocket::_HandleLogonProof()
 {
-    printf("%s\n", __FUNCTION__);
     DEBUG_LOG("Entering _HandleLogonProof");
     ///- Read the packet
     sAuthLogonProof_C lp;

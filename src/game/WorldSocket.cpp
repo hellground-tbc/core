@@ -780,7 +780,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     OPENSSL_free((void*) vStr);
 
     ///- Re-check ip locking(same check as in realmd).
-    if (fields[4].GetUInt8() == 1) // if ip is locked
+    if (fields[4].GetUInt8() == ACCOUNT_STATE_IP_LOCKED) // if ip is locked
     {
         if (strcmp(fields[3].GetString(), GetRemoteAddress().c_str()))
         {
