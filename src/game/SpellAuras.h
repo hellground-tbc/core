@@ -223,6 +223,7 @@ class HELLGROUND_IMPORT_EXPORT Aura
         void HandlePreventFleeing(bool apply, bool Real);
         void HandleManaShield(bool apply, bool Real);
         void HandleArenaPreparation(bool apply, bool Real);
+        void HandleAuraMirrorImage(bool apply, bool Real);
         void HandleAuraMeleeAPAttackerBonus(bool apply, bool Real);
 
         virtual ~Aura();

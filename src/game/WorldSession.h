@@ -741,6 +741,9 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void HandleGuildBankBuyTab(WorldPacket& recv_data);
         void HandleGuildBankTabText(WorldPacket& recv_data);
         void HandleGuildBankSetTabText(WorldPacket& recv_data);
+        
+        // Other
+        void HandleGetMirrorimageData(WorldPacket& recv_data);
 
     private:
         // private trade methods
