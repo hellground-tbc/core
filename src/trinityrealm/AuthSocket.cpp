@@ -424,9 +424,8 @@ bool AuthSocket::_HandleLogonChallenge()
     ///- Get the account details from the account table
     // No SQL injection (escaped user name)
 
-    result = AccountsDatabase.PQuery("SELECT pass_hash, account.account_id, account_state_id, last_ip, permission_mask, v, s, email "
+    result = AccountsDatabase.PQuery("SELECT pass_hash, account.account_id, account_state_id, last_ip, permission_mask, email "
                                      "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
-                                     "    JOIN account_session ON account.account_id = account_session.account_id "
                                      "WHERE username = '%s'", _safelogin.c_str());
 
     if (!result)    // account not exists
@@ -504,20 +503,7 @@ bool AuthSocket::_HandleLogonChallenge()
     ///- Get the password from the account table, upper it, and make the SRP6 calculation
     std::string rI = fields[0].GetCppString();
 
-    ///- Don't calculate (v, s) if there are already some in the database
-    std::string databaseV = fields[5].GetCppString();
-    std::string databaseS = fields[6].GetCppString();
-
-    DEBUG_LOG("database authentication values: v='%s' s='%s'", databaseV.c_str(), databaseS.c_str());
-
-    // multiply with 2, bytes are stored as hexstring
-    if (databaseV.size() != s_BYTE_SIZE*2 || databaseS.size() != s_BYTE_SIZE*2)
-        _SetVSFields(rI);
-    else
-    {
-        s.SetHexStr(databaseS.c_str());
-        v.SetHexStr(databaseV.c_str());
-    }
+    _SetVSFields(rI);
 
     b.SetRand(19 * 8);
     BigNumber gmod = g.ModExp(b, N);
