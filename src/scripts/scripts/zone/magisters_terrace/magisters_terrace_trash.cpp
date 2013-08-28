@@ -269,7 +269,7 @@ struct mob_sunblade_magisterAI : public ScriptedAI
 
 struct mob_sunblade_warlockAI : public ScriptedAI
 {
-    mob_sunblade_warlockAI(Creature *c) : ScriptedAI(c)
+    mob_sunblade_warlockAI(Creature *c) : ScriptedAI(c), Summons(me)
     {
         pInstance = (c->GetInstanceData());
         FelArmor_Timer = 120000;    //check each 2 minutes
@@ -277,6 +277,7 @@ struct mob_sunblade_warlockAI : public ScriptedAI
     }
 
     ScriptedInstance* pInstance;
+    SummonList Summons;
 
     uint32 SummonImp_Timer;
     uint32 FelArmor_Timer;
@@ -319,6 +320,7 @@ struct mob_sunblade_warlockAI : public ScriptedAI
                     pInstance->SetData(DATA_KAEL_TRASH_COUNTER, 1);
             }
         }
+        Summons.DespawnAll();
     }
 
     void HandleOffCombatEffects()
@@ -333,9 +335,10 @@ struct mob_sunblade_warlockAI : public ScriptedAI
             me->InterruptNonMeleeSpells(false);
     }
 
-    void JustSummoned(Creature* summon)
+    void JustSummoned(Creature* summoned)
     {
-        SummonGUID = summon->GetGUID();
+        SummonGUID = summoned->GetGUID();
+        Summons.Summon(summoned);
     }
 
     void AttackStart(Unit* who)
