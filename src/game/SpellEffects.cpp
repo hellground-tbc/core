@@ -958,6 +958,7 @@ void Spell::EffectDummy(uint32 i)
                                 m_caster->DealDamage(unitTarget, unitTarget->GetMaxHealth(), DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         }
                     }
+                    return;
                 }
                 // Six Demon Bag, TODO: Search and add more spells to cast with normal dmg (100 ~ 200), Shadow bolt, Fireball, Summon Felhunter
                 case 14537:
