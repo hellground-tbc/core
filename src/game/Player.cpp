@@ -14478,6 +14478,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                 SetMapId(GetBattleGroundEntryPointMap());
                 Relocate(GetBattleGroundEntryPointX(),GetBattleGroundEntryPointY(),GetBattleGroundEntryPointZ(),GetBattleGroundEntryPointO());
                 //RemoveArenaAuras(true);
+                if (!isAlive())// resurrect on bg exit
+                {
+                    ResurrectPlayer(1.0f);
+                    SpawnCorpseBones();
+                }
             }
         }
     }
