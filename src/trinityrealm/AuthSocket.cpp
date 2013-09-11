@@ -490,7 +490,7 @@ bool AuthSocket::_HandleLogonChallenge()
         return true;
     }
 
-    QueryResultAutoPtr  emailbanresult = AccountsDatabase.PQuery("SELECT email FROM email_banned WHERE email = '%s'", (*result)[7].GetString());
+    QueryResultAutoPtr  emailbanresult = AccountsDatabase.PQuery("SELECT email FROM email_banned WHERE email = '%s'", (*result)[5].GetString());
     if (emailbanresult)
     {
         pkt << uint8(WOW_FAIL_BANNED);
@@ -753,7 +753,7 @@ bool AuthSocket::_HandleLogonProof()
         AccountsDatabase.DirectPExecute("UPDATE account_session SET session_key = '%s' WHERE account_id = '%u'", K_hex, accId);
 
         static SqlStatementID updateAccount;
-        SqlStatement stmt = AccountsDatabase.CreateStatement(updateAccount, "UPDATE account SET last_ip = ?, last_local_ip = ?, last_login = UNIX_TIMESTAMP(), locale_id = ?, failed_logins = 0, client_os_version_id = ? WHERE account_id = ?");
+        SqlStatement stmt = AccountsDatabase.CreateStatement(updateAccount, "UPDATE account SET last_ip = ?, last_local_ip = ?, last_login = NOW(), locale_id = ?, failed_logins = 0, client_os_version_id = ? WHERE account_id = ?");
         std::string tmpIp = get_remote_address();
         stmt.addString(tmpIp.c_str());
         stmt.addString(localIp_.c_str());
