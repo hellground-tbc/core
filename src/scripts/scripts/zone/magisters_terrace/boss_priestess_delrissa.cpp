@@ -946,7 +946,7 @@ struct mob_fizzleAI : public ScriptedAI
 #define SPELL_KNOCKDOWN            (HeroicMode?46183:11428)
 #define SPELL_SNAP_KICK            46182
 #define SPELL_FISTS_OF_ARCANE_FURY 44120
-#define SPELL_CHACRA_DRAIN         44121
+#define SPELL_HEALING_POTION         15503
 
 struct boss_eramas_brightblazeAI : public boss_priestess_guestAI
 {
@@ -1007,7 +1007,7 @@ struct boss_eramas_brightblazeAI : public boss_priestess_guestAI
         if(ChacraDrain_Timer < diff)
         {
             if(HeroicMode)
-                AddSpellToCast(SPELL_CHACRA_DRAIN, CAST_RANDOM);
+                AddSpellToCast(SPELL_HEALING_POTION, CAST_SELF);
             ChacraDrain_Timer = urand(10000, 20000);
         }
         else
