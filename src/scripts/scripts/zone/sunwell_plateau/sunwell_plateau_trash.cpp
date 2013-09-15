@@ -2324,7 +2324,7 @@ struct npc_gauntlet_imp_triggerAI : public Scripted_NoMovementAI
 {
     npc_gauntlet_imp_triggerAI(Creature *c) : Scripted_NoMovementAI(c), summons(c)
     {
-        me->SetAggroRange(1.0);
+        me->SetAggroRange(2*AGGRO_RANGE);
         pInstance = c->GetInstanceData();
         me->GetPosition(wLoc);
     }
@@ -2390,7 +2390,10 @@ struct npc_gauntlet_imp_triggerAI : public Scripted_NoMovementAI
             JustRespawned();
 
         if(pInstance->GetData(DATA_TRASH_GAUNTLET_EVENT) == DONE)
+        {
             me->Kill(me, false);
+            JustRespawned();
+        }
     }
 };
 
