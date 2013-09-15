@@ -61,7 +61,7 @@ enum ItemModType
     ITEM_MOD_SPELL_PENETRATION        = 38
 };
 
-#define MAX_ITEM_MOD                    38
+#define MAX_ITEM_MOD                    39
 
 enum ItemSpelltriggerType
 {
