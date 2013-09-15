@@ -854,6 +854,10 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     if (plr && plr->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
         plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_SHAPESHIFT);
 
+    // should remove SPELL_AURA_MOD_STUN
+    if (plr && plr->isAlive() && plr->HasAuraType(SPELL_AURA_MOD_STUN))
+        plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);            //testfixbg
+
     if (plr && !plr->isAlive())                              // resurrect on exit
     {
         plr->ResurrectPlayer(1.0f);
@@ -1066,6 +1070,9 @@ void BattleGround::AddPlayer(Player *plr)
 
     plr->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
     plr->CombatStop();
+    // should remove SPELL_AURA_MOD_STUN
+    if (plr && plr->isAlive() && plr->HasAuraType(SPELL_AURA_MOD_STUN))
+        plr->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);            //testfixbg
 
     // add arena specific auras
     if (isArena())
