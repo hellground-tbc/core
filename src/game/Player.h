@@ -1652,6 +1652,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 GetRangedCritDamageReduction(uint32 damage) const;
         uint32 GetSpellCritDamageReduction(uint32 damage) const;
         uint32 GetDotDamageReduction(uint32 damage) const;
+        int32 GetSpellPenetrationItemMod() const { return m_spellPenetrationItemMod; }
 
         float GetExpertiseDodgeOrParryReduction(WeaponAttackType attType) const;
         void UpdateBlockPercentage();
@@ -2342,6 +2343,8 @@ class HELLGROUND_EXPORT Player : public Unit
         int32 m_SpellModRemoveCount;
         EnchantDurationList m_enchantDuration;
         ItemDurationList m_itemDuration;
+
+        int32 m_spellPenetrationItemMod;
 
         uint64 m_resurrectGUID;
         uint32 m_resurrectMap;

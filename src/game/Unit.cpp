@@ -56,7 +56,6 @@
 #include "movement/MoveSplineInit.h"
 #include "movement/MoveSpline.h"
 
-
 #include <math.h>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
@@ -1838,35 +1837,38 @@ void Unit::CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEff
     if (schoolMask & ~SPELL_SCHOOL_MASK_NORMAL)
     {
         // Get base victim resistance for school
-        float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
+        float victimResistance = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
         // Ignore resistance by self SPELL_AURA_MOD_TARGET_RESISTANCE aura
         if(GetTypeId() == TYPEID_PLAYER)
-            tmpvalue2 += (float)GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
+            victimResistance += (float)GetInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE);
         else
-            tmpvalue2 += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
+            victimResistance += (float)GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, schoolMask);
 
-        if (tmpvalue2 < 0.0f || schoolMask & SPELL_SCHOOL_MASK_HOLY)
-            tmpvalue2 = 0.0f;
+        if (Player* player = ToPlayer())
+            victimResistance -= float(player->GetSpellPenetrationItemMod());
+
+        if (victimResistance < 0.0f || schoolMask & SPELL_SCHOOL_MASK_HOLY)
+            victimResistance = 0.0f;
 
         if (Creature* pCre = pVictim->ToCreature())
         {
             int32 leveldiff = int32(pCre->getLevelForTarget(this)) - int32(getLevelForTarget(pCre));
             if (leveldiff > 0)
-                tmpvalue2 += leveldiff * 5;
+                victimResistance += leveldiff * 5;
         }
 
-        tmpvalue2 *= (float)(0.15f / getLevel());
-        if (tmpvalue2 < 0.0f)
-            tmpvalue2 = 0.0f;
-        if (tmpvalue2 > 0.75f)
-            tmpvalue2 = 0.75f;
+        victimResistance *= (float)(0.15f / getLevel());
+        if (victimResistance < 0.0f)
+            victimResistance = 0.0f;
+        if (victimResistance > 0.75f)
+            victimResistance = 0.75f;
         uint32 ran = urand(0, 10000);
         uint32 faq[4] = {24,6,4,6};
         uint8 m = 0;
         float Binom = 0.0f;
         for (uint8 i = 0; i < 4; i++)
         {
-            Binom += 240000 *(powf(tmpvalue2, i) * powf((1-tmpvalue2), (4-i)))/faq[i];
+            Binom += 240000 *(powf(victimResistance, i) * powf((1-victimResistance), (4-i)))/faq[i];
             if (ran > Binom)
                 ++m;
             else
