@@ -80,6 +80,13 @@ void Channel::Join(uint64 p, const char *pass)
         }
     }
 
+    if (!m_ownerGUID && (!plr || !plr->CanSpeak())) // muted players can't create new channels
+    {
+        MakeBanned(&data);//no idea what to send
+        SendToOne(&data, p);
+        return;
+    }
+
     if (IsBanned(p) && (!plr || !plr->isGameMaster()))
     {
         MakeBanned(&data);
