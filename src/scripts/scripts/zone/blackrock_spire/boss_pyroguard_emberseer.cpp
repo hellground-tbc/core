@@ -24,8 +24,8 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_blackrock_spire.h"
 
-#define SPELL_FIRENOVA          23462
-#define SPELL_FLAMEBUFFET       23341
+#define SPELL_FIRENOVA          16079
+#define SPELL_FLAMEBUFFET       16536
 #define SPELL_PYROBLAST         17274
 #define SPELL_GROWING           16048
 #define SPELL_TRANSFORM         16052

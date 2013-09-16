@@ -57,10 +57,11 @@ enum ItemModType
     ITEM_MOD_CRIT_TAKEN_RATING        = 34,
     ITEM_MOD_RESILIENCE_RATING        = 35,
     ITEM_MOD_HASTE_RATING             = 36,
-    ITEM_MOD_EXPERTISE_RATING         = 37
+    ITEM_MOD_EXPERTISE_RATING         = 37,
+    ITEM_MOD_SPELL_PENETRATION        = 38
 };
 
-#define MAX_ITEM_MOD                    38
+#define MAX_ITEM_MOD                    39
 
 enum ItemSpelltriggerType
 {

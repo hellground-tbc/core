@@ -317,6 +317,7 @@ struct boss_felmystAI : public ScriptedAI
                 if(p->isAlive() && p->HasAura(SPELL_FOG_CHARM, 0))
                     me->Kill(p, false);
             }
+        summons.DespawnAll();
     }
 
     void DespawnSummons()

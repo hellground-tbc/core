@@ -2502,7 +2502,7 @@ struct mob_shadowlord_deathwailAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         //m_creature->GetMotionMaster()->MovePath(DEATHWAIL_FLYPATH, true);
         //this waypoints are to far away from home and npc resets during travel
-        m_creature->GetMotionMaster()->MovePoint( -3247, 284, 187, 0);
+        m_creature->GetMotionMaster()->MovePoint(0, -3247, 284, 187);
         landed = false;
 
         Unit* trigger = FindCreature(22096, 100, m_creature);

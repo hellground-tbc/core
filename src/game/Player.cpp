@@ -431,6 +431,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
         m_auraBaseMod[i][PCT_MOD] = 1.0f;
     }
 
+    m_spellPenetrationItemMod = 0;
+
     // Honor System
     m_lastHonorUpdateTime = time(NULL);
 
@@ -6804,6 +6806,10 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto,uint8 slot,bool apply)
                 break;
             case ITEM_MOD_EXPERTISE_RATING:
                 ApplyRatingMod(CR_EXPERTISE, int32(val), apply);
+                break;
+            case ITEM_MOD_SPELL_PENETRATION:
+                ApplyModInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE, int32(-val), apply);
+                m_spellPenetrationItemMod += apply ? int32(val) : int32(-val);
                 break;
         }
     }
@@ -14478,6 +14484,11 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                 SetMapId(GetBattleGroundEntryPointMap());
                 Relocate(GetBattleGroundEntryPointX(),GetBattleGroundEntryPointY(),GetBattleGroundEntryPointZ(),GetBattleGroundEntryPointO());
                 //RemoveArenaAuras(true);
+                if (!isAlive())// resurrect on bg exit
+                {
+                    ResurrectPlayer(1.0f);
+                    SpawnCorpseBones();
+                }
             }
         }
     }
