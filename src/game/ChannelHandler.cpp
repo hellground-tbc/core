@@ -240,10 +240,22 @@ void WorldSession::HandleChannelInvite(WorldPacket& recvPacket)
 
     if (!normalizePlayerName(otp))
         return;
-
+    
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel *chn = cMgr->GetChannel(channelname, _player))
+        {
+            if (!sObjectAccessor.GetPlayerByName(otp) || !sObjectAccessor.GetPlayerByName(otp)->isAcceptWhispers()) // player not found
+                {
+                    WorldPacket data;
+                    data.Initialize(SMSG_CHANNEL_NOTIFY, 1+channelname.size()+1);
+                    data << uint8(0x09); //CHAT_PLAYER_NOT_FOUND_NOTICE
+                    data << channelname;
+                    data << otp;
+                    SendPacket(&data);
+                    return;
+                }
             chn->Invite(_player->GetGUID(), otp.c_str());
+        }
 }
 
 void WorldSession::HandleChannelKick(WorldPacket& recvPacket)
