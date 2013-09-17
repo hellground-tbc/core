@@ -100,7 +100,7 @@ class ChatHandler
         bool HandleAccountDeleteCommand(const char* args);
         bool HandleAccountOnlineListCommand(const char* args);
         bool HandleAccountSetAddonCommand(const char* args);
-        bool HandleAccountSetGmLevelCommand(const char* args);
+        bool HandleAccountSetPermissionsCommand(const char* args);
         bool HandleAccountSetPasswordCommand(const char* args);
         bool HandleAccountWeatherCommand(const char*args);
         bool HandleAccountSpecialLogCommand(const char* args);

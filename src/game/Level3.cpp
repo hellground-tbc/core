@@ -810,7 +810,7 @@ bool ChatHandler::HandleReloadAuctionsCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
+bool ChatHandler::HandleAccountSetPermissionsCommand(const char* args)
 {
     if (!*args)
         return false;
@@ -847,16 +847,15 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         }
 
         // Decide which string to show
-        if (m_session->GetPlayer()!=targetPlayer)
-        {
+        if (m_session->GetPlayer() != targetPlayer)
             PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
-        }else{
+        else
             PSendSysMessage(LANG_YOURS_SECURITY_CHANGED, m_session->GetPlayer()->GetName(), gm);
-        }
 
-        AccountsDatabase.PExecute("UPDATE account SET gmlevel = '%d' WHERE id = '%u'", gm, targetAccountId);
+        AccountsDatabase.PExecute("UPDATE account_permissions SET permission_mask = '%u' WHERE account_id = '%u' AND realm_id = '%u'", gm, targetAccountId, realmID);
         return true;
-    }else
+    }
+    else
     {
         // Check for second parameter
         if (!arg2)
@@ -866,7 +865,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
         targetAccountName = arg1;
         if (!AccountMgr::normilizeString(targetAccountName))
         {
-            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,targetAccountName.c_str());
+            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, targetAccountName.c_str());
             SetSentErrorMessage(true);
             return false;
         }

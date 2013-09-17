@@ -42,7 +42,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand accountSetCommandTable[] =
     {
         { "addon",          PERM_ADM,       true,   &ChatHandler::HandleAccountSetAddonCommand,     "", NULL },
-        { "gmlevel",        PERM_CONSOLE,   true,   &ChatHandler::HandleAccountSetGmLevelCommand,   "", NULL },
+        { "permissions",    PERM_CONSOLE,   true,   &ChatHandler::HandleAccountSetPermissionsCommand,"", NULL },
         { "password",       PERM_CONSOLE,   true,   &ChatHandler::HandleAccountSetPasswordCommand,  "", NULL },
         { NULL,             0,              false,  NULL,                                           "", NULL }
     };
