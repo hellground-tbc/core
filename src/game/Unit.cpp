@@ -2364,6 +2364,8 @@ void Unit::RollMeleeHit(MeleeDamageLog *damageInfo, int32 crit_chance, int32 mis
         dodge_chance -= expertise_reduction + skillBonus;
         // Modify dodge chance by attacker SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
         dodge_chance += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
+        // Modify dodge chance by SPELL_AURA_MOD_ENEMY_DODGE
+        dodge_chance += GetTotalAuraModifier(SPELL_AURA_MOD_ENEMY_DODGE) * 100;
         if (dodge_chance > 0)
         {
             SendCombatStats("RollMeleeHit: dodge chance = %d", pVictim, dodge_chance);
