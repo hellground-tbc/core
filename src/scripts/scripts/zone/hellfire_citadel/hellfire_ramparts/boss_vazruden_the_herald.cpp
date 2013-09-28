@@ -42,6 +42,7 @@ EndScriptData */
 #define SPELL_SUMMON_LIQUID_FIRE    (HeroicMode?30928:23971)
 #define SPELL_BELLOW_ROAR           39427
 #define SPELL_REVENGE               (HeroicMode?40392:19130)
+#define SPELL_BLAZE                 (HeroicMode?32492:30927)
 #define SPELL_KIDNEY_SHOT           30621
 #define SPELL_FIRE_NOVA_VISUAL      19823
 #define SPELL_SUMMON_VAZRUDEN       30717
@@ -79,6 +80,7 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
     uint32 checktimer;
     uint32 CastTimer;
     uint32 FlyTimer;
+    uint32 BlazeTimer;
     uint64 PlayerGUID;
     uint64 VazrudenGUID;
     uint64 VictimGUID;
@@ -100,6 +102,7 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
         SummonedGUID = 0;
         checktimer = 0;
         CastTimer = 0;
+        BlazeTimer = 0;
         FireballTimer = 0;
         ConeOfFireTimer = 1200+rand()%3000;
         BellowingRoarTimer = 1800+rand()%3000;
@@ -279,10 +282,21 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
                 }
 
                 CastTimer = 0;
+                BlazeTimer = 1000;
             }
             else
                 CastTimer -= diff;
         }
+        if (BlazeTimer <= diff)
+        {
+            if (Creature* trigger = me->GetCreature(SummonedGUID))
+            {
+                trigger->CastSpell(trigger,SPELL_BLAZE,true);
+            }
+            BlazeTimer = 1000;
+        }
+        else
+            BlazeTimer -= diff;
 
         switch (phase)
         {
