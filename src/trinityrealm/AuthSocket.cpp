@@ -471,7 +471,8 @@ bool AuthSocket::_HandleLogonChallenge()
     ///- If the account is banned, reject the logon attempt
     QueryResultAutoPtr  banresult = AccountsDatabase.PQuery("SELECT punishment_date, expiration_date "
                                                             "FROM account_punishment "
-                                                            "WHERE account_id = '%u' AND punishment_type_id = '%u' AND (punishment_date = expiration_date OR expiration_date > UNIX_TIMESTAMP())", (*result)[1].GetUInt32(), PUNISHMENT_BAN);
+                                                            "WHERE account_id = '%u' AND punishment_type_id = '%u' AND active = 1 "
+                                                            "AND (punishment_date = expiration_date OR expiration_date > UNIX_TIMESTAMP())", (*result)[1].GetUInt32(), PUNISHMENT_BAN);
 
     if (banresult)
     {

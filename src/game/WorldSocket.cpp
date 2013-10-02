@@ -813,7 +813,8 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
                                 "FROM account_punishment "
                                 "WHERE account_id = '%u' "
                                 "AND punishment_type_id = '%u' "
-                                "AND expiration_date > UNIX_TIMESTAMP()",
+                                "AND active = 1 "
+                                "AND (expiration_date > UNIX_TIMESTAMP() OR expiration_date = punishment_date)",
                                 id, PUNISHMENT_BAN);
 
     if (banresult) // if account banned
@@ -889,7 +890,8 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
                                 "reason "
                                 "FROM account_punishment "
                                 "WHERE account_id = '%u' "
-                                "AND expiration_date > UNIX_TIMESTAMP() AND active = 1 "
+                                "AND active = 1"
+                                "AND (expiration_date > UNIX_TIMESTAMP() OR expiration_date = punishment_date) "
                                 "ORDER BY expiration_date DESC LIMIT 1",
                                 id);
 
