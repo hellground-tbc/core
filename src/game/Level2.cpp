@@ -217,7 +217,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
     }
 
-    AccountsDatabase.PExecute("UPDATE account_punishment SET expiration_date = UNIX_TIMESTAMP() WHERE account_id = '%u' AND punishment_type_id = '%u'", account_id, PUNISHMENT_MUTE);
+    AccountsDatabase.PExecute("UPDATE account_punishment SET active ='0' WHERE account_id = '%u' AND punishment_type_id = '%u'", account_id, PUNISHMENT_MUTE);
 
     std::string author;
 
@@ -263,7 +263,7 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
         return true;
     }
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by "
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by, active "
                                                         "FROM account_punishment "
                                                         "WHERE account_id = '%u' AND punishment_type_id = '%u' "
                                                         "ORDER BY punishment_date ASC", accountid, PUNISHMENT_MUTE);
@@ -283,7 +283,7 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
         uint64 muteLength = fields[1].GetUInt64();
 
         bool active = false;
-        if (muteLength == 0 || unmutedate >= time(NULL))
+        if ((muteLength == 0 || unmutedate >= time(NULL)) && fields[5].GetBool())
             active = true;
 
         std::string mutetime = secsToTimeString(muteLength, true);

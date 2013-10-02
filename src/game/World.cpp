@@ -2415,7 +2415,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameIPOrMail)
                 return false;
 
             //NO SQL injection as account is uint32
-            AccountsDatabase.PExecute("UPDATE account_punishment SET expiration_date = UNIX_TIMESTAMP() WHERE account_id = '%u' AND punishment_type_id = '%u'", account, PUNISHMENT_BAN);
+            AccountsDatabase.PExecute("UPDATE account_punishment SET active = '0' WHERE account_id = '%u' AND punishment_type_id = '%u'", account, PUNISHMENT_BAN);
 
             break;
     }

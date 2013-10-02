@@ -5360,7 +5360,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by "
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by, active "
                                                         "FROM account_punishment "
                                                         "WHERE punishment_type_id = '%u' AND account_id = '%u' "
                                                         "ORDER BY punishment_date ASC", PUNISHMENT_BAN, accountid);
@@ -5381,7 +5381,7 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
         bool active = false;
         bool permanent = (banLength == 0);
 
-        if (permanent || unbandate >= time(NULL))
+        if ((permanent || unbandate >= time(NULL)) && fields[5].GetBool())
             active = true;
 
         std::string bantime = permanent ? GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(banLength, true);
@@ -5478,11 +5478,12 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
     if (filter.empty())
         result = AccountsDatabase.PQuery("SELECT account.account_id, username "
                                         "FROM account JOIN account_punishment ON account.account_id = account_punishment.account_id "
-                                        "WHERE punishment_type_id = '%u' AND expiration_date > UNIX_TIMESTAMP() GROUP BY account.account_id", PUNISHMENT_BAN);
+                                        "WHERE punishment_type_id = '%u' AND active = 1 GROUP BY account.account_id", PUNISHMENT_BAN);
     else
         result = AccountsDatabase.PQuery("SELECT account.account_id, username "
                                         "FROM account JOIN account_punishment ON account.account_id = account_punishment.account_id "
-                                        "WHERE punishment_type_id = '%u' AND username LIKE '%%%s%%' GROUP BY account.account_id", PUNISHMENT_BAN, filter.c_str());
+                                        "WHERE punishment_type_id = '%u' AND active = 1 AND "
+                                        "username LIKE '%%%s%%' GROUP BY account.account_id", PUNISHMENT_BAN, filter.c_str());
 
 
     if (!result)
