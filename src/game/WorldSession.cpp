@@ -180,7 +180,7 @@ void WorldSession::RemoveOpcodeDisableFlag(uint16 flag)
 void WorldSession::SaveAccountFlags(uint32 accountId, uint64 flags)
 {
     SqlStatementID saveAccountFlags;
-    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE id = ?");
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveAccountFlags, "UPDATE account SET account_flags = ? WHERE account_id = ?");
     stmt.PExecute(flags, accountId);
 }
 
