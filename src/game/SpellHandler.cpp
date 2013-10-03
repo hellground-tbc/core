@@ -546,7 +546,7 @@ void WorldSession::HandleGetMirrorimageData(WorldPacket& recv_data)
     data << (uint8)pCreature->getGender();
     // data << (uint8)pCreature->getClass();
 
-    if (pCaster->GetTypeId() == TYPEID_PLAYER)
+    if (pCaster && pCaster->GetTypeId() == TYPEID_PLAYER)
     {
         Player* pPlayer = (Player*)pCaster;
 
