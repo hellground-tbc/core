@@ -161,7 +161,7 @@ char const* WorldSession::GetPlayerName() const
 void WorldSession::SaveOpcodesDisableFlags()
 {
     static SqlStatementID saveOpcodesDisabled;
-    SqlStatement stmt = AccountsDatabase.CreateStatement(saveOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE id = ?");
+    SqlStatement stmt = AccountsDatabase.CreateStatement(saveOpcodesDisabled, "UPDATE account SET opcodesDisabled = ? WHERE account_id = ?");
     stmt.PExecute(m_opcodesDisabled, GetAccountId());
 }
 
