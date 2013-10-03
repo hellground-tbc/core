@@ -122,7 +122,7 @@ AccountOpResult AccountMgr::ChangePassword(uint32 accid, std::string new_passwd)
     normilizeString(new_passwd);
 
     AccountsDatabase.escape_string(new_passwd);
-    if (!AccountsDatabase.PExecute("UPDATE account SET sha_pass_hash = SHA1(CONCAT(username, ':', '%s')) WHERE account_id = '%u'", new_passwd.c_str(), accid))
+    if (!AccountsDatabase.PExecute("UPDATE account SET pass_hash = SHA1(CONCAT(username, ':', '%s')) WHERE account_id = '%u'", new_passwd.c_str(), accid))
         return AOR_DB_INTERNAL_ERROR;                       // unexpected error
 
     return AOR_OK;
@@ -169,7 +169,7 @@ bool AccountMgr::CheckPassword(uint32 accid, std::string passwd)
     normilizeString(passwd);
     AccountsDatabase.escape_string(passwd);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE account_id ='%u' AND sha_pass_hash=SHA1(CONCAT(username, ':', '%s'))", accid, passwd.c_str());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT 1 FROM account WHERE account_id ='%u' AND pass_hash=SHA1(CONCAT(username, ':', '%s'))", accid, passwd.c_str());
     if (result)
         return true;
 
