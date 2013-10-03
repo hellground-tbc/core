@@ -1898,7 +1898,7 @@ void World::Update(uint32 diff)
         static SqlStatementID updateBansStmt;
         SqlStatement stmt = AccountsDatabase.CreateStatement(updateBansStmt,"UPDATE account_punishment "
             "SET active = 0 WHERE expiration_date <= UNIX_TIMESTAMP() AND expiration_date <> punishment_date "
-            "AND punishment_type_id IN ('%u','%u')");
+            "AND punishment_type_id IN (?,?)");
         stmt.addUInt8(PUNISHMENT_BAN);
         stmt.addUInt8(PUNISHMENT_MUTE);
         stmt.Execute();
