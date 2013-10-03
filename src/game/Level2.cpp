@@ -144,7 +144,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     AccountsDatabase.escape_string(author);
 
-    AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), '%u', '%s', '%s')",
+    AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), '%u', '%s', '%s', '1')",
                               account_id, PUNISHMENT_MUTE, uint64(mutetime), author.c_str(), mutereasonstr.c_str());
 
     SendGlobalGMSysMessage(LANG_GM_DISABLE_CHAT, author.c_str(), cname.c_str(), notspeaktime, mutereasonstr.c_str());

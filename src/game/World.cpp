@@ -2377,7 +2377,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameIPOrMail, std::string 
         if (mode != BAN_IP && mode != BAN_EMAIL)
         {
             //No SQL injection as strings are escaped
-            AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s')",
+            AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
                                     account, PUNISHMENT_BAN, duration_secs, safe_author.c_str(), reason.c_str());
         }
 

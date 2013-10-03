@@ -814,7 +814,7 @@ bool AuthSocket::_HandleLogonProof()
                     if (WrongPassBanType)
                     {
                         uint32 acc_id = fields[0].GetUInt32();
-                        AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, 'Realm', 'Incorrect password for: %u times. Ban for: %u seconds')",
+                        AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, 'Realm', 'Incorrect password for: %u times. Ban for: %u seconds', '1')",
                                                 acc_id, PUNISHMENT_BAN, WrongPassBanTime, failed_logins, WrongPassBanTime);
                         sLog.outBasic("[AuthChallenge] account %s got banned for '%u' seconds because it failed to authenticate '%u' times",
                             _login.c_str(), WrongPassBanTime, failed_logins);

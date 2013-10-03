@@ -411,9 +411,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         switch (sWorld.getConfig(CONFIG_SESSION_UPDATE_OVERTIME_METHOD))
         {
             case OVERTIME_IPBAN:
-                AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'CONSOLE', 'bye bye')", GetRemoteAddress().c_str());
+                AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'CONSOLE', 'bye bye', '1')", GetRemoteAddress().c_str());
             case OVERTIME_ACCBAN:
-                AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'CONSOLE', 'bye bye')", GetAccountId(), PUNISHMENT_BAN);
+                AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), 'CONSOLE', 'bye bye', '1')", GetAccountId(), PUNISHMENT_BAN);
             case OVERTIME_KICK:
                 KickPlayer();
             case OVERTIME_LOG:
