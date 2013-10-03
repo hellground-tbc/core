@@ -299,7 +299,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             }
 
             Player *player = sObjectMgr.GetPlayer(to.c_str());
-            if (!player || (!HasPermissions(PERM_GMT) && !player->GetSession()->HasPermissions(PERM_GMT) && !player->isAcceptWhispers()))
+            if (!player || (!HasPermissions(PERM_GMT) && player->GetSession()->HasPermissions(PERM_GMT) && !player->isAcceptWhispers()))
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
                 data<<to;
