@@ -261,8 +261,6 @@ extern int main(int argc, char **argv)
 
     // cleanup query
     // set expired bans to inactive
-    AccountsDatabase.PExecute("UPDATE account_punishment SET active = 0 WHERE expiration_date <= UNIX_TIMESTAMP() "
-                                "AND punishment_type_id = '%u' AND expiration_date <> punishment_date ",PUNISHMENT_BAN);
     AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unban_date <= UNIX_TIMESTAMP() AND unban_date <> ban_date");
 
     ///- Launch the listening network socket

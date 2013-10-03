@@ -600,6 +600,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_RETURNOLDMAILS_MODE] = sConfig.GetIntDefault("Mail.OldReturnMode", 0);
     m_configs[CONFIG_RETURNOLDMAILS_INTERVAL] = sConfig.GetIntDefault("Mail.OldReturnTimer", 60);
+    
+    m_configs[CONFIG_ACTIVE_BANS_UPDATE_TIME] = sConfig.GetIntDefault("ActiveBansUpdateTime",30000);
 
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
     if (m_configs[CONFIG_COMPRESSION] < 1 || m_configs[CONFIG_COMPRESSION] > 9)
@@ -1510,6 +1512,7 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_GUILD_ANNOUNCES].SetInterval(getConfig(CONFIG_GUILD_ANN_INTERVAL));
     m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILISECONDS); // check for chars to delete every day
     m_timers[WUPDATE_OLDMAILS].SetInterval(getConfig(CONFIG_RETURNOLDMAILS_INTERVAL)*1000);
+    m_timers[WUPDATE_ACTIVE_BANS].SetInterval(getConfig(CONFIG_ACTIVE_BANS_UPDATE_TIME));
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1887,7 +1890,19 @@ void World::Update(uint32 diff)
         m_timers[WUPDATE_EVENTS].Reset();
         diffRecorder.RecordTimeFor("UpdateGameEvents");
     }
+    
+    if (m_timers[WUPDATE_ACTIVE_BANS].Passed())
+    {
+        m_timers[WUPDATE_ACTIVE_BANS].Reset();
 
+        static SqlStatementID updateBansStmt;
+        SqlStatement stmt = AccountsDatabase.CreateStatement(updateBansStmt,"UPDATE account_punishment "
+            "SET active = 0 WHERE expiration_date <= UNIX_TIMESTAMP() AND expiration_date <> punishment_date "
+            "AND punishment_type_id IN ('%u','%u')");
+        stmt.addUInt8(PUNISHMENT_BAN);
+        stmt.addUInt8(PUNISHMENT_MUTE);
+        stmt.Execute();
+    }
     /// </ul>
 
     // update the instance reset times

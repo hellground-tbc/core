@@ -880,9 +880,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Update the last_ip in the database
     // No SQL injection, username escaped.
     static SqlStatementID updAccount;
-    // deactivate old mutes
-    AccountsDatabase.PExecute("UPDATE account_punishment SET active = 0 WHERE expiration_date <= UNIX_TIMESTAMP() "
-                                "AND punishment_type_id = '%u' AND expiration_date <> punishment_date ",PUNISHMENT_MUTE);
     SqlStatement stmt = AccountsDatabase.CreateStatement(updAccount, "UPDATE account SET last_ip = ? WHERE account_id = ?");
     stmt.PExecute(address.c_str(), id);
 
