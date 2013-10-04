@@ -1895,6 +1895,10 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         level = fields[1].GetUInt32();
         money = fields[2].GetUInt32();
         accId = fields[3].GetUInt32();
+        race = fields[4].GetUInt8();
+        Class = fields[5].GetUInt8();
+
+
     }
 
     std::string username = GetTrinityString(LANG_ERROR);
@@ -1903,18 +1907,18 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 permissions = 0;
     std::string last_login = GetTrinityString(LANG_ERROR);
 
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username, permission_mask, email, ip, login_date"
-                                                        "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
-                                                        "    JOIN account_login ON account.account_id = account_login.account_id "
-                                                        "WHERE account.account_id = '%u' AND realmd_id = '%u'"
-                                                        "ORDER BY login_date DESC "
-                                                        "LIMIT 1", accId, realmID);
+
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,ap.permission_mask,a.email,a.last_ip,a.last_login "
+                                                       "FROM account a "
+						                               "LEFT JOIN account_permissions ap "
+						                               "ON (a.account_id = ap.account_id) "
+						                               "WHERE a.account_id = '%u'",accId);
 
     if (result)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
-        permissions = fields[1].GetUInt32();
+		permissions = fields[1].GetUInt32();
 
         if (email.empty())
             email = "-";
