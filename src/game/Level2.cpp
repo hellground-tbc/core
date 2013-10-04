@@ -1910,15 +1910,15 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,ap.permission_mask,a.email,a.last_ip,a.last_login "
                                                        "FROM account a "
-						                               "LEFT JOIN account_permissions ap "
-						                               "ON (a.account_id = ap.account_id) "
-						                               "WHERE a.account_id = '%u'",accId);
+                                                       "LEFT JOIN account_permissions ap "
+                                                       "ON (a.account_id = ap.account_id) "
+                                                       "WHERE a.account_id = '%u'",accId);
 
     if (result)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
-		permissions = fields[1].GetUInt32();
+        permissions = fields[1].GetUInt32();
 
         if (email.empty())
             email = "-";
