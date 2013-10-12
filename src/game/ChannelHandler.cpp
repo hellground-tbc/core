@@ -41,6 +41,9 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
     CHECK_PACKET_SIZE(recvPacket, 4+1+1+(channelname.size()+1)+1);
 
     recvPacket >> pass;
+    if(channel_id == 2 && sWorld.getConfig(CONFIG_GLOBAL_TRADE_CHANNEL)) //magic number - trade channel id from DBC
+        channelname = "Trade";
+    
     if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
         if (Channel *chn = cMgr->GetJoinChannel(channelname, channel_id))
             chn->Join(_player->GetGUID(), pass.c_str());
@@ -52,9 +55,9 @@ void WorldSession::HandleChannelLeave(WorldPacket& recvPacket)
     //recvPacket.hexlike();
     CHECK_PACKET_SIZE(recvPacket, 4+1);
 
-    uint32 unk;
+    uint32 channel_id;
     std::string channelname;
-    recvPacket >> unk;                                      // channel id?
+    recvPacket >> channel_id;
     recvPacket >> channelname;
 
     if (channelname.empty())

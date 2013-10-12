@@ -4636,7 +4636,10 @@ void Player::UpdateLocalChannels(uint32 newZone)
         if (!ch)
             continue;
 
-        if ((ch->flags & 4) == 4)                            // global channel without zone name in pattern
+        if (ch->flags & CHANNEL_DBC_FLAG_GLOBAL)//Global channels
+            continue;
+        
+        if ((ch->flags & CHANNEL_DBC_FLAG_TRADE) && sWorld.getConfig(CONFIG_GLOBAL_TRADE_CHANNEL))//trade channel
             continue;
 
         //  new channel

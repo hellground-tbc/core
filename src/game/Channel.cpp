@@ -103,7 +103,7 @@ void Channel::Join(uint64 p, const char *pass)
 
     if (plr)
     {
-        if (HasFlag(CHANNEL_FLAG_LFG) &&
+        if (IsLFG() &&
             sWorld.getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && !plr->GetSession()->HasPermissions(PERM_GMT) &&
             plr->m_lookingForGroup.Empty())
         {

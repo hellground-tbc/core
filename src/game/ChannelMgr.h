@@ -86,7 +86,7 @@ class ChannelMgr
         {
             std::list<std::string> tmpList;
             for (ChannelMap::const_iterator itr = channels.begin();itr!=channels.end(); ++itr)
-                if (!itr->second->GetFlags() || itr->second->HasFlag(1))
+                if (!itr->second->GetFlags() || itr->second->HasFlag(CHANNEL_FLAG_CUSTOM))
                     tmpList.push_back(itr->first);
 
             return tmpList;
