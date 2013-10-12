@@ -441,10 +441,12 @@ void WardenWin::HandleData(ByteBuffer &buff)
                     }
 
                     sLog.outLog(LOG_WARDEN, "RESULT MEM_CHECK fail CheckId %u account Id %u got: %s  should be: %s;", *itr, Client->GetAccountId(), tmpStrContents.c_str(), tmpStrByteArray.c_str());
+                    if(*itr != sWorld.getConfig(CONFIG_WARDEN_LOG_ONLY_CHECK))
+                    {
+                        ids << *itr << " ";
+                        found = true;
+                    }
 
-                    ids << *itr << " ";
-
-                    found = true;
                     buff.rpos(buff.rpos() + rd->Length);
                     continue;
                 }
