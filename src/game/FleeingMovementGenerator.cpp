@@ -35,9 +35,9 @@ void FleeingMovementGenerator<UNIT>::_moveToNextLocation(UNIT &unit)
 
     PathFinder path(&unit);
     path.setPathLengthLimit(30.0f);
-    path.calculate(dest.x, dest.y, dest.z);
+    bool result = path.calculate(dest.x, dest.y, dest.z);
 
-    if (path.getPathType() & PATHFIND_NOPATH)
+    if (!result || path.getPathType() & PATHFIND_NOPATH)
         unit.GetPosition(dest);
 
     Movement::MoveSplineInit init(unit);

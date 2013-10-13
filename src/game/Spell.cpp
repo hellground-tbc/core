@@ -4189,10 +4189,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                     float angle = m_caster->GetAngle(target) - m_caster->GetOrientation() - M_PI;
                     m_caster->GetValidPointInAngle(dest, 2.0f, angle, false);
                     _path.setPathLengthLimit(SpellMgr::GetSpellMaxRange(GetSpellInfo()) * 1.5f);
-                    _path.calculate(dest.x, dest.y, dest.z);
+                    bool result = _path.calculate(dest.x, dest.y, dest.z);
 
                     if (_path.getPathType() & PATHFIND_SHORT)
                         return SPELL_FAILED_OUT_OF_RANGE;
+                    else if (!result)
+                        return SPELL_FAILED_NOPATH;
                 }
                 break;
             }

@@ -72,8 +72,8 @@ bool ConfusedMovementGenerator<UNIT>::Update(UNIT &unit, const uint32 &diff)
 
         PathFinder path(&unit);
         path.setPathLengthLimit(30.0f);
-        path.calculate(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
-        if (path.getPathType() & PATHFIND_NOPATH)
+        bool result = path.calculate(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
+        if (!result || path.getPathType() & PATHFIND_NOPATH)
             init.MoveTo(_randomPosition[nextMove].x, _randomPosition[nextMove].y, _randomPosition[nextMove].z);
         else
             init.MovebyPath(path.getPath());
