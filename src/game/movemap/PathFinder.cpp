@@ -50,12 +50,16 @@ PathFinder::~PathFinder()
 
 bool PathFinder::calculate(float destX, float destY, float destZ, bool forceDest)
 {
+    float x, y, z;
+    m_sourceUnit->GetPosition(x, y, z);
+
+    if (!Hellground::IsValidMapCoord(destX, destY, destZ) || !Hellground::IsValidMapCoord(x, y, z))
+        return false;
+
     Vector3 oldDest = getEndPosition();
     Vector3 dest(destX, destY, destZ);
     setEndPosition(dest);
 
-    float x, y, z;
-    m_sourceUnit->GetPosition(x, y, z);
     Vector3 start(x, y, z);
     setStartPosition(start);
 
@@ -457,6 +461,8 @@ void PathFinder::BuildPointPath(const float *startPoint, const float *endPoint)
     for (uint32 i = 0; i < pointCount; ++i)
         m_pathPoints[i] = Vector3(pathPoints[i*VERTEX_SIZE+2], pathPoints[i*VERTEX_SIZE], pathPoints[i*VERTEX_SIZE+1]);
 
+    NormalizePath();
+
     // first point is always our current location - we need the next one
     setActualEndPosition(m_pathPoints[pointCount-1]);
 
@@ -483,6 +489,12 @@ void PathFinder::BuildPointPath(const float *startPoint, const float *endPoint)
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::BuildPointPath path type %d size %d poly-size %d\n", m_type, pointCount, m_polyLength);
 }
 
+void PathFinder::NormalizePath()
+{
+    for (uint32 i = 0; i < m_pathPoints.size(); ++i)
+        m_sourceUnit->UpdateAllowedPositionZ(m_pathPoints[i].x, m_pathPoints[i].y, m_pathPoints[i].z);
+}
+
 void PathFinder::BuildShortcut()
 {
     //DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ PathFinder::BuildShortcut :: making shortcut\n");
@@ -495,6 +507,8 @@ void PathFinder::BuildShortcut()
     // set start and a default next position
     m_pathPoints[0] = getStartPosition();
     m_pathPoints[1] = getActualEndPosition();
+
+    NormalizePath();
 
     m_type = PATHFIND_SHORTCUT;
 }

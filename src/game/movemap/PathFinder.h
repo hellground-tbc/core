@@ -119,6 +119,8 @@ class PathFinder
         void BuildPointPath(const float *startPoint, const float *endPoint);
         void BuildShortcut();
 
+        void NormalizePath();
+
         NavTerrain getNavTerrain(float x, float y, float z);
         void createFilter();
         void updateFilter();
