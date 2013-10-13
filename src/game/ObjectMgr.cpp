@@ -6173,8 +6173,13 @@ bool PlayerCondition::Meets(Player const * player) const
             return player->GetQuestRewardStatus(value1);
         case CONDITION_QUESTTAKEN:
         {
-            QuestStatus status = player->GetQuestStatus(value1);
-            return (status == QUEST_STATUS_INCOMPLETE);
+            QuestStatus status1 = player->GetQuestStatus(value1);
+            if (status1 == QUEST_STATUS_INCOMPLETE)
+                return true;
+            if (value2 == 0)
+                return false;
+            QuestStatus status2 = player->GetQuestStatus(value2);
+            return (status2 == QUEST_STATUS_INCOMPLETE);
         }
         case CONDITION_AD_COMMISSION_AURA:
         {
@@ -6296,14 +6301,21 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
         case CONDITION_QUESTREWARDED:
         case CONDITION_QUESTTAKEN:
         {
-            Quest const *Quest = sObjectMgr.GetQuestTemplate(value1);
-            if (!Quest)
+            Quest const *quest1 = sObjectMgr.GetQuestTemplate(value1);
+            if (!quest1)
             {
                 sLog.outLog(LOG_DB_ERR, "Quest condition specifies non-existing quest (%u), skipped", value1);
                 return false;
             }
-            if (value2)
-                sLog.outLog(LOG_DB_ERR, "Quest condition has useless data in value2 (%u)!", value2);
+            if (!value2)
+                return true;
+
+            Quest const *quest2 = sObjectMgr.GetQuestTemplate(value1);
+            if (!quest2)
+            {
+                sLog.outLog(LOG_DB_ERR, "Quest condition specifies non-existing secondary quest (%u), skipped", value2);
+                return false;
+            }
             break;
         }
         case CONDITION_AD_COMMISSION_AURA:
