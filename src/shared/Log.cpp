@@ -221,7 +221,7 @@ void Log::Initialize()
     else
     {
         // GM log settings for per account case
-        m_gmlog_filename_format = sConfig.GetStringDefault(logToStr[LOG_GM][0], logToStr[LOG_GM][2]);
+        m_gmlog_filename_format = sConfig.GetStringDefault("GmLogDir", "gmLogs/") + sConfig.GetStringDefault(logToStr[LOG_GM][0], logToStr[LOG_GM][2]);
         if(!m_gmlog_filename_format.empty())
         {
             bool m_gmlog_timestamp = sConfig.GetBoolDefault("GmLogTimestamp",false);
