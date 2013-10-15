@@ -517,6 +517,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "delitem",        PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcDelItemCommand,          "", NULL },
         { "doaction",       PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcDoActionCommand,         "", NULL },
         { "enterevademode", PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcEnterEvadeModeCommand,   "", NULL },
+        { "extraflag",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcExtraFlagCommand,        "", NULL },
         { "factionid",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFactionIdCommand,        "", NULL },
         { "fieldflag",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFieldFlagCommand,        "", NULL },
         { "flag",           PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcFlagCommand,             "", NULL },
