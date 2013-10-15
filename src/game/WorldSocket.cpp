@@ -889,7 +889,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
                                 "reason "
                                 "FROM account_punishment "
                                 "WHERE account_id = '%u' "
-                                "AND active = 1"
+                                "AND active = 1 "
                                 "AND punishment_type_id = '%u' "
                                 "AND (expiration_date > UNIX_TIMESTAMP() OR expiration_date = punishment_date) "
                                 "ORDER BY expiration_date DESC LIMIT 1",
