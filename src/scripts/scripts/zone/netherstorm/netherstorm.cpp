@@ -252,13 +252,16 @@ struct npc_manaforge_control_consoleAI : public ScriptedAI
             switch(Phase)
             {
                 case 1:
-                    Unit* u = Unit::GetUnit((*me), someplayer);
-                    if (u && u->GetTypeId() == TYPEID_PLAYER) DoScriptText(EMOTE_START, me, u);
+                    {
+                    Unit* u = me->GetUnit(someplayer);
+                    if (u && u->GetTypeId() == TYPEID_PLAYER)
+                        DoScriptText(EMOTE_START, me, u);
                     
                     Event_Timer = 60000;
                     Wave = true;
                     ++Phase;
                     break;
+                    }
                 case 2:
                     DoScriptText(EMOTE_60, me);
                     Event_Timer = 30000;
