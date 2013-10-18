@@ -2800,6 +2800,8 @@ void SpellMgr::LoadSpellCustomAttr()
                      spellInfo->Dispel = DISPEL_NONE;
                  else if (spellInfo->Id == 46337) // Crab disguise
                      spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CAST;
+                 else if (spellInfo->SpellIconID = 2367) // remove flag from steam tonk & crashin trashin racers
+                     spellInfo->AttributesEx4 &= ~SPELL_ATTR_EX4_FORCE_TRIGGERED;
                  break;
             }
             case SPELLFAMILY_SHAMAN:
