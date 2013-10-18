@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -503,6 +503,7 @@
     <ClCompile Include="..\..\src\scripts\scripts\zone\coilfang_resevoir\slave_pens\slave_pens_trash.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\deadmines\deadmines.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\desolace\desolace.cpp" />
+    <ClCompile Include="..\..\src\scripts\scripts\zone\dire_maul\dire_maul.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\dun_morogh\dun_morogh.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\durotar\durotar.cpp" />
     <ClCompile Include="..\..\src\scripts\scripts\zone\duskwood\duskwood.cpp" />
