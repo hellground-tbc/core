@@ -228,6 +228,7 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
 
     void CheckChannelers()
     {
+        m_creature->Yell("[Leo Debug] Check channelers",LANG_UNIVERSAL,0);
         for(uint8 i = 0; i < 3; i++)
         {
             Creature *add = Unit::GetCreature(*m_creature,SpellBinderGUID[i]);
@@ -424,6 +425,17 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
         }
         if (!UpdateVictim() || m_creature->HasAura(AURA_BANISH, 0))
         {
+            if (LeoDebugBool[0] && !m_creature->HasAura(AURA_BANISH, 0))
+            {
+                m_creature->Yell("[Leo Debug]:Evade in UpdateVictim",LANG_UNIVERSAL,0);
+                char format[200];
+                sprintf(format,"Debug info: %u%u%u%u %u%u%u%u %u%u%u%u %u| %s %f %f %f",
+                    LeoDebugBool[1],LeoDebugBool[2],LeoDebugBool[3],LeoDebugBool[4],LeoDebugBool[5],LeoDebugBool[6],
+                    LeoDebugBool[7],LeoDebugBool[8],LeoDebugBool[9],LeoDebugBool[10],LeoDebugBool[11],LeoDebugBool[12],
+                    Berserk_Timer,LeoDebugString[0].c_str(),LeoDebugFloat[0],LeoDebugFloat[1],LeoDebugFloat[2]);
+                m_creature->Yell(format,LANG_UNIVERSAL,0);
+            }
+
             if(BanishTimer < diff)
             {
                 CheckBanish();         //no need to check every update tick
@@ -431,17 +443,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
             }
             else
                 BanishTimer -= diff;
-
-            if (LeoDebugBool[0] && !m_creature->HasAura(AURA_BANISH, 0))
-            {
-                m_creature->Yell("[Leo Debug]:Evade in UpdateVictim",LANG_UNIVERSAL,0);
-                char format[200];
-                sprintf(format,"Debug info: %u %u %u %u %u %u %u %u %u %u %u %u| %s %f %f %f",
-                    LeoDebugBool[1],LeoDebugBool[2],LeoDebugBool[3],LeoDebugBool[4],LeoDebugBool[5],LeoDebugBool[6],
-                    LeoDebugBool[7],LeoDebugBool[8],LeoDebugBool[9],LeoDebugBool[10],LeoDebugBool[11],LeoDebugBool[12],
-                    LeoDebugString[0].c_str(),LeoDebugFloat[0],LeoDebugFloat[1],LeoDebugFloat[2]);
-                m_creature->Yell(format,LANG_UNIVERSAL,0);
-            }
             return;
         }
         for (uint8 i=0;i<13;i++)
@@ -746,7 +747,6 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
     {
         pInstance = ((ScriptedInstance *)c->GetInstanceData());;
         leotherasGUID = 0;
-        AddedBanish = false;
     }
 
     ScriptedInstance *pInstance;
@@ -756,8 +756,6 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
     uint32 Mindblast_Timer;
     uint32 Earthshock_Timer;
 
-    bool AddedBanish;
-
     void Reset()
     {
         Mindblast_Timer  = 3000 + rand()%5000;
@@ -765,6 +763,11 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
 
         if(pInstance)
         {
+            if (pInstance->GetData(DATA_LEOTHERASTHEBLINDEVENT) != NOT_STARTED)
+            {
+                m_creature->Kill(m_creature,false);
+                return;
+            }
             pInstance->SetData64(DATA_LEOTHERAS_EVENT_STARTER, 0);
             Creature *leotheras = (Creature *)Unit::GetUnit(*m_creature, leotherasGUID);
             if(leotheras && leotheras->isAlive())
@@ -781,7 +784,7 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
 
     void JustRespawned()
     {
-        AddedBanish = false;
+        m_creature->Yell("Just Respawned (LOL!)",LANG_UNIVERSAL,0);
         Reset();
     }
 
