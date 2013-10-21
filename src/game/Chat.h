@@ -460,6 +460,7 @@ class ChatHandler
         bool HandleTaxiCheatCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
         bool HandleModifyDrunkCommand(const char* args);
+        bool HandleHDevAnnounceCommand(const char* args);
 
         bool HandleLoadScriptsCommand(const char* args);
 

@@ -207,6 +207,16 @@ bool ChatHandler::HandleNameAnnounceCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleHDevAnnounceCommand(const char* args)
+{
+    WorldPacket data;
+    if (!*args)
+        return false;
+
+    sWorld.SendWorldText(LANG_HDEV_ANNOUNCE_COLOR, 0, m_session->GetPlayer()->GetName(), args);
+    return true;
+}
+
 bool ChatHandler::HandleGMNameAnnounceCommand(const char* args)
 {
     WorldPacket data;

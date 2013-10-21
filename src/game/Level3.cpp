@@ -6412,7 +6412,7 @@ bool ChatHandler::HandleInstanceResetEncountersCommand(const char* args)
 bool ChatHandler::HandleGMListFullCommand(const char* /*args*/)
 {
     ///- Get the accounts with GM Level >0
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username, permission_mask FROM account JOIN account_permission WHERE permission_mask & '%u' AND realm_id = '%u'", PERM_GMT, realmID);
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT username, permission_mask FROM account JOIN account_permission WHERE permission_mask & '%u' AND realm_id = '%u'", PERM_GMT_DEV, realmID);
     if (result)
     {
         SendSysMessage(LANG_GMLIST);

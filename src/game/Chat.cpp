@@ -704,6 +704,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "info",           PERM_GMT,       false,  &ChatHandler::HandleInfoCommand,                "", NULL },
         { "groupgo",        PERM_GMT,       false,  &ChatHandler::HandleGroupgoCommand,             "", NULL },
         { "guid",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGUIDCommand,                "", NULL },
+        { "hdevannounce",   PERM_HEAD_DEVELOPER,false,&ChatHandler::HandleHDevAnnounceCommand,      "", NULL },
         { "help",           PERM_PLAYER,    true,   &ChatHandler::HandleHelpCommand,                "", NULL },
         { "hidearea",       PERM_ADM,       false,  &ChatHandler::HandleHideAreaCommand,            "", NULL },
         { "hover",          PERM_ADM,       false,  &ChatHandler::HandleHoverCommand,               "", NULL },

@@ -308,7 +308,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
         }
     }
 
-    bool AllowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || HasPermissions(PERM_GMT);
+    bool AllowTwoSideAccounts = !sWorld.IsPvPRealm() || sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || HasPermissions(PERM_GMT_DEV);
     uint32 skipCinematics = sWorld.getConfig(CONFIG_SKIP_CINEMATICS);
 
     bool have_same_race = false;

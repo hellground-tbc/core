@@ -702,6 +702,7 @@ enum TrinityStrings
     LANG_MOVEGENS_FOLLOW_CREATURE       = 790,
     LANG_MOVEGENS_FOLLOW_NULL           = 791,
     LANG_MOVEGENS_EFFECT                = 792,
+    LANG_HDEV_ANNOUNCE_COLOR            = 793,
 
     LANG_BG_GROUP_TOO_LARGE             = 1122, // "Your group is too large for this battleground. Please regroup to join."
     LANG_ARENA_GROUP_TOO_LARGE          = 1123, // "Your group is too large for this arena. Please regroup to join."

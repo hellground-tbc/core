@@ -289,7 +289,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
     m_ExtraFlags = 0;
 
     // players always accept
-    if (!GetSession()->HasPermissions(PERM_GMT))
+    if (!GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
         SetAcceptWhispers(true);
 
     m_curSelection = 0;
@@ -626,7 +626,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0);
 
     // set starting level
-    if (GetSession()->HasPermissions(PERM_GMT))
+    if (GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
     else
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
@@ -14869,7 +14869,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     outDebugValues();
 
     // GM state
-    if (GetSession()->HasPermissions(PERM_GMT))
+    if (GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
     {
         switch (sWorld.getConfig(CONFIG_GM_LOGIN_STATE))
         {
@@ -14881,7 +14881,21 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
                     SetGameMaster(true);
                 break;
         }
+        
+        switch (sWorld.getConfig(CONFIG_GM_WISPERING_TO))
+        {
+            default:
+            case 0:                          break;         // disable
+            case 1: SetAcceptWhispers(true); break;         // enable
+            case 2:                                         // save state
+                if (extraflags & PLAYER_EXTRA_ACCEPT_WHISPERS)
+                    SetAcceptWhispers(true);
+                break;
+        }
+    }
 
+    if (GetSession()->HasPermissions(PERM_GMT))
+    {
         switch (sWorld.getConfig(CONFIG_GM_VISIBLE_STATE))
         {
             default:
@@ -14901,17 +14915,6 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
             case 2:                                         // save state
                 if (extraflags & PLAYER_EXTRA_GM_CHAT)
                     SetGMChat(true);
-                break;
-        }
-
-        switch (sWorld.getConfig(CONFIG_GM_WISPERING_TO))
-        {
-            default:
-            case 0:                          break;         // disable
-            case 1: SetAcceptWhispers(true); break;         // enable
-            case 2:                                         // save state
-                if (extraflags & PLAYER_EXTRA_ACCEPT_WHISPERS)
-                    SetAcceptWhispers(true);
                 break;
         }
     }
@@ -18653,7 +18656,7 @@ bool Player::IsVisibleGloballyfor (Player* u) const
         return true;
 
     // GMs are visible for higher gms (or players are visible for gms)
-    if (u->GetSession()->HasPermissions(PERM_GMT))
+    if (u->GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
         return GetSession()->GetPermissions() <= u->GetSession()->GetPermissions();
 
     // non faction visibility non-breakable for non-GMs
