@@ -3830,7 +3830,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
 
     PSendSysMessage("Combat reach: %f, BoundingRadius: %f", target->GetFloatValue(UNIT_FIELD_COMBATREACH), target->GetFloatValue(UNIT_FIELD_BOUNDINGRADIUS));
     PSendSysMessage("Determinative Size: %f, CollisionWidth: %f, Scale DB: %f, Scale DBC: %f", target->GetDeterminativeSize(), modelInfo->CollisionWidth, cInfo->scale, displayInfo->scale);
-    PSendSysMessage("Active flags: %x; Extra flags: %u", target->isActiveObject(),cInfo->flags_extra);
+    PSendSysMessage("Active flags: %x; Extra flags: 0x%08X", target->isActiveObject(),cInfo->flags_extra);
 
     return true;
 }
