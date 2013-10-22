@@ -7708,8 +7708,19 @@ void Aura::PeriodicDummyTick()
 //        case 42596: break;
 //        // Headless Horseman Climax, Head: Periodic
 //        case 42603: break;
-//        // Fire Bomb
-//        case 42621: break;
+                case 42621:                                 // Fire Bomb
+                {
+                    uint32 rand = urand(0, 99);
+                    for (uint32 i = 1; i <= 6; ++i)
+                    {
+                        if (rand < i * (i+1) /2 * 5)
+                        {
+                            m_target->CastSpell(m_target, spell->Id + i, true);
+                            break;
+                        }
+                    }
+                    break;
+                } 
 //        // Headless Horseman - Conflagrate, Periodic Aura
 //        case 42637: break;
 //        // Headless Horseman - Create Pumpkin Treats Aura
