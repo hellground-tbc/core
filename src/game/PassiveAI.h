@@ -80,5 +80,6 @@ class HELLGROUND_IMPORT_EXPORT TriggerAI : public NullCreatureAI
     public:
         explicit TriggerAI(Creature *c) : NullCreatureAI(c) {}
         void IsSummonedBy(Unit *summoner);
+        virtual void MoveInLineOfSight(Unit *) {};
 };
 #endif
