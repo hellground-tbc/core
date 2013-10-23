@@ -549,6 +549,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand goCommandTable[] =
     {
         { "creature",       PERM_GMT_DEV,   false,  &ChatHandler::HandleGoCreatureCommand,          "", NULL },
+        { "direct",         PERM_GMT_DEV,   false,  &ChatHandler::HandleGoCreatureDirectCommand,    "", NULL },
         { "graveyard",      PERM_GMT_DEV,   false,  &ChatHandler::HandleGoGraveyardCommand,         "", NULL },
         { "grid",           PERM_GMT_DEV,   false,  &ChatHandler::HandleGoGridCommand,              "", NULL },
         { "object",         PERM_GMT_DEV,   false,  &ChatHandler::HandleGoObjectCommand,            "", NULL },

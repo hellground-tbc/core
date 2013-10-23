@@ -476,6 +476,7 @@ class ChatHandler
         bool HandleNpcDelItemCommand(const char* args);
         bool HandleNpcChangeLevelCommand(const char* args);
         bool HandleGoCreatureCommand(const char* args);
+        bool HandleGoCreatureDirectCommand(const char* args);
         bool HandleGoObjectCommand(const char* args);
         bool HandleGoTicketCommand(const char* args);
         bool HandleGoTriggerCommand(const char* args);

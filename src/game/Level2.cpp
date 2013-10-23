@@ -671,6 +671,57 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleGoCreatureDirectCommand(const char* args)
+{
+    if (!*args || !m_session)
+        return false;
+    uint32 lowguid = atoi(args);
+    CreatureData const* data = sObjectMgr.GetCreatureData(lowguid);
+    if (!data)
+    {
+        PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    QueryResultAutoPtr result = GameDataDatabase.PQuery("SELECT map FROM creature WHERE guid = '%u'",lowguid);
+    if (!result)
+    {
+        SendSysMessage(LANG_COMMAND_GOCREATNOTFOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+    uint16 mapid = result->Fetch()[0].GetUInt16();
+    Map* map;
+    
+    if (m_session->GetPlayer()->GetMap()->GetId() == mapid)
+        map = m_session->GetPlayer()->GetMap();
+    else
+        map = sMapMgr.FindMap(mapid);
+
+    if (!map)
+    {
+        SendSysMessage(LANG_COMMAND_GOCREATNOTFOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Creature* creature = map->GetCreature(MAKE_NEW_GUID(lowguid,data->id,HIGHGUID_UNIT));
+    if (!creature)
+        {
+        SendSysMessage(LANG_COMMAND_GOCREATNOTFOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    m_session->GetPlayer()->InterruptTaxiFlying();
+    
+    WorldLocation loc;
+    creature->GetPosition(loc);
+    m_session->GetPlayer()->TeleportTo(loc);
+    return true;
+}
+
 bool ChatHandler::HandleGUIDCommand(const char* /*args*/)
 {
     uint64 guid = m_session->GetPlayer()->GetSelection();
