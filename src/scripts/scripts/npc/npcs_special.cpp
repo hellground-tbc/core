@@ -1652,7 +1652,7 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
 
 struct npc_elemental_guardianAI : public ScriptedAI
 {
-    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_DEFENSIVE); }
+    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_AGGRESSIVE); }
 
     uint32 m_checkTimer;
 
