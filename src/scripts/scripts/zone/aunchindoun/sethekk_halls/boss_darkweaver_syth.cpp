@@ -45,10 +45,8 @@ EndScriptData */
 
 #define SPELL_CHAIN_LIGHTNING       15659 //15305
 
-#define SPELL_SUMMON_SYTH_FIRE      33537                   // Spawns 19203
-#define SPELL_SUMMON_SYTH_ARCANE    33538                   // Spawns 19205
-#define SPELL_SUMMON_SYTH_FROST     33539                   // Spawns 19204
-#define SPELL_SUMMON_SYTH_SHADOW    33540                   // Spawns 19206
+#define NPC_ELEMENTAL               19203
+#define NUM_ELEMENTALS              4
 
 #define SPELL_FLAME_BUFFET          (HeroicMode?38141:33526)
 #define SPELL_ARCANE_BUFFET         (HeroicMode?38138:33527)
@@ -57,14 +55,15 @@ EndScriptData */
 
 struct boss_darkweaver_sythAI : public ScriptedAI
 {
-    boss_darkweaver_sythAI(Creature *c) : ScriptedAI(c)
-
+    boss_darkweaver_sythAI(Creature *c) : ScriptedAI(c), summons(c)
     {
         HeroicMode = m_creature->GetMap()->IsHeroic();
         pInstance = c->GetInstanceData();
     }
 
     ScriptedInstance *pInstance;
+
+    SummonList summons;
 
     uint32 flameshock_timer;
     uint32 arcaneshock_timer;
@@ -79,6 +78,8 @@ struct boss_darkweaver_sythAI : public ScriptedAI
 
     void Reset()
     {
+        summons.DespawnAll();
+
         flameshock_timer = 2000;
         arcaneshock_timer = 4000;
         frostshock_timer = 6000;
@@ -102,6 +103,8 @@ struct boss_darkweaver_sythAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
+        summons.DespawnAll();
+
         DoScriptText(SAY_DEATH, m_creature);
 
         if (Creature* lakka = GetClosestCreatureWithEntry(me, NPC_LAKKA, 25.0f))
@@ -123,6 +126,8 @@ struct boss_darkweaver_sythAI : public ScriptedAI
     {
         if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 60, true))
             summoned->AI()->AttackStart(target);
+
+        summons.Summon(summoned);
     }
 
     void SythSummoning()
@@ -132,10 +137,15 @@ struct boss_darkweaver_sythAI : public ScriptedAI
         if (m_creature->IsNonMeleeSpellCasted(false))
             m_creature->InterruptNonMeleeSpells(false);
 
-        DoCast(m_creature,SPELL_SUMMON_SYTH_ARCANE,true);   //front
-        DoCast(m_creature,SPELL_SUMMON_SYTH_FIRE,true);     //back
-        DoCast(m_creature,SPELL_SUMMON_SYTH_FROST,true);    //left
-        DoCast(m_creature,SPELL_SUMMON_SYTH_SHADOW,true);   //right
+        float px, py, pz;
+
+        for (int id = NUM_ELEMENTALS; id--; )
+        {
+            me->GetNearPoint(px, py, pz, 0.0f, 8.0f, 0.5f * id * M_PI);
+
+            if (Creature *elemental = me->SummonCreature(NPC_ELEMENTAL + id, px, py, pz, me->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0))
+                summons.Summon(elemental);
+        }
     }
 
     void UpdateAI(const uint32 diff)
