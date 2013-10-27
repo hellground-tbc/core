@@ -715,8 +715,7 @@ bool AuthSocket::_HandleLogonProof()
             OS = CLIENT_OS_WIN;
         else if (!strcmp(operatingSystem_.c_str(), "OSX"))
             OS = CLIENT_OS_OSX;
-        else if (!strcmp(operatingSystem_.c_str(), "CHA") ||
-                 !strcmp(operatingSystem_.c_str(), "CHAT"))
+        else if (!strcmp(operatingSystem_.c_str(), sRealmList.ChatboxOsName.c_str()))
             OS = CLIENT_OS_CHAT;
         else
         {
