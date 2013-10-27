@@ -2996,3 +2996,19 @@ bool ChatHandler::HandleModifyDrunkCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNpcStandState(const char* args)
+{
+    uint32 state = atoi((char*)args);
+
+    Creature* target = getSelectedCreature();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    target->SetStandState(state);
+
+    return true;
+}

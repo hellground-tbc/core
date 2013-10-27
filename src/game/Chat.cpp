@@ -532,6 +532,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "setmovetype",    PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcSetMoveTypeCommand,      "", NULL },
         { "spawndist",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcSpawnDistCommand,        "", NULL },
         { "spawntime",      PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcSpawnTimeCommand,        "", NULL },
+        { "standstate",     PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcStandState,              "", NULL },
         { "textemote",      PERM_GMT,       false,  &ChatHandler::HandleNpcTextEmoteCommand,        "", NULL },
         { "unfollow",       PERM_GMT_DEV,   false,  &ChatHandler::HandleNpcUnFollowCommand,         "", NULL },
         { "whisper",        PERM_GMT,       false,  &ChatHandler::HandleNpcWhisperCommand,          "", NULL },
