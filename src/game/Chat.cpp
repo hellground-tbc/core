@@ -963,18 +963,14 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         // table[i].Name == "" is special case: send original command to handler
         if ((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if (table[i].RequiredPermissions & sWorld.getConfig(CONFIG_MIN_GM_COMMAND_LOG_LEVEL))
+            if (m_session && (m_session->GetPermissions() & sWorld.getConfig(CONFIG_COMMAND_LOG_PERMISSION)))
             {
-                // chat case
-                if (m_session)
-                {
-                    Player* p = m_session->GetPlayer();
-                    uint64 sel_guid = p->GetSelection();
-                    if (table[i].Name != "password")
-                        sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: (GUID: %u)]",
-                            fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
-                            GUID_LOPART(sel_guid));
-                }
+                Player* p = m_session->GetPlayer();
+                uint64 sel_guid = p->GetSelection();
+                if (table[i].Name != "password")
+                    sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: (GUID: %u)]",
+                        fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
+                        GUID_LOPART(sel_guid));
             }
         }
         // some commands have custom error messages. Don't send the default one in these cases.

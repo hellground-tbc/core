@@ -1131,7 +1131,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_KICK_PLAYER_ON_BAD_PACKET] = sConfig.GetBoolDefault("Network.KickOnBadPacket", true);
 
-    m_configs[CONFIG_MIN_GM_COMMAND_LOG_LEVEL] = sConfig.GetIntDefault("GmLogMinLevel", 1);
+    m_configs[CONFIG_COMMAND_LOG_PERMISSION] = sConfig.GetIntDefault("CommandLogPermission", PERM_ADM | PERM_GMT_DEV);
 
     m_configs[CONFIG_PRIVATE_CHANNEL_LIMIT] = sConfig.GetIntDefault("Channel.PrivateLimitCount", 20);
     m_configs[CONFIG_GLOBAL_TRADE_CHANNEL] = sConfig.GetBoolDefault("Channel.GlobalTradeChannel",true);
@@ -2060,7 +2060,7 @@ void World::SendGlobalGMMessage(WorldPacket *packet, WorldSession *self, uint32 
             itr->second->GetPlayer() &&
             itr->second->GetPlayer()->IsInWorld() &&
             itr->second != self &&
-            itr->second->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER) &&
+            itr->second->HasPermissions(sWorld.getConfig(CONFIG_MIN_GM_TEXT_LVL)) &&
             (team == 0 || itr->second->GetPlayer()->GetTeam() == team))
         {
             itr->second->SendPacket(packet);
