@@ -41,8 +41,8 @@ ChatCommand * ChatHandler::getCommandTable()
 {
     static ChatCommand accountSetCommandTable[] =
     {
-        { "addon",          PERM_ADM,       true,   &ChatHandler::HandleAccountSetAddonCommand,     "", NULL },
-        { "permissions",    PERM_CONSOLE,   true,   &ChatHandler::HandleAccountSetPermissionsCommand,"", NULL },
+        { "addon",          PERM_HIGH_GMT,  true,   &ChatHandler::HandleAccountSetAddonCommand,     "", NULL },
+        { "permissions",    PERM_HIGH_GMT,  true,   &ChatHandler::HandleAccountSetPermissionsCommand,"", NULL },
         { "password",       PERM_CONSOLE,   true,   &ChatHandler::HandleAccountSetPasswordCommand,  "", NULL },
         { NULL,             0,              false,  NULL,                                           "", NULL }
     };
@@ -922,7 +922,7 @@ void ChatHandler::PSendSysMessage(const char *format, ...)
     SendSysMessage(str);
 }
 
-bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcmd)
+bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string mastercommands)
 {
     char const* oldtext = text;
     std::string cmd = "";
@@ -939,11 +939,12 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
     {
         if (!hasStringAbbr(table[i].Name, cmd.c_str()))
             continue;
-
+        
+        std::string upToThisCommand = (mastercommands + table[i].Name);
         // select subcommand from child commands list
         if (table[i].ChildCommands != NULL)
         {
-            if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd))
+            if (!ExecuteCommandInTable(table[i].ChildCommands, text, upToThisCommand + " "))
             {
                 if (text && text[0] != '\0')
                     SendSysMessage(LANG_NO_SUBCMD);
@@ -964,14 +965,22 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         // table[i].Name == "" is special case: send original command to handler
         if ((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if (m_session && (m_session->GetPermissions() & sWorld.getConfig(CONFIG_COMMAND_LOG_PERMISSION)))
+            if (m_session && (m_session->GetPermissions() & sWorld.getConfig(CONFIG_COMMAND_LOG_PERMISSION)) && table[i].Name != "password")
             {
                 Player* p = m_session->GetPlayer();
                 uint64 sel_guid = p->GetSelection();
-                if (table[i].Name != "password")
-                    sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: (GUID: %u)]",
-                        fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
-                        GUID_LOPART(sel_guid));
+                Unit* unit = p->GetUnit(sel_guid);
+                char sel_string[100];
+                if(sel_guid && unit)
+                    sprintf(sel_string,"%s (GUID:%u)",unit->GetName(), GUID_LOPART(sel_guid));
+                else if (sel_guid)
+                    sprintf(sel_string,"(GUID:%u)", GUID_LOPART(sel_guid));
+                else
+                    sprintf(sel_string,"NONE");
+
+                sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s]",
+                    (upToThisCommand + (strlen(table[i].Name)!=0 ? (" " + std::string(text)).c_str() : oldtext)).c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
+                    sel_string);
             }
         }
         // some commands have custom error messages. Don't send the default one in these cases.
@@ -1004,8 +1013,6 @@ int ChatHandler::ParseCommands(const char* text)
     ASSERT(text);
     ASSERT(*text);
 
-    std::string fullcmd = text;
-
     /// chat case (.command format)
     if (m_session)
     {
@@ -1026,7 +1033,7 @@ int ChatHandler::ParseCommands(const char* text)
     if (text[0] == '.')
         ++text;
 
-    if (!ExecuteCommandInTable(getCommandTable(), text, fullcmd))
+    if (!ExecuteCommandInTable(getCommandTable(), text, "."))
     {
         if (m_session && !m_session->HasPermissions(PERM_GMT))
             return 0;
