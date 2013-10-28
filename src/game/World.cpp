@@ -1131,7 +1131,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_KICK_PLAYER_ON_BAD_PACKET] = sConfig.GetBoolDefault("Network.KickOnBadPacket", true);
 
-    m_configs[CONFIG_COMMAND_LOG_PERMISSION] = sConfig.GetIntDefault("CommandLogPermission", PERM_ADM | PERM_GMT_DEV);
+    m_configs[CONFIG_COMMAND_LOG_PERMISSION] = sConfig.GetIntDefault("CommandLogPermission", PERM_GMT_DEV);
 
     m_configs[CONFIG_PRIVATE_CHANNEL_LIMIT] = sConfig.GetIntDefault("Channel.PrivateLimitCount", 20);
     m_configs[CONFIG_GLOBAL_TRADE_CHANNEL] = sConfig.GetBoolDefault("Channel.GlobalTradeChannel",true);
