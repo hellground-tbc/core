@@ -2732,7 +2732,7 @@ struct npc_banishing_crystalAI : public ScriptedAI
         {
             if (Player* player = itr->getSource())
             {
-                if (me->IsWithinDistInMap(player, 15.0f) && (player->GetQuestStatus(11026) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11051) == QUEST_STATUS_INCOMPLETE))
+                if (me->IsWithinDistInMap(player, 30.0f) && (player->GetQuestStatus(11026) == QUEST_STATUS_INCOMPLETE || player->GetQuestStatus(11051) == QUEST_STATUS_INCOMPLETE))
                     PlayerGUID = player->GetGUID();
             }
         }
