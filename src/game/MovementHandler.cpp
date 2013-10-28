@@ -254,7 +254,7 @@ void WorldSession::HandleMoverRelocation(MovementInfo& movementInfo)
 
     if (Player *plMover = mover->ToPlayer())
     {
-        if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && !plMover->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !plMover->GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER) && plMover->m_AC_timer == 0)
+        if (sWorld.getConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT) && !plMover->hasUnitState(UNIT_STAT_LOST_CONTROL | UNIT_STAT_NOT_MOVE) && !plMover->GetSession()->HasPermissions(PERM_GMT_DEV) && plMover->m_AC_timer == 0)
             sWorld.m_ac.execute(new ACRequest(plMover, plMover->m_movementInfo, movementInfo));
 
         if (movementInfo.HasMovementFlag(MOVEFLAG_ONTRANSPORT))
