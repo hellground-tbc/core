@@ -1960,6 +1960,16 @@ uint32 BattleGroundMgr::GetWSGEndAfterTime() const
     return sWorld.getConfig(CONFIG_BATTLEGROUND_WSG_END_AFTER_TIME);
 }
 
+uint32 BattleGroundMgr::GetArenaEndAfterTime() const
+{
+    return sWorld.getConfig(CONFIG_ARENA_END_AFTER_TIME);
+}
+
+bool BattleGroundMgr::IsArenaEndAfterAlwaysDraw() const
+{
+    return sWorld.getConfig(CONFIG_ARENA_END_AFTER_ALWAYS_DRAW);
+}
+
 bool BattleGroundMgr::IsBGWeekend(BattleGroundTypeId bgTypeId)
 {
     uint32 eventId = 0;

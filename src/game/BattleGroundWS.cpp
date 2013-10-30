@@ -58,7 +58,6 @@ BattleGroundWS::BattleGroundWS()
     m_BgCreatures.resize(BG_CREATURES_MAX_WS);
     m_AllianceFlagUpdate = 0;
     m_HordeFlagUpdate = 0;
-    m_TimeElapsedSinceBeggining = 0;
 }
 
 BattleGroundWS::~BattleGroundWS()
@@ -69,7 +68,6 @@ void BattleGroundWS::Update(uint32 diff)
 {
     BattleGround::Update(diff);
 
-    m_TimeElapsedSinceBeggining += diff;
     if (sBattleGroundMgr.IsWSGEndAfterEnabled())
     {
         if (m_TimeElapsedSinceBeggining > sBattleGroundMgr.GetWSGEndAfterTime() && GetStatus() == STATUS_IN_PROGRESS)
@@ -143,7 +141,7 @@ void BattleGroundWS::Update(uint32 diff)
         else if (GetStartDelayTime() < 0 && !(m_Events & 0x10))
         {
             m_Events |= 0x10;
-            m_TimeElapsedSinceBeggining = 0;
+            
             for (uint32 i = BG_WS_OBJECT_DOOR_A_1; i <= BG_WS_OBJECT_DOOR_A_4; i++)
                 DoorOpen(i);
             for (uint32 i = BG_WS_OBJECT_DOOR_H_1; i <= BG_WS_OBJECT_DOOR_H_2; i++)

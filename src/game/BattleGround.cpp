@@ -93,6 +93,7 @@ BattleGround::BattleGround()
 
     m_PrematureCountDown = false;
     m_PrematureCountDown = 0;
+    m_TimeElapsedSinceBeggining = 0;
 
     m_HonorMode = BG_NORMAL;
 
@@ -140,6 +141,7 @@ void BattleGround::Update(uint32 diff)
         return;
 
     m_StartTime += diff;
+    m_TimeElapsedSinceBeggining += diff;
 
     if (GetRemovedPlayersSize())
     {
@@ -308,6 +310,26 @@ void BattleGround::Update(uint32 diff)
             for (uint32 i = BG_NA_OBJECT_DOOR_1; i <= BG_NA_OBJECT_DOOR_2; i++)
                 DelObject(i, false);
         }
+    }
+
+    if (isArena() && sBattleGroundMgr.GetArenaEndAfterTime() && m_TimeElapsedSinceBeggining > sBattleGroundMgr.GetArenaEndAfterTime() && GetStatus() == STATUS_IN_PROGRESS)
+    {
+        if (!sBattleGroundMgr.IsArenaEndAfterAlwaysDraw())
+        {
+            if(GetAlivePlayersCountByTeam(HORDE) > GetAlivePlayersCountByTeam(ALLIANCE))
+            {
+                EndBattleGround(HORDE);
+                return;
+            }
+            else if (GetAlivePlayersCountByTeam(HORDE) < GetAlivePlayersCountByTeam(ALLIANCE))
+            {
+                EndBattleGround(ALLIANCE);
+                return;
+            }
+        }
+
+        EndBattleGround(0);
+        return;
     }
 }
 
@@ -1831,7 +1853,10 @@ void BattleGround::SetStatus(uint32 Status)
 {
     m_Status = Status;
     if (Status == STATUS_IN_PROGRESS)
+    {
         m_progressStart = time(NULL);
+        m_TimeElapsedSinceBeggining = 0;
+    }
 }
 
 void BattleGround::SendObjectiveComplete(uint32 id, uint32 TeamID, float x, float y)

@@ -84,7 +84,7 @@ void BattleGroundRL::Update(uint32 diff)
         else if (GetStartDelayTime() <= 0 && !(m_Events & 0x10))
         {
             m_Events |= 0x10;
-
+            
             for (uint32 i = BG_RL_OBJECT_DOOR_1; i <= BG_RL_OBJECT_DOOR_2; i++)
                 DoorOpen(i);
 

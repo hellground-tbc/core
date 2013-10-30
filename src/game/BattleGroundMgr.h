@@ -238,6 +238,8 @@ class BattleGroundMgr
         bool IsWSGEndAfterEnabled() const;
         bool IsWSGEndAfterAlwaysDraw() const;
         uint32 GetWSGEndAfterTime() const;
+        uint32 GetArenaEndAfterTime() const;
+        bool IsArenaEndAfterAlwaysDraw() const;
 
         void InitAutomaticArenaPointDistribution();
         void DistributeArenaPoints();
