@@ -479,7 +479,6 @@ void Spell::FillTargetMap()
                     }
                     break;
                 }
-                case SPELL_EFFECT_RESURRECT:
                 case SPELL_EFFECT_CREATE_ITEM:
                 case SPELL_EFFECT_TRIGGER_SPELL:
                 case SPELL_EFFECT_SKILL_STEP:
@@ -496,6 +495,7 @@ void Spell::FillTargetMap()
                     if (m_targets.getUnitTarget())
                         AddUnitTarget(m_targets.getUnitTarget(), i);
                     break;
+                case SPELL_EFFECT_RESURRECT:
                 case SPELL_EFFECT_RESURRECT_NEW:
                     if (m_targets.getUnitTarget())
                         AddUnitTarget(m_targets.getUnitTarget(), i);
