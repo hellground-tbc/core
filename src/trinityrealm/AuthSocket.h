@@ -79,9 +79,8 @@ class AuthSocket: public BufferedSocket
 
         std::string _login;
         std::string _safelogin;
-        std::string operatingSystem_;
         std::string localIp_;
-
+        uint8 OS;
         // Since GetLocaleByName() is _NOT_ bijective, we have to store the locale as a string. Otherwise we can't differ
         // between enUS and enGB, which is important for the patch system
         std::string _localizationName;

@@ -372,12 +372,18 @@ bool AuthSocket::_HandleLogonChallenge()
 
     _login = (const char*)ch->I;
     _build = ch->build;
-    operatingSystem_ = (const char*)ch->os;
+    std::string operatingSystem_ = (const char*)ch->os;
 
     // Restore string order as its byte order is reversed
     std::reverse(operatingSystem_.begin(), operatingSystem_.end());
 
-    if (operatingSystem_.size() > 4 || (operatingSystem_ != "Win" && operatingSystem_ != "OSX" && (sRealmList.ChatboxOsName == "" || operatingSystem_ != sRealmList.ChatboxOsName))){
+    if (operatingSystem_ == "Win")
+        OS = CLIENT_OS_WIN;
+    else if (operatingSystem_ == "OSX")
+        OS = CLIENT_OS_OSX;
+    else if (sRealmList.ChatboxOsName != "" && operatingSystem_ == sRealmList.ChatboxOsName)
+        OS = CLIENT_OS_CHAT;
+    else {
         sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _login.c_str(), operatingSystem_.c_str());
         return false;
     }
@@ -708,21 +714,6 @@ bool AuthSocket::_HandleLogonProof()
     if (!memcmp(M.AsByteArray(), lp.M1, 20))
     {
         sLog.outBasic("User '%s' successfully authenticated", _login.c_str());
-
-        uint8 OS;
-
-        if (!strcmp(operatingSystem_.c_str(), "Win"))
-            OS = CLIENT_OS_WIN;
-        else if (!strcmp(operatingSystem_.c_str(), "OSX"))
-            OS = CLIENT_OS_OSX;
-        else if (!strcmp(operatingSystem_.c_str(), sRealmList.ChatboxOsName.c_str()))
-            OS = CLIENT_OS_CHAT;
-        else
-        {
-            OS = CLIENT_OS_UNKNOWN;
-            AccountsDatabase.escape_string(operatingSystem_);
-            sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _safelogin.c_str(), operatingSystem_.c_str());
-        }
 
         ///- Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
         // No SQL injection (escaped user name) and IP address as received by socket
