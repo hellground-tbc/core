@@ -3464,6 +3464,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 38829: // energy discharge hc
                 spellInfo->MaxAffectedTargets = 1;
                 break;
+            case 29838: //Second Wind (Rank 2)
+                spellInfo->procFlags &= ~PROC_FLAG_ON_TAKE_PERIODIC;
+                break;
             default:
                 break;
         }
