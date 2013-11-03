@@ -3023,6 +3023,58 @@ bool GossipSelect_npc_dummy_park(Player *player, Creature *creature, uint32 send
     return true;
 }
 
+struct npc_nearly_dead_combat_dummyAI : public Scripted_NoMovementAI
+{
+    npc_nearly_dead_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+    }
+
+    uint64 AttackerGUID;
+    uint32 Check_Timer;
+
+    void Reset()
+    {
+        m_creature->SetHealth(m_creature->GetMaxHealth()/11);
+        m_creature->SetNoCallAssistance(true);
+        m_creature->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_STUN, true);
+        AttackerGUID = 0;
+        Check_Timer = 0;
+    }
+
+    void EnterCombat(Unit* who)
+    {
+        AttackerGUID = ((Player*)who)->GetGUID();
+        m_creature->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN, UNIT_ACTION_PRIORITY_END);
+    }
+
+    void DamageTaken(Unit *attacker, uint32 &damage)
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        Player* attacker = Player::GetPlayer(AttackerGUID);
+
+        if (!UpdateVictim())
+            return;
+
+        if (attacker && Check_Timer < diff)
+        {
+            if(m_creature->GetDistance2d(attacker) > 12.0f)
+                EnterEvadeMode();
+
+            Check_Timer = 3000;
+        }
+        else
+            Check_Timer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_nearly_dead_combat_dummy(Creature *_Creature)
+{
+    return new npc_nearly_dead_combat_dummyAI (_Creature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -3228,5 +3280,10 @@ void AddSC_npcs_special()
     newscript->Name="npc_dummy_park_controller";
     newscript->pGossipHello =  &GossipHello_npc_dummy_park;
     newscript->pGossipSelect = &GossipSelect_npc_dummy_park;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_nearly_dead_combat_dummy";
+    newscript->GetAI = &GetAI_npc_nearly_dead_combat_dummy;
     newscript->RegisterSelf();
 }

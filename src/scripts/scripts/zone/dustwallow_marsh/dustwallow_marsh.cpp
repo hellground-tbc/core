@@ -268,10 +268,6 @@ struct npc_theramore_combat_dummyAI : public Scripted_NoMovementAI
 {
     npc_theramore_combat_dummyAI(Creature *c) : Scripted_NoMovementAI(c)
     {
-        // niech ktoœ to przepisze na zapytanie plx
-        CreatureInfo *cInfo = (CreatureInfo *)m_creature->GetCreatureInfo();
-        if (cInfo)
-            cInfo->flags_extra |= CREATURE_FLAG_EXTRA_NO_DAMAGE_TAKEN;
     }
 
     uint64 AttackerGUID;
