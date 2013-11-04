@@ -16,6 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+ 
+/home/core/repo/src/game/Player.cpp: In member function ‘void Player::removeSpell(uint32, bool)’:
+/home/core/repo/src/game/Player.cpp:3221:13: error: expected ‘)’ before ‘SetCanDualWield’
+
  */
 
 #include "Common.h"
@@ -3217,7 +3222,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     {
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
 
-        if (spellInfo && spellInfo->HasEffect(SPELL_EFFECT_DUAL_WIELD)
+        if (spellInfo && spellInfo->HasEffect(SPELL_EFFECT_DUAL_WIELD))
             SetCanDualWield(false);
     }
 
