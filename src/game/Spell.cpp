@@ -2320,7 +2320,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
             m_casttime = 0;
     }
 
-    if (GetCastTime() && !SpellMgr::IsChanneledSpell(GetSpellInfo()) ? GetSpellInfo()->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : GetSpellInfo()->ChannelInterruptFlags & CHANNEL_FLAG_MOVEMENT)
+    if (GetCastTime() && !SpellMgr::IsChanneledSpell(GetSpellInfo()) ? GetSpellInfo()->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT : GetSpellInfo()->ChannelInterruptFlags & CHANNEL_INTERRUPT_FLAG_MOVEMENT)
     {
         // controlled state is delivered from idle movement so should be sufficient
         m_caster->addUnitState(UNIT_STAT_CASTING_NOT_MOVE);
