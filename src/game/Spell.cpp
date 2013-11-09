@@ -500,15 +500,9 @@ void Spell::FillTargetMap()
                     if (m_targets.getUnitTarget())
                         AddUnitTarget(m_targets.getUnitTarget(), i);
                     if (m_targets.getCorpseTargetGUID())
-                    {
-                        Corpse *corpse = ObjectAccessor::GetCorpse(*m_caster,m_targets.getCorpseTargetGUID());
-                        if (corpse)
-                        {
-                            Player* owner = ObjectAccessor::FindPlayer(corpse->GetOwnerGUID());
-                            if (owner)
+                        if (Corpse *corpse = ObjectAccessor::GetCorpse(*m_caster,m_targets.getCorpseTargetGUID()))
+                            if (Player* owner = ObjectAccessor::FindPlayer(corpse->GetOwnerGUID()))
                                 AddUnitTarget(owner, i);
-                        }
-                    }
                     break;
                 case SPELL_EFFECT_SUMMON_CHANGE_ITEM:
                 case SPELL_EFFECT_ADD_FARSIGHT:
@@ -546,19 +540,11 @@ void Spell::FillTargetMap()
                     break;
                 case SPELL_EFFECT_SKIN_PLAYER_CORPSE:
                     if (m_targets.getUnitTarget())
-                    {
                         AddUnitTarget(m_targets.getUnitTarget(), i);
-                    }
                     else if (m_targets.getCorpseTargetGUID())
-                    {
-                        Corpse *corpse = ObjectAccessor::GetCorpse(*m_caster,m_targets.getCorpseTargetGUID());
-                        if (corpse)
-                        {
-                            Player* owner = ObjectAccessor::FindPlayer(corpse->GetOwnerGUID());
-                            if (owner)
+                        if (Corpse *corpse = ObjectAccessor::GetCorpse(*m_caster,m_targets.getCorpseTargetGUID()))
+                            if (Player* owner = ObjectAccessor::FindPlayer(corpse->GetOwnerGUID()))
                                 AddUnitTarget(owner, i);
-                        }
-                    }
                     break;
                 default:
                     break;
@@ -5514,6 +5500,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             if (GetSpellInfo()->Id!=20577)                      // Cannibalize
                 break;
             //fall through
+        case SPELL_EFFECT_RESURRECT:
         case SPELL_EFFECT_RESURRECT_NEW:
             // player far away, maybe his corpse near?
             if (target!=m_caster && !SpellMgr::SpellIgnoreLOS(GetSpellInfo(), eff) && !target->IsWithinLOSInMap(m_caster))
