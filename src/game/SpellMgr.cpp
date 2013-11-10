@@ -2777,7 +2777,7 @@ void SpellMgr::LoadSpellCustomAttr()
         if (spellInfo->Effect[0] == SPELL_EFFECT_STUCK)
         {
             if (IsChanneledSpell(spellInfo))
-                spellInfo->ChannelInterruptFlags &= ~CHANNEL_FLAG_MOVEMENT;
+                spellInfo->ChannelInterruptFlags &= ~CHANNEL_INTERRUPT_FLAG_MOVEMENT;
             else
                 spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_MOVEMENT;
         }
@@ -3365,7 +3365,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesEx2 &= ~SPELL_ATTR_EX2_IGNORE_LOS;
                 break;
             case 43383: // Spirit Bolts (HexLord)
-                spellInfo->ChannelInterruptFlags |= CHANNEL_FLAG_MOVEMENT;
+                spellInfo->ChannelInterruptFlags |= CHANNEL_INTERRUPT_FLAG_MOVEMENT;
                 spellInfo->InterruptFlags &= ~SPELL_INTERRUPT_FLAG_INTERRUPT;
                 break;
             case 29962: // Summon Elemental (Shade of Aran)

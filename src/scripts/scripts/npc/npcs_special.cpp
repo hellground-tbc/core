@@ -2875,7 +2875,7 @@ CreatureAI* GetAI_npc_gnomish_flame_turret(Creature *_Creature)
 #define DUMMY_PARK_ON "Start dummy park event"
 #define DUMMY_PARK_OFF "Stop dummy park event"
 #define DUMMY_PARK_OBJECTS 16
-#define DUMMY_PARK_NPCS 6
+#define DUMMY_PARK_NPCS 8
 
 float dummyparkstorage[3] = {-1899, 5607, -33};
 
