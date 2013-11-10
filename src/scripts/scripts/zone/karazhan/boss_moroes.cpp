@@ -77,10 +77,12 @@ struct boss_moroesAI : public ScriptedAI
     uint32 Blind_Timer;
     uint32 Gouge_Timer;
     uint32 Wait_Timer;
+    uint32 NonAttackable_Timer;
     uint32 CheckAdds_Timer;
     uint32 AddId[4];
 
     bool InVanish;
+    bool NonAttackable;
     bool Enrage;
 
     void Reset()
@@ -89,12 +91,19 @@ struct boss_moroesAI : public ScriptedAI
         Blind_Timer = 35000;
         Gouge_Timer = 23000;
         Wait_Timer = 0;
+        NonAttackable_Timer = 0;
         CheckAdds_Timer = 5000;
         Enrage = false;
         InVanish = false;
+        NonAttackable = false;
         if(m_creature->GetHealth() > 0)
         {
             SpawnAdds();
+        }
+
+        if(m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+        {
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
         if(pInstance && pInstance->GetData(DATA_MOROES_EVENT) != DONE)
@@ -280,6 +289,9 @@ struct boss_moroesAI : public ScriptedAI
             {
                 DoCast(m_creature, SPELL_VANISH);
                 InVanish = true;
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                NonAttackable = true;
+                NonAttackable_Timer = 12100;
                 Vanish_Timer = 30000;
                 Wait_Timer = 5000;
             }
@@ -322,6 +334,15 @@ struct boss_moroesAI : public ScriptedAI
 
         if(!InVanish)
             DoMeleeAttackIfReady();
+
+        if(NonAttackable)
+        {
+            if(NonAttackable_Timer < diff)
+            {
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                NonAttackable = false;
+            } else NonAttackable_Timer -= diff;
+        }
     }
 };
 
