@@ -290,7 +290,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
     m_ExtraFlags = 0;
 
     // players always accept
-    if (!GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
+    if (!GetSession()->HasPermissions(PERM_GMT_HDEV))
         SetAcceptWhispers(true);
 
     m_curSelection = 0;
@@ -637,7 +637,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, 0);
 
     // set starting level
-    if (GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
+    if (GetSession()->HasPermissions(PERM_GMT_HDEV))
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_GM_LEVEL));
     else
         SetUInt32Value (UNIT_FIELD_LEVEL, sWorld.getConfig(CONFIG_START_PLAYER_LEVEL));
@@ -14947,7 +14947,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     outDebugValues();
 
     // GM state
-    if (GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
+    if (GetSession()->HasPermissions(PERM_GMT_HDEV))
     {
         switch (sWorld.getConfig(CONFIG_GM_LOGIN_STATE))
         {
@@ -18739,7 +18739,7 @@ bool Player::IsVisibleGloballyfor (Player* u) const
         return true;
 
     // GMs are visible for higher gms (or players are visible for gms)
-    if (u->GetSession()->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
+    if (u->GetSession()->HasPermissions(PERM_GMT_HDEV))
         return GetSession()->GetPermissions() <= u->GetSession()->GetPermissions();
 
     // non faction visibility non-breakable for non-GMs

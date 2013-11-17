@@ -282,7 +282,7 @@ void World::AddSession_ (WorldSession* s)
     if (decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && !s->HasPermissions(PERM_GMT | PERM_HEAD_DEVELOPER))
+    if (pLimit > 0 && Sessions >= pLimit && !s->HasPermissions(PERM_GMT_HDEV))
     {
         if (!sObjectMgr.IsUnqueuedAccount(s->GetAccountId()) && !HasRecentlyDisconnected(s))
         {
