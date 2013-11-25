@@ -34,7 +34,7 @@
 #include "QuestDef.h"
 #include "GossipDef.h"
 #include "UpdateData.h"
-#include "Channel.
+#include "Channel.h"
 #include "ChannelMgr.h"
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
