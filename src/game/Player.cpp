@@ -34,7 +34,7 @@
 #include "QuestDef.h"
 #include "GossipDef.h"
 #include "UpdateData.h"
-#include "Channel.h"
+#include "Channel.
 #include "ChannelMgr.h"
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
@@ -618,7 +618,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     LoadAccountLinkedState();
 
     if (GetAccountLinkedState() != STATE_NOT_LINKED)
-        SetByteValue(PLAYER_BYTES_2, 3, 0x06);              // rest state = refer-a-friend
+        SetByteValue(PLAYER_BYTES_2, 3, REST_STATE_RAF);    // rest state = refer-a-friend
     else
         SetByteValue(PLAYER_BYTES_2, 3, REST_STATE_NORMAL); // rest state = normal
 
@@ -14834,7 +14834,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
 
     _LoadAuras(holder->GetResult(PLAYER_LOGIN_QUERY_LOADAURAS), time_diff);
 
-    m_GrantableLevelsCount = fields[60].GetUInt32();
+    m_GrantableLevelsCount = fields[43].GetUInt32();
 
     // refer-a-friend flag - maybe wrong and hacky
     LoadAccountLinkedState();
