@@ -7404,8 +7404,11 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
 bool ChatHandler::HandleAccountFriendAddCommand(const char* args)
 {
     ///- Get the command line arguments
-    uint32 targetAccountId = atoi(strtok((char*) args, " "));
-
+    char* arg1 = strtok((char*) args, " ");
+    if (arg1 == nullptr || arg1 == "")
+        return false;
+        
+    uint32 targetAccountId = atoi(arg1);
     if (!targetAccountId)
         return false;
 
@@ -7434,13 +7437,19 @@ bool ChatHandler::HandleAccountFriendAddCommand(const char* args)
 bool ChatHandler::HandleAccountFriendDeleteCommand(const char* args)
 {
     ///- Get the command line arguments
-    uint32 targetAccountId = atoi(strtok((char*) args, " "));
-
+    char* arg1 = strtok((char*) args, " ");
+    if (arg1 == nullptr || arg1 == "")
+        return false;
+        
+    uint32 targetAccountId = atoi(arg1);
     if (!targetAccountId)
         return false;
 
-    uint32 friendAccountId = atoi(strtok(NULL, " "));
-
+    char* arg2 = strtok(NULL, " ");
+    if (arg2 == nullptr || arg2 == "")
+        return false;
+        
+    uint32 friendAccountId = atoi(arg2);
     if (!friendAccountId)
         return false;
 
