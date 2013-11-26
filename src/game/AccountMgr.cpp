@@ -217,7 +217,7 @@ std::vector<uint32> AccountMgr::GetRAFAccounts(uint32 accid, bool referred)
 
 AccountOpResult AccountMgr::AddRAFLink(uint32 accid, uint32 friendid)
 {
-    if (!AccountsDatabase.PExecute("INSERT INTO `account_friends`  (`id`, `friend_id`, `expire_date`) VALUES (%u,%u,NOW() INTERVAL 3 MONTH)", accid, friendid))
+    if (!AccountsDatabase.PExecute("INSERT INTO `account_friends`  (`id`, `friend_id`, `expire_date`) VALUES (%u,%u,NOW() + INTERVAL 3 MONTH)", accid, friendid))
         return AOR_DB_INTERNAL_ERROR;
 
     return AOR_OK;
