@@ -737,7 +737,7 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_RAF_MAXREFERALS, sConfig.GetIntDefault("RAF.MaxReferals", 5));
     setConfig(CONFIG_UINT32_RAF_MAXREFERERS, sConfig.GetIntDefault("RAF.MaxReferers", 5));
     setConfig(CONFIG_FLOAT_RATE_RAF_XP, sConfig.GetFloatDefault("Rate.RAF.XP", 3.0f));
-    setConfig(CONFIG_FLOAT_RATE_RAF_LEVELPERLEVEL, sConfig.GetFloatDefault("Rate.RAF.XP", 0.5f));
+    setConfig(CONFIG_FLOAT_RATE_RAF_LEVELPERLEVEL, sConfig.GetFloatDefault("Rate.RAF.LevelPerLevel", 0.5f));
 
     m_configs[CONFIG_START_PLAYER_LEVEL] = sConfig.GetIntDefault("StartPlayerLevel", 1);
     if (m_configs[CONFIG_START_PLAYER_LEVEL] < 1)
