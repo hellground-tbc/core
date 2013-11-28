@@ -918,7 +918,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     AccountsDatabase.escape_string(lastLocalIp);
 
-    AccountsDatabase.PExecute("INSERT INTO account_login VALUES ('%u', UNIX_TIMESTAMP(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
+    AccountsDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
 
     // Initialize Warden system only if it is enabled by config
     if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
