@@ -621,7 +621,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
 
                 if (m_Session != NULL)
                 {
-                    if((_os == "CHA") && !IsChatOpcode(opcode))
+                    if((operatingSystem == CLIENT_OS_CHAT) && !IsChatOpcode(opcode))
                     {
                         sLog.outLog(LOG_WARDEN, "Chat Client for account %u send illegal opcode %u",m_Session->GetAccountId(),opcode);
                         if (sWorld.getConfig(CONFIG_WARDEN_KICK))
@@ -760,7 +760,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     Field* fields = result->Fetch();
 
     std::string lastLocalIp = fields[12].GetString();
-    uint8 operatingSystem = fields[11].GetUInt8();
+    operatingSystem = fields[11].GetUInt8();
     expansion =((sWorld.getConfig(CONFIG_EXPANSION) > fields[7].GetUInt8()) ? fields[7].GetUInt8() : sWorld.getConfig(CONFIG_EXPANSION));
 
     N.SetHexStr("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
