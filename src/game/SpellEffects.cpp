@@ -8057,11 +8057,23 @@ void Spell::EffectFriendSummon(uint32 eff_idx)
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (((Player*) m_caster)->GetSelection() == NULL || !IS_PLAYER_GUID(((Player*) m_caster)->GetSelection()))
+    uint64 selection = ((Player*) m_caster)->GetSelection();
+    if (selection == NULL || !IS_PLAYER_GUID(selection))
     {
         DEBUG_LOG("Spell::EffectFriendSummon is called, but no selection or selection is not player");
         return;
     }
 
-    m_caster->CastSpell(m_caster, m_spellInfo->EffectTriggerSpell[eff_idx], true);
+    Player* target = ObjectAccessor::GetPlayer(selection);
+    if (target == nullptr)
+        return;
+
+    WorldLocation location;
+    location.mapid = m_caster->GetMapId();
+    location.coord_x = m_caster->GetPositionX();
+    location.coord_y = m_caster->GetPositionY();
+    location.coord_z = m_caster->GetPositionZ();
+    location.orientation = m_caster->GetOrientation();
+
+    target->TeleportTo(location);
 }
