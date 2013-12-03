@@ -232,7 +232,7 @@ class WorldSocket : protected WorldHandler
 
         uint32 m_Seed;
 
-        std::string _os; // stores client's operating system
+        uint8 operatingSystem; // stores client's operating system
 };
 
 #endif  /* _WORLDSOCKET_H */
