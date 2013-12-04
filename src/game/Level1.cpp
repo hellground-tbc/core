@@ -2435,7 +2435,7 @@ bool ChatHandler::HandleLookupTeleCommand(const char * args)
     return true;
 }
 
-//Enable\Dissable accept whispers (for GM)
+//Enable\Disable GM accept whispers and players ability to whisper to gm
 bool ChatHandler::HandleWhispersCommand(const char* args)
 {
     if (!*args)
@@ -2444,20 +2444,59 @@ bool ChatHandler::HandleWhispersCommand(const char* args)
         return true;
     }
 
-    std::string argstr = (char*)args;
+    std::string firstpart = strtok((char*)args, " ");
+    if (firstpart.empty())
+        return false;
+
     // whisper on
-    if (argstr == "on")
+    if (firstpart == "on")
     {
         m_session->GetPlayer()->SetAcceptWhispers(true);
-        SendSysMessage(LANG_COMMAND_WHISPERON);
+        PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING,GetTrinityString(LANG_ON));
         return true;
     }
 
     // whisper off
-    if (argstr == "off")
+    if (firstpart == "off")
     {
         m_session->GetPlayer()->SetAcceptWhispers(false);
-        SendSysMessage(LANG_COMMAND_WHISPEROFF);
+        PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING,GetTrinityString(LANG_OFF));
+        return true;
+    }
+    
+    std::string secondpart = strtok(NULL, " ");
+    if (secondpart.empty())
+        return false;
+    
+    if (!normalizePlayerName(firstpart))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Player* target = sObjectAccessor.GetPlayerByName(firstpart);
+    if (!target)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (secondpart == "on")
+    {
+        target->SetCanWhisperToGM(true);
+        SendGlobalGMSysMessage(LANG_COMMAND_CAN_WHISPER_GM_ON, target->GetName());
+        if (m_session->GetPlayer()->IsVisibleGloballyfor(target))
+            ChatHandler(target).SendSysMessage(LANG_YOU_CAN_WHISPER_TO_GM_ON);
+        return true;
+    }
+    if (secondpart == "off")
+    {
+        target->SetCanWhisperToGM(false);
+        SendGlobalGMSysMessage(LANG_COMMAND_CAN_WHISPER_GM_OFF, target->GetName());
+        if (m_session->GetPlayer()->IsVisibleGloballyfor(target))
+            ChatHandler(target).SendSysMessage(LANG_YOU_CAN_WHISPER_TO_GM_OFF);
         return true;
     }
 

@@ -560,6 +560,7 @@ enum PlayerExtraFlags
 {
     // gm abilities
     PLAYER_EXTRA_GM_ON              = 0x0001,
+    PLAYER_EXTRA_CAN_WHISP_TO_GM    = 0x0002,
     PLAYER_EXTRA_ACCEPT_WHISPERS    = 0x0004,
     PLAYER_EXTRA_TAXICHEAT          = 0x0008,
     PLAYER_EXTRA_GM_INVISIBLE       = 0x0010,
@@ -1033,6 +1034,8 @@ class HELLGROUND_EXPORT Player : public Unit
 
         bool isAcceptWhispers() const { return m_ExtraFlags & PLAYER_EXTRA_ACCEPT_WHISPERS; }
         void SetAcceptWhispers(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS; else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS; }
+        bool canWhisperToGM() const { return m_ExtraFlags & PLAYER_EXTRA_CAN_WHISP_TO_GM; }
+        void SetCanWhisperToGM(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_CAN_WHISP_TO_GM; else m_ExtraFlags &= ~PLAYER_EXTRA_CAN_WHISP_TO_GM; }
         bool isGameMaster() const { return m_ExtraFlags & PLAYER_EXTRA_GM_ON; }
         void SetGameMaster(bool on);
         bool isGMChat() const { return GetSession()->HasPermissions(PERM_GMT) && (m_ExtraFlags & PLAYER_EXTRA_GM_CHAT); }

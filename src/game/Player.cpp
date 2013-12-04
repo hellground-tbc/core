@@ -14753,6 +14753,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     m_taxi.LoadTaxiMask(fields[18].GetString());          // must be before InitTaxiNodesForLevel
 
     uint32 extraflags = fields[32].GetUInt32();
+    SetCanWhisperToGM(extraflags & PLAYER_EXTRA_CAN_WHISP_TO_GM);
 
     m_stableSlots = fields[33].GetUInt32();
     if (m_stableSlots > 2)
@@ -17300,7 +17301,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     if (!isAcceptWhispers() && !isGameMaster() && !rPlayer->isGameMaster())
     {
         SetAcceptWhispers(true);
-        ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
+        ChatHandler(this).PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING,ChatHandler(this).GetTrinityString(LANG_ON));
     }
 
     // announce to player that player he is whispering to is afk
