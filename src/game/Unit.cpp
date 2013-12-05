@@ -9054,9 +9054,6 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
         AuraList const& mModDamagePercentDone = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
         for (AuraList::const_iterator i = mModDamagePercentDone.begin(); i != mModDamagePercentDone.end(); ++i)
         {
-            if ((*i)->GetModifier()->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL) // If modifier affects physical already - it shouldn't affect the spell second time.
-                continue;
-            else
             switch ((*i)->GetId())
             {
                 case 6057:  // M Wand Spec 1
