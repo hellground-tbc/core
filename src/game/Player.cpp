@@ -15016,6 +15016,16 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     if (!HasAura(28006) && (GetQuestRewardStatus(9121) || GetQuestRewardStatus(9122) || GetQuestRewardStatus(9123)))
         CastSpell(this, 28006, true);
 
+    uint8 changeRaceTo = fields[44].GetUInt8();
+    if (changeRaceTo)
+    {
+        if (!ChangeRace(changeRaceTo))
+            sLog.outLog(LOG_SPECIAL,"Problem during race change for player %s [%u]",GetName(),GetGUIDLow());
+        else
+            sLog.outLog(LOG_SPECIAL,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
+        RealmDataDatabase.PExecute("UPDATE characters SET changeRaceTo = '0' WHERE guid ='%u'", GetGUIDLow());
+    }
+
     return true;
 }
 
@@ -21010,4 +21020,72 @@ bool Player::IsReferAFriendLinked(Player* target)
     }
 
     return false;
+}
+
+bool Player::ChangeRace(uint8 new_race)
+{
+    static uint16 CapitalForRace[] = {72,76,47,69,68,81,54,530,911,930};
+
+    Races old_race = Races(getRace());
+
+    if (bool((1 << new_race) & 0x44D) != bool((1 << old_race) & 0x2B2))
+        return false;
+
+    const PlayerInfo* new_info = sObjectMgr.GetPlayerInfo(new_race,getClass());
+    if (!new_info)
+        return false;
+
+    if (getGender() == GENDER_FEMALE)
+    {
+        SetDisplayId(new_info->displayId_f);
+        SetNativeDisplayId(new_info->displayId_f);
+    }
+    else
+    {
+        SetDisplayId(new_info->displayId_m);
+        SetNativeDisplayId(new_info->displayId_m);
+    }
+
+    uint32 unitbytes0 = GetUInt32Value(UNIT_FIELD_BYTES_0) & 0xFFFFFF00;
+    unitbytes0 |= new_race;
+    SetUInt32Value(UNIT_FIELD_BYTES_0, unitbytes0);
+
+    //spells
+    const PlayerInfo* old_info = sObjectMgr.GetPlayerInfo(old_race,getClass());
+    std::list<CreateSpellPair>::const_iterator spell_itr;
+    for (spell_itr = old_info->spell.begin(); spell_itr!=old_info->spell.end(); ++spell_itr)
+    {
+        uint16 tspell = spell_itr->first;
+        if (tspell)
+            removeSpell(tspell);
+    }
+
+    if (getClass() == CLASS_PRIEST)
+    {
+        removeSpell(2651);
+        removeSpell(2652);
+        removeSpell(2944);
+        removeSpell(9035);
+        removeSpell(10797);
+        removeSpell(13896);
+        removeSpell(13908);
+        removeSpell(18137);
+        removeSpell(32548);
+        removeSpell(32676);
+        removeSpell(44041);
+    }
+
+    for (spell_itr = new_info->spell.begin(); spell_itr!=new_info->spell.end(); ++spell_itr)
+    {
+        uint16 tspell = spell_itr->first;
+        if (tspell)
+            learnSpell(tspell);
+    }
+
+    //reps
+    setFaction(Player::getFactionForRace(new_race));
+    GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]);
+
+    //Items??
+    return true;
 }

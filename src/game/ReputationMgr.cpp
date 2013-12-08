@@ -491,3 +491,18 @@ void ReputationMgr::SaveToDB(bool transaction)
     if (transaction)
         RealmDataDatabase.CommitTransaction();
 }
+
+bool ReputationMgr::SwitchReputation(uint32 faction1Id, uint32 faction2Id)
+{
+    FactionEntry const *faction1Entry = sFactionStore.LookupEntry(faction1Id);
+    FactionEntry const *faction2Entry = sFactionStore.LookupEntry(faction2Id);
+    if (!faction1Entry || !faction2Entry)
+        return false;
+
+    int32 tempreputation =  GetReputation(faction1Entry);
+    if (!SetOneFactionReputation(faction1Entry,GetReputation(faction2Entry),false))
+        return false;
+    if (!SetOneFactionReputation(faction2Entry,tempreputation,false))
+        return false;
+    return true;
+}

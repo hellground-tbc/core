@@ -108,6 +108,7 @@ class HELLGROUND_EXPORT ReputationMgr
         {
             return SetReputation(factionEntry, standing, true);
         }
+        bool SwitchReputation(uint32 faction1Id, uint32 faction2Id);
 
         void SetVisible(FactionTemplateEntry const* factionTemplateEntry);
         void SetVisible(FactionEntry const* factionEntry);
