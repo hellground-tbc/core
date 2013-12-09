@@ -503,6 +503,7 @@ Player::~Player ()
     delete m_declinedname;
 
     DeleteCharmAI();
+    sSocialMgr.canWhisperToGMList.remove(GetGUID());
 }
 
 void Player::CleanupsBeforeDelete()
@@ -21092,4 +21093,18 @@ void Player::ChangeRace(uint8 new_race)
 
     //Items??
     sLog.outLog(LOG_CHAR,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
+}
+
+void Player::SetCanWhisperToGM(bool on)
+{
+    if (on)
+    {
+        m_ExtraFlags |= PLAYER_EXTRA_CAN_WHISP_TO_GM;
+        sSocialMgr.canWhisperToGMList.push_back(GetGUID());
+    }
+    else
+    {
+        m_ExtraFlags &= ~PLAYER_EXTRA_CAN_WHISP_TO_GM;
+        sSocialMgr.canWhisperToGMList.remove(GetGUID());
+    }
 }

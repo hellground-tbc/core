@@ -154,6 +154,8 @@ class SocialMgr
         void BroadcastToFriendListers(Player *player, WorldPacket *packet);
         // Loading
         PlayerSocial *LoadFromDB(QueryResultAutoPtr result, uint32 guid);
+
+        std::list<uint64> canWhisperToGMList;
     private:
         SocialMap m_socialMap;
 };

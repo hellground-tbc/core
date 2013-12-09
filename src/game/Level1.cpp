@@ -38,6 +38,7 @@
 #include "GridMap.h"
 #include "Guild.h"
 #include "AccountMgr.h"
+#include "SocialMgr.h"
 
 #ifdef _DEBUG_VMAPS
 #include "VMapFactory.h"
@@ -2463,6 +2464,17 @@ bool ChatHandler::HandleWhispersCommand(const char* args)
         PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING,GetTrinityString(LANG_OFF));
         return true;
     }
+
+    if (firstpart == "list")
+    {
+        SendSysMessage("Listing online players with GMWhisper enabled");
+        std::for_each(sSocialMgr.canWhisperToGMList.begin(),sSocialMgr.canWhisperToGMList.end(),
+            [this](uint64 guid)-> void
+            {if(Player* plr = sObjectAccessor.GetPlayer(guid))
+            PSendSysMessage(LANG_LOOKUP_PLAYER_CHARACTER, GetNameLink(plr->GetName()).c_str(), guid);}
+        );
+        return true;
+    }
     
     std::string secondpart = strtok(NULL, " ");
     if (secondpart.empty())
@@ -2475,28 +2487,46 @@ bool ChatHandler::HandleWhispersCommand(const char* args)
         return false;
     }
 
+    uint32 targetguid;
     Player* target = sObjectAccessor.GetPlayerByName(firstpart);
     if (!target)
     {
-        SendSysMessage(LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage(true);
-        return false;
+        GameDataDatabase.escape_string(firstpart);
+        QueryResultAutoPtr result = RealmDataDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s' ",firstpart.c_str());
+        if (!result)
+        {
+            SendSysMessage(LANG_PLAYER_NOT_FOUND);
+            SetSentErrorMessage(true);
+            return false;
+        }
+        
+        targetguid = result->Fetch()[0].GetUInt32();
     }
 
     if (secondpart == "on")
     {
-        target->SetCanWhisperToGM(true);
-        SendGlobalGMSysMessage(LANG_COMMAND_CAN_WHISPER_GM_ON, target->GetName());
-        if (m_session->GetPlayer()->IsVisibleGloballyfor(target))
-            ChatHandler(target).SendSysMessage(LANG_YOU_CAN_WHISPER_TO_GM_ON);
+        if (target)
+        {
+            target->SetCanWhisperToGM(true);
+            if (m_session->GetPlayer()->IsVisibleGloballyfor(target))
+                ChatHandler(target).SendSysMessage(LANG_YOU_CAN_WHISPER_TO_GM_ON);
+        }
+        else
+            RealmDataDatabase.PExecute("UPDATE characters SET extra_flags = extra_flags | %u WHERE guid ='%u'", uint32(PLAYER_EXTRA_CAN_WHISP_TO_GM), targetguid);
+        SendGlobalGMSysMessage(LANG_COMMAND_CAN_WHISPER_GM_ON, firstpart.c_str());
         return true;
     }
     if (secondpart == "off")
     {
-        target->SetCanWhisperToGM(false);
-        SendGlobalGMSysMessage(LANG_COMMAND_CAN_WHISPER_GM_OFF, target->GetName());
-        if (m_session->GetPlayer()->IsVisibleGloballyfor(target))
-            ChatHandler(target).SendSysMessage(LANG_YOU_CAN_WHISPER_TO_GM_OFF);
+        if (target)
+        {
+            target->SetCanWhisperToGM(false);
+            if (m_session->GetPlayer()->IsVisibleGloballyfor(target))
+                ChatHandler(target).SendSysMessage(LANG_YOU_CAN_WHISPER_TO_GM_OFF);
+        }
+        else
+            RealmDataDatabase.PExecute("UPDATE characters SET extra_flags = extra_flags & ~ %u WHERE guid ='%u'", uint32(PLAYER_EXTRA_CAN_WHISP_TO_GM), targetguid);
+        SendGlobalGMSysMessage(LANG_COMMAND_CAN_WHISPER_GM_OFF, firstpart.c_str());
         return true;
     }
 

@@ -61,7 +61,7 @@ class ChatHandler
         }
 
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
-        static std::string GetNameLink(std::string & name);
+        static std::string GetNameLink(const std::string & name);
 
         virtual const char *GetTrinityString(int32 entry) const;
 

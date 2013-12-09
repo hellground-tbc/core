@@ -173,7 +173,7 @@ bool PlayerSocial::HasIgnore(uint32 ignore_guid)
 
 SocialMgr::SocialMgr()
 {
-
+    canWhisperToGMList.clear();
 }
 
 SocialMgr::~SocialMgr()

@@ -1035,7 +1035,7 @@ class HELLGROUND_EXPORT Player : public Unit
         bool isAcceptWhispers() const { return m_ExtraFlags & PLAYER_EXTRA_ACCEPT_WHISPERS; }
         void SetAcceptWhispers(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS; else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS; }
         bool canWhisperToGM() const { return m_ExtraFlags & PLAYER_EXTRA_CAN_WHISP_TO_GM; }
-        void SetCanWhisperToGM(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_CAN_WHISP_TO_GM; else m_ExtraFlags &= ~PLAYER_EXTRA_CAN_WHISP_TO_GM; }
+        void SetCanWhisperToGM(bool on);
         bool isGameMaster() const { return m_ExtraFlags & PLAYER_EXTRA_GM_ON; }
         void SetGameMaster(bool on);
         bool isGMChat() const { return GetSession()->HasPermissions(PERM_GMT) && (m_ExtraFlags & PLAYER_EXTRA_GM_CHAT); }
