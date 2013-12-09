@@ -15019,10 +15019,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     uint8 changeRaceTo = fields[44].GetUInt8();
     if (changeRaceTo)
     {
-        if (!ChangeRace(changeRaceTo))
-            sLog.outLog(LOG_SPECIAL,"Problem during race change for player %s [%u]",GetName(),GetGUIDLow());
-        else
-            sLog.outLog(LOG_SPECIAL,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
+        ChangeRace(changeRaceTo);
         RealmDataDatabase.PExecute("UPDATE characters SET changeRaceTo = '0' WHERE guid ='%u'", GetGUIDLow());
     }
 
@@ -21022,18 +21019,25 @@ bool Player::IsReferAFriendLinked(Player* target)
     return false;
 }
 
-bool Player::ChangeRace(uint8 new_race)
+void Player::ChangeRace(uint8 new_race)
 {
-    static uint16 CapitalForRace[] = {72,76,47,69,68,81,54,530,911,930};
+    static uint16 CapitalForRace[] = {0,72,76,47,69,68,81,54,530,0,911,930};
 
+    sLog.outLog(LOG_CHAR,"Starting race change for player %s [%u]",GetName(),GetGUIDLow());
     Races old_race = Races(getRace());
 
     if (bool((1 << new_race) & 0x44D) != bool((1 << old_race) & 0x2B2))
-        return false;
+    {
+        sLog.outLog(LOG_CHAR,"Race change: invalid race change, trans-faction NYI");
+        return;
+    }
 
     const PlayerInfo* new_info = sObjectMgr.GetPlayerInfo(new_race,getClass());
     if (!new_info)
-        return false;
+    {
+        sLog.outLog(LOG_CHAR,"Race change: invalid race/class pair");
+        return;
+    }
 
     if (getGender() == GENDER_FEMALE)
     {
@@ -21087,5 +21091,5 @@ bool Player::ChangeRace(uint8 new_race)
     GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]);
 
     //Items??
-    return true;
+    sLog.outLog(LOG_CHAR,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
 }
