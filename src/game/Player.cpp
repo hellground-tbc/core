@@ -503,6 +503,7 @@ Player::~Player ()
     delete m_declinedname;
 
     DeleteCharmAI();
+    sSocialMgr.canWhisperToGMList.remove(GetGUID());
 }
 
 void Player::CleanupsBeforeDelete()
@@ -15016,6 +15017,13 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     if (!HasAura(28006) && (GetQuestRewardStatus(9121) || GetQuestRewardStatus(9122) || GetQuestRewardStatus(9123)))
         CastSpell(this, 28006, true);
 
+    uint8 changeRaceTo = fields[44].GetUInt8();
+    if (changeRaceTo)
+    {
+        ChangeRace(changeRaceTo);
+        RealmDataDatabase.PExecute("UPDATE characters SET changeRaceTo = '0' WHERE guid ='%u'", GetGUIDLow());
+    }
+
     return true;
 }
 
@@ -16446,7 +16454,7 @@ void Player::_SaveInventory()
 
                 AccountsDatabase.BeginTransaction();
 
-                SqlStatement stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_punishment VALUES (?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
+                SqlStatement stmt = AccountsDatabase.CreateStatement(insertBan, "INSERT INTO account_panishment VALUES (?, ?, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), '[CONSOLE]', 'With love: cheater -.-', 1)");
                 stmt.PExecute(GetSession()->GetAccountId(), uint32(PUNISHMENT_BAN));
 
                 if (!GetSession()->IsAccountFlagged(ACC_SPECIAL_LOG))
@@ -21010,4 +21018,93 @@ bool Player::IsReferAFriendLinked(Player* target)
     }
 
     return false;
+}
+
+void Player::ChangeRace(uint8 new_race)
+{
+    static uint16 CapitalForRace[] = {0,72,76,47,69,68,81,54,530,0,911,930};
+
+    sLog.outLog(LOG_CHAR,"Starting race change for player %s [%u]",GetName(),GetGUIDLow());
+    Races old_race = Races(getRace());
+
+    if (bool((1 << new_race) & 0x44D) != bool((1 << old_race) & 0x2B2))
+    {
+        sLog.outLog(LOG_CHAR,"Race change: invalid race change, trans-faction NYI");
+        return;
+    }
+
+    const PlayerInfo* new_info = sObjectMgr.GetPlayerInfo(new_race,getClass());
+    if (!new_info)
+    {
+        sLog.outLog(LOG_CHAR,"Race change: invalid race/class pair");
+        return;
+    }
+
+    if (getGender() == GENDER_FEMALE)
+    {
+        SetDisplayId(new_info->displayId_f);
+        SetNativeDisplayId(new_info->displayId_f);
+    }
+    else
+    {
+        SetDisplayId(new_info->displayId_m);
+        SetNativeDisplayId(new_info->displayId_m);
+    }
+
+    uint32 unitbytes0 = GetUInt32Value(UNIT_FIELD_BYTES_0) & 0xFFFFFF00;
+    unitbytes0 |= new_race;
+    SetUInt32Value(UNIT_FIELD_BYTES_0, unitbytes0);
+
+    //spells
+    const PlayerInfo* old_info = sObjectMgr.GetPlayerInfo(old_race,getClass());
+    std::list<CreateSpellPair>::const_iterator spell_itr;
+    for (spell_itr = old_info->spell.begin(); spell_itr!=old_info->spell.end(); ++spell_itr)
+    {
+        uint16 tspell = spell_itr->first;
+        if (tspell)
+            removeSpell(tspell);
+    }
+
+    if (getClass() == CLASS_PRIEST)
+    {
+        removeSpell(2651);
+        removeSpell(2652);
+        removeSpell(2944);
+        removeSpell(9035);
+        removeSpell(10797);
+        removeSpell(13896);
+        removeSpell(13908);
+        removeSpell(18137);
+        removeSpell(32548);
+        removeSpell(32676);
+        removeSpell(44041);
+    }
+
+    for (spell_itr = new_info->spell.begin(); spell_itr!=new_info->spell.end(); ++spell_itr)
+    {
+        uint16 tspell = spell_itr->first;
+        if (tspell)
+            learnSpell(tspell);
+    }
+
+    //reps
+    setFaction(Player::getFactionForRace(new_race));
+    GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]);
+
+    //Items??
+    sLog.outLog(LOG_CHAR,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
+}
+
+void Player::SetCanWhisperToGM(bool on)
+{
+    if (on)
+    {
+        m_ExtraFlags |= PLAYER_EXTRA_CAN_WHISP_TO_GM;
+        sSocialMgr.canWhisperToGMList.push_back(GetGUID());
+    }
+    else
+    {
+        m_ExtraFlags &= ~PLAYER_EXTRA_CAN_WHISP_TO_GM;
+        sSocialMgr.canWhisperToGMList.remove(GetGUID());
+    }
 }
