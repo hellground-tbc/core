@@ -601,7 +601,10 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
         data << what;
         data << uint8(plr ? plr->chatTag() : 0);
 
-        SendToAll(&data, !players[p].IsModerator() ? p : false);
+        if (!plr || !plr->IsTrollmuted())
+            SendToAll(&data, !players[p].IsModerator() ? p : false);
+        else
+            plr->SendPacketToSelf(&data);
     }
 }
 

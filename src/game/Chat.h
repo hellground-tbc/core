@@ -489,6 +489,7 @@ class ChatHandler
         bool HandlePInfoCommand(const char* args);
         bool HandlePLimitCommand(const char* args);
         bool HandleMuteCommand(const char* args);
+        bool HandleTrollmuteCommand(const char* args);
         bool HandleUnmuteCommand(const char* args);
         bool HandleMuteInfoCommand(const char* args);
         bool HandleMovegensCommand(const char* args);

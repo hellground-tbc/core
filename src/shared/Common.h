@@ -205,7 +205,8 @@ enum AccountStates
 enum PunishmentTypes
 {
     PUNISHMENT_MUTE     = 1,
-    PUNISHMENT_BAN      = 2
+    PUNISHMENT_BAN      = 2,
+    PUNISHMENT_TROLLMUTE= 3
 };
 
 enum ClientOSVersion

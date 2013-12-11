@@ -332,6 +332,9 @@ enum TrinityStrings
     LANG_MUTEINFO_HISTORYENTRY          = 349,
     LANG_MUTEINFO_YES                   = 350,
     LANG_MUTEINFO_NO                    = 351,
+    LANG_MUTEINFO_TROLLMUTE_HISTORY     = 352,
+    LANG_MUTEINFO_NOACCOUNT_TROLLMUTE   = 353,
+    LANG_GM_TROLLMUTED_PLAYER           = 354,
 
     // Room for more level 2              346-399 not used
 

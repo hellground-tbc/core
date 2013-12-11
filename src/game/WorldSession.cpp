@@ -89,9 +89,10 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint64 permissions, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, uint64 accFlags, uint16 opcDisabled) :
+WorldSession::WorldSession(uint32 id, WorldSocket *sock, uint64 permissions, uint8 expansion, LocaleConstant locale, time_t mute_time, std::string mute_reason, time_t trollmute_time, std::string trollmute_reason, uint64 accFlags, uint16 opcDisabled) :
 LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mute_time), m_muteReason(mute_reason),
-_player(NULL), m_Socket(sock), m_permissions(permissions), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
+m_trollmuteTime(trollmute_time), m_trollmuteReason(trollmute_reason), _player(NULL), m_Socket(sock),
+m_permissions(permissions), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
 _logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
 m_accFlags(accFlags), m_Warden(NULL)

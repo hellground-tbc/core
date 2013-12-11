@@ -2091,6 +2091,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void UpdateSpeakTime();
         bool CanSpeak() const;
         void ChangeSpeakTime(int utime);
+        bool IsTrollmuted() const;
 
         /*********************************************************/
         /***                 VARIOUS SYSTEMS                   ***/

@@ -750,6 +750,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "showarea",       PERM_ADM,       false,  &ChatHandler::HandleShowAreaCommand,            "", NULL },
         { "start",          PERM_PLAYER,    false,  &ChatHandler::HandleStartCommand,               "", NULL },
         { "taxicheat",      PERM_HIGH_GMT,  false,  &ChatHandler::HandleTaxiCheatCommand,           "", NULL },
+        { "trollmute",      PERM_GMT,       false,  &ChatHandler::HandleTrollmuteCommand,           "", NULL },
         { "unaura",         PERM_ADM,       false,  &ChatHandler::HandleUnAuraCommand,              "", NULL },
         { "unbindfollow",   PERM_ADM,       false,  &ChatHandler::HandleUnbindFollowCommand,        "", NULL },
         { "unbindsight",    PERM_ADM,       false,  &ChatHandler::HandleUnbindSightCommand,         "", NULL },

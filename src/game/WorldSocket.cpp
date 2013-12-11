@@ -910,8 +910,34 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         mutereason = "";
     }
 
+    muteresult = AccountsDatabase.PQuery("SELECT "
+                                "expiration_date, "
+                                "reason "
+                                "FROM account_punishment "
+                                "WHERE account_id = '%u' "
+                                "AND active = 1 "
+                                "AND punishment_type_id = '%u' "
+                                "AND (expiration_date > UNIX_TIMESTAMP() OR expiration_date = punishment_date) "
+                                "ORDER BY expiration_date DESC LIMIT 1",
+                                id,PUNISHMENT_TROLLMUTE);
+
+    time_t trollmutetime;
+    std::string trollmutereason;
+
+    if (muteresult)
+    {
+        Field* mutefields = muteresult->Fetch();
+        trollmutetime = time_t(mutefields[0].GetUInt64());
+        trollmutereason = mutefields[1].GetString();
+    }
+    else
+    {
+        trollmutetime = 0;
+        trollmutereason = "";
+    }
+
     // NOTE ATM the socket is singlethreaded, have this in mind ...
-    ACE_NEW_RETURN(m_Session, WorldSession(id, this, permissionMask, expansion, locale, mutetime, mutereason, accFlags, opcDis), -1);
+    ACE_NEW_RETURN(m_Session, WorldSession(id, this, permissionMask, expansion, locale, mutetime, mutereason, trollmutetime, trollmutereason, accFlags, opcDis), -1);
 
     m_Crypt.SetKey(&K);
     m_Crypt.Init();
