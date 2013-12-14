@@ -273,40 +273,10 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
     if (!result)
     {
         PSendSysMessage(LANG_MUTEINFO_NOACCOUNTMUTE, accountname.c_str());
-    }
-    else
-    {
-        PSendSysMessage(LANG_MUTEINFO_MUTEHISTORY, accountname.c_str());
-        do
-        {
-            Field* fields = result->Fetch();
-
-            time_t unmutedate = time_t(fields[2].GetUInt64());
-            uint64 muteLength = fields[1].GetUInt64();
-
-            bool active = false;
-            if ((muteLength == 0 || unmutedate >= time(NULL)) && fields[5].GetBool())
-                active = true;
-
-            std::string mutetime = secsToTimeString(muteLength, true);
-            PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
-                fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
-        }
-        while (result->NextRow());
-    }
-
-    result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by, active "
-                                    "FROM account_punishment "
-                                    "WHERE account_id = '%u' AND punishment_type_id = '%u' "
-                                    "ORDER BY punishment_date ASC", accountid, PUNISHMENT_TROLLMUTE);
-
-    if (!result)
-    {
-        PSendSysMessage(LANG_MUTEINFO_NOACCOUNT_TROLLMUTE, accountname.c_str());
         return true;
     }
 
-    PSendSysMessage(LANG_MUTEINFO_TROLLMUTE_HISTORY, accountname.c_str());
+    PSendSysMessage(LANG_MUTEINFO_MUTEHISTORY, accountname.c_str());
     do
     {
         Field* fields = result->Fetch();
@@ -4693,6 +4663,70 @@ bool ChatHandler::HandleTrollmuteCommand(const char* args)
                               account_id, PUNISHMENT_TROLLMUTE, uint64(mutetime), author.c_str(), mutereasonstr.c_str());
 
     SendGlobalGMSysMessage(LANG_GM_TROLLMUTED_PLAYER, author.c_str(), cname.c_str(), notspeaktime, mutereasonstr.c_str());
+
+    return true;
+}
+
+bool ChatHandler::HandleTrollmuteInfoCommand(const char* args)
+{
+    if (!args)
+        return false;
+
+    char* cname = strtok ((char*)args, "");
+    if (!cname)
+        return false;
+
+    std::string name = cname;
+    if (!normalizePlayerName(name))
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 accountid = sObjectMgr.GetPlayerAccountIdByPlayerName(name);
+    if (!accountid)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    std::string accountname;
+    if (!AccountMgr::GetName(accountid,accountname))
+    {
+        PSendSysMessage(LANG_MUTEINFO_NOCHARACTER);
+        return true;
+    }
+
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT FROM_UNIXTIME(punishment_date), expiration_date-punishment_date, expiration_date, reason, punished_by, active "
+                                    "FROM account_punishment "
+                                    "WHERE account_id = '%u' AND punishment_type_id = '%u' "
+                                    "ORDER BY punishment_date ASC", accountid, PUNISHMENT_TROLLMUTE);
+
+    if (!result)
+    {
+        PSendSysMessage(LANG_MUTEINFO_NOACCOUNT_TROLLMUTE, accountname.c_str());
+        return true;
+    }
+
+    PSendSysMessage(LANG_MUTEINFO_TROLLMUTE_HISTORY, accountname.c_str());
+    do
+    {
+        Field* fields = result->Fetch();
+
+        time_t unmutedate = time_t(fields[2].GetUInt64());
+        uint64 muteLength = fields[1].GetUInt64();
+
+        bool active = false;
+        if ((muteLength == 0 || unmutedate >= time(NULL)) && fields[5].GetBool())
+            active = true;
+
+        std::string mutetime = secsToTimeString(muteLength, true);
+        PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
+            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
+    }
+    while (result->NextRow());
 
     return true;
 }
