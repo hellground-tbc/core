@@ -2105,7 +2105,7 @@ void World::SendWorldText(int32 string_id, uint32 preventFlags, ...)
             char buf[1000];
 
             va_list argptr;
-            va_start(argptr, string_id);
+            va_start(argptr, preventFlags);
             vsnprintf(buf,1000, text, argptr);
             va_end(argptr);
 
