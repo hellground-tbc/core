@@ -131,16 +131,14 @@ struct mob_rift_spawnAI : public ScriptedAI
     {
         if(sucked)
         {
-            if(GameObject* container = GetClosestGameObjectWithEntry(me, GO_CONTAINMENT_COFFER, 5.0))
-            {
-                container->Delete();
+            
                 Creature *trigger = me->SummonTrigger(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, 60000);
                 if (trigger)
                 {
                     trigger->SetVisibility(VISIBILITY_OFF);
                     trigger->CastSpell(trigger, SPELL_CREATE_FILLED_CONTAINMENT_COFFER, false);
                 }
-            }
+            
             me->CastSpell(me, SPELL_RIFT_SPAWN_INVISIBILITY, true);
             me->Kill(me, false);
             return;
