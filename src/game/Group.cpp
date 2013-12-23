@@ -1001,6 +1001,19 @@ void Group::SendTargetIconList(WorldSession *session)
     session->SendPacket(&data);
 }
 
+uint8 Group::GetMemberFlags(member_citerator &citr) const
+{
+    uint8 flags = citr->assistant ? MEMBER_FLAG_ASSISTANT : MEMBER_FLAG_NONE;
+
+    if (this->m_mainTank == citr->guid)
+        flags |= MEMBER_FLAG_MAINTANK;
+
+    if (this->m_mainAssistant == citr->guid)
+        flags |= MEMBER_FLAG_MAINASSIST;
+
+    return flags;
+}
+
 void Group::SendUpdate()
 {
     Player *player;
@@ -1016,7 +1029,7 @@ void Group::SendUpdate()
         data << (uint8)m_groupType;                         // group type
         data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattleGroundGroup?
         data << (uint8)(citr->group);                       // groupid
-        data << (uint8)(citr->assistant?0x01:0);            // 0x2 main assist, 0x4 main tank
+        data << (uint8)GetMemberFlags(citr);                // flags
         data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
         data << uint32(GetMembersCount()-1);
         for (member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
@@ -1032,7 +1045,7 @@ void Group::SendUpdate()
             data << (uint64)citr2->guid;
             data << (uint8)(onlineState);                   // online-state
             data << (uint8)(citr2->group);                  // groupid
-            data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
+            data << (uint8)GetMemberFlags(citr2);           // flags
         }
 
         data << uint64(m_leaderGuid);                       // leader guid
@@ -1402,18 +1415,22 @@ bool Group::_setAssistantFlag(const uint64 &guid, const bool &state)
 
 bool Group::_setMainTank(const uint64 &guid)
 {
-    member_citerator slot = _getMemberCSlot(guid);
-    if (slot==m_memberSlots.end())
-        return false;
+    if (guid)
+    {
+        member_citerator slot = _getMemberCSlot(guid);
 
-    static SqlStatementID updateMainTank;
+        if (slot == m_memberSlots.end())
+            return false;
 
-    if (m_mainAssistant == guid)
-        _setMainAssistant(0);
+        if (m_mainAssistant == guid)
+            _setMainAssistant(0);
+    }
+
     m_mainTank = guid;
 
     if (!isBGGroup())
     {
+        static SqlStatementID updateMainTank;
         SqlStatement stmt = RealmDataDatabase.CreateStatement(updateMainTank, "UPDATE groups SET mainTank = ? WHERE leaderGuid = ?");
         stmt.PExecute(GUID_LOPART(m_mainTank), GUID_LOPART(m_leaderGuid));
     }
@@ -1423,21 +1440,26 @@ bool Group::_setMainTank(const uint64 &guid)
 
 bool Group::_setMainAssistant(const uint64 &guid)
 {
-    member_witerator slot = _getMemberWSlot(guid);
-    if (slot==m_memberSlots.end())
-        return false;
+    if (guid)
+    {
+        member_witerator slot = _getMemberWSlot(guid);
 
-    static SqlStatementID updateMainAssist;
+        if (slot == m_memberSlots.end())
+            return false;
 
-    if (m_mainTank == guid)
-        _setMainTank(0);
+        if (m_mainTank == guid)
+            _setMainTank(0);
+    }
+
     m_mainAssistant = guid;
 
     if (!isBGGroup())
     {
+        static SqlStatementID updateMainAssist;
         SqlStatement stmt = RealmDataDatabase.CreateStatement(updateMainAssist, "UPDATE groups SET mainAssistant = ? WHERE leaderGuid = ?");
         stmt.PExecute(GUID_LOPART(m_mainAssistant), GUID_LOPART(m_leaderGuid));
     }
+
     return true;
 }
 

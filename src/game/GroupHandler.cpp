@@ -579,7 +579,7 @@ void WorldSession::HandleGroupAssistantOpcode(WorldPacket & recv_data)
     /********************/
 
     // everything's fine, do it
-    group->SetAssistant(guid, (flag==0?false:true));
+    group->SetAssistant(guid, flag == 0 ? false : true);
 }
 
 void WorldSession::HandleGroupPromoteOpcode(WorldPacket & recv_data)
@@ -590,24 +590,20 @@ void WorldSession::HandleGroupPromoteOpcode(WorldPacket & recv_data)
     if (!group)
         return;
 
-    uint8 flag1, flag2;
+    uint8 mainAssistant, mainTank;
     uint64 guid;
-    recv_data >> flag1 >> flag2;
+    recv_data >> mainAssistant >> mainTank;
     recv_data >> guid;
-    // if (flag1) Main Assist
-    //     0x4
-    // if (flag2) Main Tank
-    //     0x2
 
     /** error handling **/
-    if (!group->IsLeader(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
         return;
     /********************/
 
     // everything's fine, do it
-    if (flag1 == 1)
+    if (mainAssistant)
         group->SetMainAssistant(guid);
-    if (flag2 == 1)
+    else
         group->SetMainTank(guid);
 }
 
