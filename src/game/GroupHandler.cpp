@@ -596,7 +596,7 @@ void WorldSession::HandleGroupPromoteOpcode(WorldPacket & recv_data)
     recv_data >> guid;
 
     /** error handling **/
-    if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()) && (!group->IsAssistant(GetPlayer()->GetGUID()) || mainAssistant))
         return;
     /********************/
 
