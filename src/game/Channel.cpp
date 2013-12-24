@@ -602,7 +602,24 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
         data << uint8(plr ? plr->chatTag() : 0);
 
         if (!plr || !plr->IsTrollmuted())
+        {
+            // exclude LFG from two-side channels
+            if (sWorld.getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL) && IsLFG() && plr)
+            {
+                uint32 fromteam = plr->GetTeam();
+                for (PlayerList::iterator i = players.begin(); i != players.end(); ++i)
+                {
+                    Player *to = sObjectMgr.GetPlayer(i->first);
+                    if (!to || to->GetTeam() != fromteam)
+                        continue;
+
+                    if (!p || !to->GetSocial()->HasIgnore(GUID_LOPART(p)))
+                        to->SendPacketToSelf(&data);
+                }
+            }
+            else 
             SendToAll(&data, !players[p].IsModerator() ? p : false);
+        }
         else
             plr->SendPacketToSelf(&data);
     }
