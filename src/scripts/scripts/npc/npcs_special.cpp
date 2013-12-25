@@ -1016,16 +1016,13 @@ CreatureAI* GetAI_npc_tonk_mine(Creature *_Creature)
 
 bool ReceiveEmote_npc_winter_reveler( Player *player, Creature *_Creature, uint32 emote )
 {
-    if (player->HasSpellCooldown(26218))
-        return false;
-
-    if (emote == TEXTEMOTE_KISS)
+    if ((!player->HasAura(26218))&&(emote == TEXTEMOTE_KISS))
     {
-        //_Creature->CastSpell(_Creature, 26218, false);
-        player->CastSpell(player, 26218, false);
-        player->AddSpellCooldown(26218, 0, time(NULL) + 3600);
+        _Creature->CastSpell(player, 26218, false);
+        return true;
     }
-    return true;
+    
+    return false;
 }
 
 /*####
