@@ -701,7 +701,7 @@ const char* ImpInABottleQuotes[] =
 
 bool GOUse_go_imp_in_a_bottle(Player* player, GameObject* go)
 {
-    go->Whisper(ImpInABottleQuotes[urand(0, sizeof(ImpInABottleQuotes)/sizeof(char*))], player->GetGUID());
+    go->Whisper(ImpInABottleQuotes[urand(0, (sizeof(ImpInABottleQuotes)/sizeof(char*)) -1)], player->GetGUID());
     return true;
 };
 
