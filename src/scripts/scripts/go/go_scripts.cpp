@@ -701,12 +701,21 @@ const char* ImpInABottleQuotes[] =
 
 bool GOUse_go_imp_in_a_bottle(Player* player, GameObject* go)
 {
+    if (go == nullptr || player == nullptr || !go->IsInWorld() || !player->IsInWorld())
+        return false;
+        
     go->Whisper(ImpInABottleQuotes[urand(0, (sizeof(ImpInABottleQuotes)/sizeof(char*)) -1)], player->GetGUID());
     return true;
 };
 
 bool GOUse_go_personal_mole_machine(Player* player, GameObject* go)
 {
+    if (go == nullptr || player == nullptr || !go->IsInWorld() || !player->IsInWorld())
+        return false;
+        
+    if (go->GetOwner() == nullptr || !go->GetOwner()->IsInWorld())
+        return false;
+        
     if (Player* owner = go->GetOwner()->ToPlayer())
     {
         if (player->IsInRaidWith(owner) || owner == player)
