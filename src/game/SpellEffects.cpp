@@ -5303,8 +5303,19 @@ void Spell::EffectInterruptCast(uint32 i)
                     int32 duration = m_originalCaster->CalculateSpellDuration(GetSpellInfo(), i, unitTarget);
                     unitTarget->ProhibitSpellSchool(SpellMgr::GetSpellSchoolMask(curSpellInfo), duration /* GetSpellDuration(GetSpellInfo())? */);
                 }
-                // TODO: send combat log interrupt message here
-                unitTarget->InterruptSpell(k,false);
+
+                // has to be sent before InterruptSpell call
+                WorldPacket data(SMSG_SPELLLOGEXECUTE, (8+4+4+4+4+8+4));
+                data << m_caster->GetPackGUID();
+                data << uint32(GetSpellInfo()->Id);
+                data << uint32(1); // effect count
+                data << uint32(SPELL_EFFECT_INTERRUPT_CAST);
+                data << uint32(1); // target count
+                data << unitTarget->GetPackGUID();
+                data << uint32(curSpellInfo->Id);
+                m_caster->BroadcastPacket(&data, true);
+
+                unitTarget->InterruptSpell(k, false);
             }
         }
     }

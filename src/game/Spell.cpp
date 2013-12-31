@@ -3319,13 +3319,6 @@ void Spell::SendLogExecute()
                         data << uint8(0);
                     data << uint32(m_caster->m_extraAttacks);
                     break;
-                case SPELL_EFFECT_INTERRUPT_CAST:
-                    if (Unit *unit = m_targets.getUnitTarget())
-                        data << unit->GetPackGUID();
-                    else
-                        data << uint8(0);
-                    data << uint32(0);                      // spellid
-                    break;
                 case SPELL_EFFECT_DURABILITY_DAMAGE:
                     if (Unit *unit = m_targets.getUnitTarget())
                         data << unit->GetPackGUID();
