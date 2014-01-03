@@ -14852,6 +14852,10 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         m_deathState = DEAD;
 
     _LoadSpells(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
+    
+    //Ugly hacky one - give summon friend spell to players created before RAF implement
+    if (GetAccountLinkedState() != STATE_NOT_LINKED)
+        learnSpell(45927);
 
     // after spell load
     InitTalentForLevel();
