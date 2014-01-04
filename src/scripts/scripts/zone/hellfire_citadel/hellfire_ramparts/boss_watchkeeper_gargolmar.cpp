@@ -109,6 +109,11 @@ struct boss_watchkeeper_gargolmarAI : public ScriptedAI
     {
         DoScriptText(SAY_DIE, me);
 
+        std::list<Creature*> helpers = FindAllCreaturesWithEntry(17309, 100);
+        for(std::list<Creature *>::iterator i = helpers.begin(); i != helpers.end(); i++)
+        {
+            (*i)->ForcedDespawn(500);
+        }
         if (pInstance)
             pInstance->SetData(DATA_GARGOLMAR, DONE);
     }
