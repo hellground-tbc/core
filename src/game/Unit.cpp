@@ -2797,7 +2797,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
         canBlock = false;
 
     //We use SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY until right Attribute was found
-    bool canMiss = !(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) && cMiss || spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS;
+    bool canMiss = !(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) && cMiss ||
+        spell->AttributesEx3 & SPELL_ATTR_EX3_CANT_MISS || spell->AttributesEx3 & SPELL_ATTR_EX3_UNK15;
 
     if (canMiss)
     {
@@ -2817,13 +2818,22 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     if (roll < tmp)
         return SPELL_MISS_RESIST;
 
-    // Same spells cannot be parry/dodge
+    // Some spells cannot be parried, dodged nor blocked
     if (spell->Attributes & SPELL_ATTR_IMPOSSIBLE_DODGE_PARRY_BLOCK)
         return SPELL_MISS_NONE;
 
-    // Ranged attack can`t miss too
+    // Handle ranged attacks
     if (attType == RANGED_ATTACK)
-        return SPELL_MISS_NONE;
+    {
+        // Wand attacks can't miss
+        if (spell->Category == 351)
+            return SPELL_MISS_NONE;
+
+        // Other ranged attacks cannot be parried or dodged
+        // Can be blocked under suitable circumstances
+        canParry = false;
+        canDodge = false;
+    }
 
     // Check for attack from behind
     if (!pVictim->HasInArc(M_PI,this))
