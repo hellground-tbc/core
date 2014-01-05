@@ -51,29 +51,6 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
     guild->Query(this);
 }
 
-void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
-{
-    CHECK_PACKET_SIZE(recvPacket, 1);
-
-    std::string gname;
-
-    //sLog.outDebug("WORLD: Received CMSG_GUILD_CREATE");
-
-    recvPacket >> gname;
-
-    if (GetPlayer()->GetGuildId())
-        return;
-
-    Guild *guild = new Guild;
-    if (!guild->create(GetPlayer()->GetGUID(),gname))
-    {
-        delete guild;
-        return;
-    }
-
-    sObjectMgr.AddGuild(guild);
-}
-
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
     CHECK_PACKET_SIZE(recvPacket, 1);
