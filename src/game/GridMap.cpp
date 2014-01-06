@@ -1114,10 +1114,12 @@ bool TerrainInfo::IsPathFindingEnabled() const
 
 float TerrainInfo::GetVisibilityDistance()
 {
+    const TerrainSpecifics* specifics = GetSpecifics();
+    float visibility = specifics ? specifics->visibility : DEFAULT_VISIBILITY_DISTANCE;
     if (sWorld.GetCoreBalancerTreshold() >= CB_VISIBILITY_PENALTY)
-        return GetSpecifics()->visibility - sWorld.getConfig(CONFIG_COREBALANCER_VISIBILITY_PENALTY);
+        visibility -= sWorld.getConfig(CONFIG_COREBALANCER_VISIBILITY_PENALTY);
 
-    return GetSpecifics()->visibility;
+    return visibility;
 }
 
 //////////////////////////////////////////////////////////////////////////
