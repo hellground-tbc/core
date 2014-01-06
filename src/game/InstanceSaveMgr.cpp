@@ -513,6 +513,9 @@ void InstanceSaveManager::Update()
                 static int tim[4] = {3600, 900, 300, 60};
                 ScheduleReset(true, resetTime - tim[event.type-1], event);
             }
+            else
+                sMapMgr.InitMaxInstanceId(); // recalculate max instance id
+
             m_resetTimeQueue.erase(m_resetTimeQueue.begin());
         }
     }
