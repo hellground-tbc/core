@@ -300,12 +300,18 @@ struct instance_stratholme : public ScriptedInstance
             if (data == SPECIAL)
             {
                 SlaugtherSquare_Timer = 300000;
+                HandleGameObject(portGauntletGUID, true);
                 debug_log("TSCR: Instance Stratholme: Slaugther event will continue in 5 minutes.");
             }
             if (data == DONE)
             {
                 SlaugtherSquare_Timer = 10000;
                 debug_log("TSCR: Instance Stratholme: Skeletons died, slaughter event will continue");
+            }
+            if (data == FAIL)
+            {
+                HandleGameObject(portGauntletGUID, true);
+                data == SPECIAL;
             }
             Encounter[4] = data;
             break;

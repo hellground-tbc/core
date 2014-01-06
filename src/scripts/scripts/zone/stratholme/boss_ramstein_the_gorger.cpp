@@ -22,7 +22,7 @@ SDCategory: Stratholme
 EndScriptData */
 
 #include "precompiled.h"
- #include "def_stratholme.h"
+#include "def_stratholme.h"
 
 #define SPELL_TRAMPLE       5568
 #define SPELL_KNOCKOUT    17307
@@ -70,8 +70,8 @@ struct boss_ramstein_the_gorgerAI : public ScriptedAI
 
     void SummonedCreatureDespawn(Creature*)
     {
-        if (pInstance && pInstance->GetData(5) == SPECIAL && std::none_of(summons.begin(),summons.end(),[this](uint64 guid)-> bool {Creature *c = pInstance->GetCreature(guid) ; return c ? c->isAlive():false;}))
-            pInstance->SetData(5,DONE);
+        if (pInstance && pInstance->GetData(TYPE_RAMSTEIN) == SPECIAL && std::none_of(summons.begin(),summons.end(),[this](uint64 guid)-> bool {Creature *c = pInstance->GetCreature(guid) ; return c ? c->isAlive():false;}))
+            pInstance->SetData(TYPE_RAMSTEIN,DONE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -95,6 +95,15 @@ struct boss_ramstein_the_gorgerAI : public ScriptedAI
         }else Knockout_Timer -= diff;
 
         DoMeleeAttackIfReady();
+    }
+
+    void EnterEvadeMode()
+    {
+        CreatureAI::EnterEvadeMode();
+        if(pInstance)
+        {
+            pInstance->SetData(TYPE_RAMSTEIN,FAIL);
+        }
     }
 };
 CreatureAI* GetAI_boss_ramstein_the_gorger(Creature *_Creature)
