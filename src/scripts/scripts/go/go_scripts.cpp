@@ -713,16 +713,14 @@ bool GOUse_go_personal_mole_machine(Player* player, GameObject* go)
     if (go == nullptr || player == nullptr || !go->IsInWorld() || !player->IsInWorld())
         return false;
         
-    if (go->GetOwner() == nullptr || !go->GetOwner()->IsInWorld())
+    Unit* owner = go->GetOwner();
+    if (!owner || !owner->IsInWorld())
         return false;
         
-    if (Player* owner = go->GetOwner()->ToPlayer())
+    if (player->IsInRaidWith(owner))
     {
-        if (player->IsInRaidWith(owner) || owner == player)
-        {
-            WorldLocation location(230, 446.82f, 21.14f, -70.65f, 5.28f);
-            player->TeleportTo(location);
-        }
+        WorldLocation location(230, 446.82f, 21.14f, -70.65f, 5.28f);
+        player->TeleportTo(location);
     }
     return true;
 };
