@@ -356,7 +356,8 @@ struct instance_stratholme : public ScriptedInstance
             {
                 HandleGameObject(portGauntletGUID, true);
             }
-            Encounter[5] = data;
+            if (Encounter[5] != DONE)
+                Encounter[5] = data;
             break;
         case TYPE_SH_AELMAR:
             IsSilverHandDead[0] = (data) ? true : false;
@@ -465,6 +466,43 @@ struct instance_stratholme : public ScriptedInstance
                 SlaugtherSquare_Timer = 0;
             }else SlaugtherSquare_Timer -= diff;
         }
+    }
+
+    void Load(const char* in)
+    {
+        if (!in)
+        {
+            OUT_LOAD_INST_DATA_FAIL;
+            return;
+        }
+
+        OUT_LOAD_INST_DATA(in);
+
+        std::istringstream loadStream(in);
+        loadStream >> Encounter[0] >> Encounter[1] >> Encounter[2] >> Encounter[3] >> Encounter[4] >> Encounter[5];
+
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounter[i] == IN_PROGRESS)
+                Encounter[i] = NOT_STARTED;
+
+        OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
+    std::string GetSaveData()
+    {
+        OUT_SAVE_INST_DATA;
+
+        std::ostringstream stream;
+        stream << Encounter[0] << " ";
+        stream << Encounter[1] << " ";
+        stream << Encounter[2] << " ";
+        stream << Encounter[3] << " ";
+        stream << Encounter[4] << " ";
+        stream << Encounter[5];
+
+        OUT_SAVE_INST_DATA_COMPLETE;
+
+        return stream.str();
     }
 };
 

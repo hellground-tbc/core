@@ -98,6 +98,8 @@ struct boss_baron_rivendareAI : public ScriptedAI
         MortalStrike_Timer = 12000;
         //        RaiseDead_Timer = 30000;
         SummonSkeletons_Timer = 34000;
+        if (pInstance)
+            pInstance->SetData(TYPE_BARON,NOT_STARTED);
     }
 
     void EnterCombat(Unit *who)
