@@ -133,6 +133,7 @@ class HELLGROUND_IMPORT_EXPORT InstanceData : public ZoneScript
         virtual void HandleInitCreatureState(Creature * mob);
         virtual void HandleRequiredEncounter(uint32 encounter);
 
+        void LogPossibleCheaters(const char* cheatName);
     protected:
         void SetBossNumber(uint32 number) { bosses.resize(number); }
         void LoadDoorData(const DoorData *data);

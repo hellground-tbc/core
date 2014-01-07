@@ -229,3 +229,15 @@ void InstanceData::HandleRequiredEncounter(uint32 encounter)
                                                     });
     }
 }
+
+void InstanceData::LogPossibleCheaters(const char* cheatName)
+{
+    std::string playerlist="";
+    Map::PlayerList players = instance->GetPlayers();
+    for (MapRefManager::iterator itr = players.begin(); itr != players.end(); ++itr)
+    {
+        playerlist += itr->getSource()->GetName();
+        playerlist += " ";
+    }
+    sLog.outLog(LOG_CHEAT,"Possible cheaters(%s): %s",cheatName,playerlist.c_str());
+}

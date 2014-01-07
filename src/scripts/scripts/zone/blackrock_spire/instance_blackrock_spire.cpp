@@ -172,9 +172,7 @@ struct instance_blackrock_spire : public ScriptedInstance
                 Encounters[1] = data;
 
                 if(data == IN_PROGRESS && Encounters[0] != DONE)
-                {
-                    //someone is cheating
-                }
+                    LogPossibleCheaters("UBRS-Emberseer without runes");
                 switch(data)
                 {
                     case IN_PROGRESS:
@@ -227,6 +225,14 @@ struct instance_blackrock_spire : public ScriptedInstance
                     }
                 }
                 break;
+            }
+            case DATA_THE_BEAST:
+            {
+                if(Encounters[2] != DONE)
+                    Encounters[2] = data;
+
+                if(data == IN_PROGRESS && Encounters[1] != DONE)
+                    LogPossibleCheaters("UBRS-Beast without emberseer");
             }
         }
 
