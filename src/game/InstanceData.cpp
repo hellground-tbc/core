@@ -25,6 +25,7 @@
 #include "Map.h"
 #include "GameObject.h"
 #include "Creature.h"
+#include "MapRefManager.h"
 
 void InstanceData::SaveToDB()
 {
