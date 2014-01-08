@@ -28,6 +28,7 @@
 #include "MapRefManager.h"
 #include "MapReference.h"
 #include "Language.h"
+#include "Player.h"
 
 void InstanceData::SaveToDB()
 {
