@@ -311,7 +311,7 @@ struct instance_stratholme : public ScriptedInstance
             if (data == FAIL)
             {
                 HandleGameObject(portGauntletGUID, true);
-                data == SPECIAL;
+                data = SPECIAL;
             }
             Encounter[4] = data;
             break;

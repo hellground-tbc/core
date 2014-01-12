@@ -4413,7 +4413,7 @@ void Spell::EffectSummonGuardian(uint32 i)
 
     auto guardians = caster->GetGuardians();
     if (guardians.size() >= 5)
-         sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians(spellid: %d), player has %d summoned guardians.", caster->getName(), GetSpellInfo()->Id, guardians.size());
+         sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians(spellid: %d), player has %d summoned guardians.", caster->GetName(), GetSpellInfo()->Id, guardians.size());
     
     // in another case summon new
     uint32 level = caster->getLevel();
