@@ -61,6 +61,8 @@
 #include "GridNotifiersImpl.h"
 #include "PathFinder.h"
 
+#include <sstream>
+
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
     &Spell::EffectNULL,                                     //  0
@@ -4413,7 +4415,13 @@ void Spell::EffectSummonGuardian(uint32 i)
 
     auto guardians = caster->GetGuardians();
     if (guardians.size() >= 5)
-         sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians(spellid: %d), player has %d summoned guardians.", caster->GetName(), GetSpellInfo()->Id, guardians.size());
+    {
+        std::stringstream stream;
+        stream << "Guardians summoning exploit(spellid: " << GetSpellInfo()->Id << "), guardians count: " << guardians.size();
+        
+        sWorld.SendGMText(LANG_POSSIBLE_CHEAT, stream.str().c_str(), caster->GetName(), caster->GetName());
+        sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians(spellid: %d), guardians count: %d.", caster->GetName(), GetSpellInfo()->Id, guardians.size());
+    }
     
     // in another case summon new
     uint32 level = caster->getLevel();
