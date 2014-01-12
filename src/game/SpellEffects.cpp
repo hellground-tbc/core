@@ -4403,14 +4403,18 @@ void Spell::EffectSummonGuardian(uint32 i)
         EffectSummonWild(i);
         return;
     }
-
+    
     // Search old Guardian only for players (if casted spell not have duration or cooldown)
     // FIXME: some guardians have control spell applied and controlled by player and anyway player can't summon in this time
     //        so this code hack in fact
     if (duration <= 0 || SpellMgr::GetSpellRecoveryTime(GetSpellInfo())==0)
         if (caster->HasGuardianWithEntry(pet_entry))
-            return;                                         // find old guardian, ignore summon
+            return;                                        // find old guardian, ignore summon
 
+    auto guardians = caster->GetGuardians();
+    if (caster->HasGuardianWithEntry(pet_entry) && guardians.size() >= 4)
+         sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians, player has %d summoned guardians.", caster->getName(), guardians.size());
+    
     // in another case summon new
     uint32 level = caster->getLevel();
 
