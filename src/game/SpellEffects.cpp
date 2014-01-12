@@ -4412,8 +4412,8 @@ void Spell::EffectSummonGuardian(uint32 i)
             return;                                        // find old guardian, ignore summon
 
     auto guardians = caster->GetGuardians();
-    if (caster->HasGuardianWithEntry(pet_entry) && guardians.size() >= 4)
-         sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians, player has %d summoned guardians.", caster->getName(), guardians.size());
+    if (guardians.size() >= 5)
+         sLog.outLog(LOG_CHEAT, "Possible cheater: %s, trying to exploit guardians(spellid: %d), player has %d summoned guardians.", caster->getName(), GetSpellInfo()->Id, guardians.size());
     
     // in another case summon new
     uint32 level = caster->getLevel();
