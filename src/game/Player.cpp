@@ -18302,30 +18302,16 @@ void Player::UpdatePvP(bool state, bool ovrride)
         ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP, false);
     }
 
+    SetPvP(state);
+    if (Pet* pet = GetPet())
+        pet->SetPvP(state);
+    if (Unit* charmed = GetCharm())
+        charmed->SetPvP(state);
+
     if (!state || ovrride)
-    {
-        SetPvP(state);
-        if (Pet* pet = GetPet())
-            pet->SetPvP(state);
-        if (Unit* charmed = GetCharm())
-            charmed->SetPvP(state);
-
         pvpInfo.endTimer = 0;
-    }
-    else
-    {
-        if (pvpInfo.endTimer != 0)
-            pvpInfo.endTimer = time(NULL);
-        else
-        {
-            SetPvP(state);
-
-            if (Pet* pet = GetPet())
-                pet->SetPvP(state);
-            if (Unit* charmed = GetCharm())
-                charmed->SetPvP(state);
-        }
-    }
+    else if (!pvpInfo.inHostileArea && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
+        pvpInfo.endTimer = time(NULL);
 }
 
 void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
