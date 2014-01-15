@@ -1093,7 +1093,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     if (unit->IsPvP() && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster != unit)
     {
         if (!(Player*)m_caster->duel || (Player*)m_caster->duel->opponent != unit->GetCharmerOrOwnerPlayerOrPlayerItself())
-            (Player*)m_caster->UpdatePvP(true);
+            ((Player*)m_caster)->UpdatePvP(true);
     }
 }
 
