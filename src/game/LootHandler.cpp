@@ -416,6 +416,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket & recv_data)
     if (_player->GetLootGUID() != lootguid)
         return;
 
+    if (_player->GetInstanceId() != target->GetInstanceId())
+        return;
+
     Loot *pLoot = NULL;
 
     if (IS_CREATURE_GUID(GetPlayer()->GetLootGUID()))
