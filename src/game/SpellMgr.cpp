@@ -3171,6 +3171,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     case 43268:
                         spellInfo->MaxAffectedTargets = 2;
                         break;
+                    case 45150:
+                        spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_IGNORE_LOS;
+                        break;
                 }
                 break;
             case 44978:
