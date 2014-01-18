@@ -52,8 +52,9 @@ enum OnyxiaSpells
 };
 
 
-#define SPELL_ENGULFINGFLAMES       20019
-#define CREATURE_WHELP      11262
+#define SPELL_ENGULFINGFLAMES   20019
+#define CREATURE_WHELP          11262
+#define NPC_ONYXIAN_WARDER      12129
 
 struct Position;
 enum SpawnDefinitions;
@@ -88,6 +89,7 @@ struct boss_onyxiaAI : public ScriptedAI
 
     uint32 m_phaseMask;
 
+    uint32 m_rangeCheckTimer;
     uint32 m_flameBreathTimer;
     uint32 m_cleaveTimer;
     uint32 m_tailSweepTimer;
@@ -160,6 +162,7 @@ struct boss_onyxiaAI : public ScriptedAI
 
     void Reset()
     {
+        m_creature->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 3); // Lie animation
         if (pInstance)
             pInstance->SetData(DATA_ONYXIA, NOT_STARTED);
@@ -170,6 +173,7 @@ struct boss_onyxiaAI : public ScriptedAI
         m_nextWay = 0;
         m_nextMoveTimer = 0;
 
+        m_rangeCheckTimer = 3000;
         m_flameBreathTimer = 20000;
         m_cleaveTimer = 8000;
         m_tailSweepTimer = 5000;
@@ -188,6 +192,16 @@ struct boss_onyxiaAI : public ScriptedAI
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
         DoScriptText(SAY_AGGRO, m_creature);
         DoZoneInCombat();
+
+        std::list<Creature*> warders = FindAllCreaturesWithEntry(NPC_ONYXIAN_WARDER, 200.0f);
+
+        for (std::list<Creature*>::iterator i = warders.begin(); i != warders.end(); ++i)
+            if (!(*i)->isAlive())
+            {
+                (*i)->setDeathState(DEAD);
+                (*i)->Respawn();
+            }
+
         if (pInstance)
             pInstance->SetData(DATA_ONYXIA, IN_PROGRESS);
     }
@@ -273,7 +287,24 @@ struct boss_onyxiaAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
+        DoSpecialThings(diff, DO_EVADE_CHECK, 75.0f);
+
         UpdatePhase();
+
+        if (m_rangeCheckTimer < diff)
+        {
+            Map::PlayerList const &PlayerList = me->GetMap()->GetPlayers();
+
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                if (Player* plr = i->getSource())
+                    if (plr->isAlive() && !plr->isGameMaster() && !plr->IsWithinDistInMap(me, 100.0f))
+                        plr->TeleportTo(me->GetMapId(), me->GetPositionX(), me->GetPositionY(),
+                            me->GetPositionZ(), plr->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT);
+
+            m_rangeCheckTimer = 3000;
+        }
+        else
+            m_rangeCheckTimer -= diff;
 
         if (m_phaseMask & PHASE_1)
         {
