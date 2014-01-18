@@ -161,7 +161,7 @@ struct instance_blackrock_spire : public ScriptedInstance
                 {
                     for(std::set<uint64>::iterator i = emberseerInDoorsGUID.begin(); i != emberseerInDoorsGUID.end(); ++i)
                     {
-                        HandleGameObject(instance->GetGameObject(*i)->GetGUID(), true);
+                        HandleGameObject(*i, true);
                     }
                 }
                 break;
