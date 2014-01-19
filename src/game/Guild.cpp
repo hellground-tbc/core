@@ -751,7 +751,7 @@ void Guild::WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &mem
 
         data << pZoneId;
         data << member.Pnote;
-        data << member.OFFnote;
+        data << (HasRankRight(sessionPlayer->GetRank(), GR_RIGHT_EOFFNOTE) ? member.OFFnote : "");
     }else{
         data << uint64(MAKE_NEW_GUID(member.guid, 0, HIGHGUID_PLAYER));
         data << uint8(0);
@@ -763,7 +763,7 @@ void Guild::WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &mem
         data << uint32(member.zoneId);
         data << float((time(NULL)-member.logout_time)) / DAY;
         data << member.Pnote;
-        data << member.OFFnote;
+        data << (HasRankRight(sessionPlayer->GetRank(), GR_RIGHT_EOFFNOTE) ? member.OFFnote : "");
     }
 }
 
