@@ -178,11 +178,11 @@ struct mob_ragin_flamesAI : public ScriptedAI
 
     void Reset()
     {
-        infernoTimer = 10000;
+        infernoTimer = urand(0,10000);
 
         me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
         me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
-        me->SetSpeed(MOVE_RUN, HeroicMode ? 0.7f : 0.5f);
+        me->SetSpeed(MOVE_RUN, HeroicMode ? 0.8f : 0.5f);
 
         SetAutocast(SPELL_FIRE_TAIL, 500, false, CAST_SELF);
     }
@@ -213,7 +213,7 @@ struct mob_ragin_flamesAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, HeroicMode ? 0.7f : 0.5f);
+        DoSpecialThings(diff, DO_COMBAT_N_SPEED, 200.0f, HeroicMode ? 0.8f : 0.5f);
 
         if (infernoTimer < diff)
         {
