@@ -5953,9 +5953,6 @@ int32 Player::CalculateReputationGain(ReputationSource source, int32 rep, int32 
         percent *= repRate;
     }
 
-    if (CheckRAFConditions())
-        percent *= sWorld.getConfig(CONFIG_FLOAT_RATE_RAF_XP);
-
     return int32(0.01f + sWorld.getRate(RATE_REPUTATION_GAIN)*rep*percent/100.0f);
 }
 
