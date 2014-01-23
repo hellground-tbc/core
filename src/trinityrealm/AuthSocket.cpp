@@ -860,7 +860,7 @@ bool AuthSocket::_HandleReconnectChallenge()
     EndianConvert(ch->build);
     _build = ch->build;
 
-    QueryResultAutoPtr  result = AccountsDatabase.PQuery("SELECT session_key FROM account JOIN account_session ON account.account_id = account_session_account_id WHERE username = '%s'", _safelogin.c_str());
+    QueryResultAutoPtr  result = AccountsDatabase.PQuery("SELECT session_key FROM account JOIN account_session ON account.account_id = account_session.account_id WHERE username = '%s'", _safelogin.c_str());
 
     // Stop if the account is not found
     if (!result)
