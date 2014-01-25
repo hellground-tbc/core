@@ -186,7 +186,7 @@ struct boss_morogrim_tidewalkerAI : public ScriptedAI
 
                 int i = 0;
                 for (std::list<Unit*>::const_iterator itr = tmpList.begin(); itr != tmpList.end(); ++itr)
-                    (*itr)->CastSpell(*itr, wateryGraves[i++], true);
+                    me->CastSpell(*itr, wateryGraves[i++], true);
 
                 DoScriptText(RAND(SAY_SUMMON_BUBL1, SAY_SUMMON_BUBL2), m_creature);
                 DoScriptText(EMOTE_WATERY_GRAVE, m_creature);

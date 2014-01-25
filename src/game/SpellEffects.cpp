@@ -7427,6 +7427,9 @@ void Spell::EffectKnockBack(uint32 i)
     if (!unitTarget)
         return;
 
+    if (GetSpellInfo()->Id == 37852)    // Watery Grave Explosion;
+        unitTarget->SetStunned(false);  // stunned state has to be removed manually here before aura expires to allow self knockback
+
     unitTarget->KnockBackFrom(m_caster,float(GetSpellInfo()->EffectMiscValue[i])/10,float(damage)/10);
 }
 
