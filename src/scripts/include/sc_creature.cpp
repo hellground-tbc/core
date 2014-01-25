@@ -369,7 +369,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
             if (tempU && tempU->IsInWorld() && tempU->isAlive() && tempU->IsInMap(m_creature))
                 if (temp.spellId)
                 {
-                    if(temp.setAsTarget)
+                    if(temp.setAsTarget && !m_creature->hasIgnoreVictimSelection())
                         m_creature->SetSelection(temp.targetGUID);
                     if(temp.hasCustomValues)
                         m_creature->CastCustomSpell(tempU, temp.spellId, &temp.damage[0], &temp.damage[1], &temp.damage[2], temp.triggered);
@@ -435,7 +435,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                         }
                 }
 
-                if (victim)
+                if (victim && !m_creature->hasIgnoreVictimSelection())
                 {
                     m_creature->SetSelection(victim->GetGUID());    // for autocast always target actual victim
                     m_creature->CastSpell(victim, autocastId, false);
@@ -546,7 +546,7 @@ void ScriptedAI::ForceSpellCast(Unit *victim, uint32 spellId, interruptSpell int
             m_creature->InterruptNonMeleeSpells(false);
             break;
         case INTERRUPT_AND_CAST_INSTANTLY:
-            if(visualTarget)
+            if(visualTarget && !m_creature->hasIgnoreVictimSelection())
                 m_creature->SetSelection(victim->GetGUID());
 
             m_creature->CastSpell(victim, spellId, triggered);
@@ -571,7 +571,7 @@ void ScriptedAI::ForceSpellCastWithScriptText(Unit *victim, uint32 spellId, int3
             if (scriptTextEntry)
                 DoScriptText(scriptTextEntry, m_creature, victim);
 
-            if (visualTarget)
+            if (visualTarget && !m_creature->hasIgnoreVictimSelection())
                 m_creature->SetSelection(victim->GetGUID());
 
             m_creature->CastSpell(victim, spellId, triggered);
