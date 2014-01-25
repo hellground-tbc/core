@@ -105,7 +105,10 @@ struct ArenaTeamMember
             personal_rating += mod;
 
         if (plr)
+        {
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, personal_rating);
+            plr->SaveToDb();
+        }
     }
 
     void ModifyMatchmakerRating(int32 mod, int type)
