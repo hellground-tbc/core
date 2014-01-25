@@ -7500,7 +7500,7 @@ void Spell::EffectSuspendGravity(uint32 i)
     {
         if(Aura* aur = unitTarget->GetAura(46230, 2))
             if(aur->GetAuraDuration() < 3400)
-                unitTarget->KnockBackFrom(m_caster, -(dist + frand(5, 14)), diff_z < 1.5 ? GetSpellInfo()->EffectMiscValue[i]/10.0 : 0);
+                unitTarget->KnockBackFrom(m_caster, dist-frand(7, 14), diff_z < 1.5 ? GetSpellInfo()->EffectMiscValue[i]/10.0 : 0);
     }
     else
         unitTarget->KnockBackFrom(m_caster, dist-frand(7, 14), diff_z < 1.5 ? GetSpellInfo()->EffectMiscValue[i]/10.0 : 0);
