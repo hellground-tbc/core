@@ -107,7 +107,7 @@ struct ArenaTeamMember
         if (plr)
         {
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, personal_rating);
-            plr->SaveToDb();
+            plr->SaveToDB();
         }
     }
 
