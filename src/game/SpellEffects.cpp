@@ -2256,8 +2256,8 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget || unitTarget->getAttackers().empty())
                     {
                         // clear cooldown at fail
-                        if (m_caster->GetTypeId()==TYPEID_PLAYER)
-                            ((Player*)m_caster)->RemoveSpellCooldown(GetSpellInfo()->Id, true);
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            ((Player*) m_caster)->RemoveSpellCooldown(GetSpellInfo()->Id, true);
 
                         SendCastResult(SPELL_FAILED_TARGET_AFFECTING_COMBAT);
                         return;
@@ -2265,7 +2265,7 @@ void Spell::EffectDummy(uint32 i)
 
                     // Righteous Defense (step 2) (in old version 31980 dummy effect)
                     // Clear targets for eff 1
-                    for (std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
+                    for (std::list<TargetInfo>::iterator ihit = m_UniqueTargetInfo.begin(); ihit != m_UniqueTargetInfo.end(); ++ihit)
                     {
                         if (ihit->deleted)
                             continue;
@@ -2274,17 +2274,16 @@ void Spell::EffectDummy(uint32 i)
                     }
 
                     // not empty (checked)
-                    Unit::AttackerSet const& attackers = unitTarget->getAttackers();
+                    Unit::AttackerSet attackers(unitTarget->getAttackers());
 
                     // chance to be selected from list
-                    float chance = 100.0f/attackers.size();
-                    uint32 count=0;
-                    for (Unit::AttackerSet::const_iterator aItr = attackers.begin(); aItr != attackers.end() && count < 3; ++aItr)
+                    uint32 maxTargets = std::min<uint32>(3, attackers.size());
+                    for (uint32 i = 0; i < maxTargets; ++i)
                     {
-                        if (!roll_chance_f(chance))
-                            continue;
-                        ++count;
-                        AddUnitTarget((*aItr), 1);
+                        Unit::AttackerSet::const_iterator aItr = attackers.begin();
+                        std::advance(aItr, urand(0, attackers.size() - 1));
+                        AddUnitTarget(*aItr, 1);
+                        attackers.erase(*aItr);
                     }
 
                     // now let next effect cast spell at each target.
