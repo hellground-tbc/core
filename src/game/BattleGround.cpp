@@ -858,6 +858,19 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         m_Players.erase(itr);
         // check if the player was a participant of the match, or only entered through gm command (goname)
         participant = true;
+
+        if (isArena())
+        {
+            switch (GetArenaType())
+            {
+            case ARENA_TYPE_2v2:
+            sBattleGroundMgr.inArenasCount[0]--; break;
+            case ARENA_TYPE_3v3:
+            sBattleGroundMgr.inArenasCount[1]--; break;
+            case ARENA_TYPE_5v5:
+            sBattleGroundMgr.inArenasCount[2]--; break;
+            }
+        }
     }
 
     std::map<uint64, BattleGroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
@@ -1143,6 +1156,16 @@ void BattleGround::AddPlayer(Player *plr)
 
             if (plr->GetPower(POWER_RAGE))
                 plr->SetPower(POWER_RAGE, 0);
+        }
+
+        switch (GetArenaType())
+        {
+        case ARENA_TYPE_2v2:
+        sBattleGroundMgr.inArenasCount[0]++; break;
+        case ARENA_TYPE_3v3:
+        sBattleGroundMgr.inArenasCount[1]++; break;
+        case ARENA_TYPE_5v5:
+        sBattleGroundMgr.inArenasCount[2]++; break;
         }
     }
     else

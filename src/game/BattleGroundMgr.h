@@ -266,6 +266,7 @@ class BattleGroundMgr
 
         static bool IsBGWeekend(BattleGroundTypeId bgTypeId);
 
+        int32 inArenasCount[3];
     private:
         BattleMastersMap    mBattleMastersMap;
         std::vector<uint32> m_QueueUpdateScheduler;
