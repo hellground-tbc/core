@@ -6411,11 +6411,11 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             int32 damage = irand(1885, 2115);
             m_caster->CastCustomSpell(unitTarget, 46285, &damage, 0, 0, true, 0, 0, m_caster->GetGUID());
             damage /= 2;
-            if(Unit* target_2 = unitTarget->ToPlayer()->GetNextRandomRaidMember(30.0f, true))
+            if(Unit* target_2 = unitTarget->ToPlayer()->GetNextRandomRaidMember(10.0f, true))
             {
                 unitTarget->CastCustomSpell(target_2, 46285, &damage, 0, 0, true, 0, 0, m_caster->GetGUID());
                 damage /= 2;
-                if(Unit* target_3 = target_2->ToPlayer()->GetNextRandomRaidMember(30.0f, true))
+                if(Unit* target_3 = target_2->ToPlayer()->GetNextRandomRaidMember(10.0f, true))
                     target_2->CastCustomSpell(target_3, 46285, &damage, 0, 0, true, 0, 0, m_caster->GetGUID());
             }
             return;

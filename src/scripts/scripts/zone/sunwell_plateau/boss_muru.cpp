@@ -233,6 +233,9 @@ struct boss_muruAI : public Scripted_NoMovementAI
 
         DoSpecialThings(diff, DO_COMBAT_N_EVADE, 60.0f);
 
+        if (me->GetSelection())
+            me->SetSelection(NULL);
+
         if (EnrageTimer < diff)
         {
             DoCast(me, SPELL_ENRAGE);
@@ -641,6 +644,13 @@ struct npc_void_sentinelAI : public ScriptedAI
             me->DisappearAndDie();
     };
 
+    void AttackStart(Unit* who)
+    {
+        if (ActivationTimer)
+            return;
+        ScriptedAI::AttackStart(who);
+    }
+
     void EnterEvadeMode()
     {
         me->DisappearAndDie();
@@ -665,9 +675,9 @@ struct npc_void_sentinelAI : public ScriptedAI
         {
             if(ActivationTimer <= diff)
             {
+                ActivationTimer = 0;
                 DoZoneInCombat(100);
                 me->SetRooted(false);
-                ActivationTimer = 0;
             }
             else
                 ActivationTimer -= diff;
@@ -712,12 +722,19 @@ struct mob_void_spawnAI : public ScriptedAI
     void Reset()
     {
         Volley = urand(3000, 7000);
-        ActivationTimer = 1000;
+        ActivationTimer = 2000;
         me->SetRooted(true);
         DoZoneInCombat(100);
         if(pInstance->GetData(DATA_MURU_EVENT) == NOT_STARTED)
             me->DisappearAndDie();
     };
+
+    void AttackStart(Unit* who)
+    {
+        if (ActivationTimer)
+            return;
+        ScriptedAI::AttackStart(who);
+    }
 
     void UpdateAI(const uint32 diff)
     {
@@ -725,9 +742,9 @@ struct mob_void_spawnAI : public ScriptedAI
         {
             if(ActivationTimer <= diff)
             {
+                ActivationTimer = 0;
                 DoZoneInCombat(100);
                 me->SetRooted(false);
-                ActivationTimer = 0;
             }
             else
                 ActivationTimer -= diff;
@@ -949,12 +966,19 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
         SpellFury = urand(25000, 35000);
     }
 
+    void AttackStart(Unit* who)
+    {
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE || ActivationTimer)
+            return;
+        ScriptedAI::AttackStart(who);
+    }
+
     void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
     {
         if (aur->GetId() == SPELL_SPELL_FURY)
         {
             ClearCastQueue();
-            SetAutocast(SPELL_FEL_FIREBALL, urand(1000, 4000), true);    // 1 sec GCD
+            SetAutocast(SPELL_FEL_FIREBALL, 1000, true);    // 1 sec GCD
         }
     }
 
@@ -963,7 +987,7 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
         if (aur->GetId() == SPELL_SPELL_FURY)
         {
             ClearCastQueue();
-            SetAutocast(SPELL_FEL_FIREBALL, urand(2000, 12000), true);
+            SetAutocast(SPELL_FEL_FIREBALL, RAND(6300, 8300), true);
         }
     }
 
@@ -983,12 +1007,12 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
         {
             if(ActivationTimer <= diff)
             {
+                ActivationTimer = 0;
                 DoZoneInCombat(400);
                 me->SetRooted(false);
                 if(me->getVictim())
                     DoStartMovement(me->getVictim());
-                SetAutocast(SPELL_FEL_FIREBALL, urand(2000, 12000), true);
-                ActivationTimer = 0;
+                SetAutocast(SPELL_FEL_FIREBALL, RAND(6300, 8300), true);
             }
             else
                 ActivationTimer -= diff;
@@ -1053,6 +1077,13 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
         Flurry = urand(16000, 20000);
     }
 
+    void AttackStart(Unit* who)
+    {
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE || ActivationTimer)
+            return;
+        ScriptedAI::AttackStart(who);
+    }
+
     void MovementInform(uint32 Type, uint32 Id)
     {
         if(Type == POINT_MOTION_TYPE && Id == 1)
@@ -1069,11 +1100,11 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
         {
             if(ActivationTimer <= diff)
             {
+                ActivationTimer = 0;
                 DoZoneInCombat(400);
                 me->SetRooted(false);
                 if(me->getVictim())
                     DoStartMovement(me->getVictim());
-                ActivationTimer = 0;
             }
             else
                 ActivationTimer -= diff;
