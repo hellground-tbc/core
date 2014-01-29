@@ -3075,19 +3075,7 @@ CreatureAI* GetAI_npc_nearly_dead_combat_dummy(Creature *_Creature)
 {
     return new npc_nearly_dead_combat_dummyAI(_Creature);
 }
-struct npc_lunar_spotlightAI : public ScriptedAI
-{
-    npc_lunar_spotlightAI(Creature *c) : ScriptedAI(c)
-    {
-         me->AddAura(25824, me);
-         return;
-	}
-};
 
-CreatureAI* GetAI_npc_lunar_spotlight(Creature *_Creature)
-{
-    return new npc_lunar_spotlightAI(_Creature);
-}
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -3299,9 +3287,4 @@ void AddSC_npcs_special()
     newscript->Name="npc_nearly_dead_combat_dummy";
     newscript->GetAI = &GetAI_npc_nearly_dead_combat_dummy;
     newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="npc_lunar_spotlight";
-	newscript->GetAI = &GetAI_npc_lunar_spotlight;
-	newscript->RegisterSelf();
 }
