@@ -116,15 +116,14 @@ int Master::Run()
     sLog.outString("%s (core-daemon)", _FULLVERSION);
     sLog.outString("<Ctrl-C> to stop.\n");
 
-    sLog.outTitle(" ______                       __");
-    sLog.outTitle("/\\__  _\\       __          __/\\ \\__");
-    sLog.outTitle("\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\ ,_\\  __  __");
-    sLog.outTitle("   \\ \\ \\/\\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
-    sLog.outTitle("    \\ \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
-    sLog.outTitle("     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\");
-    sLog.outTitle("      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
-    sLog.outTitle("                                 C O R E  /\\___/");
-    sLog.outTitle("http://TrinityCore.org                    \\/__/\n");
+    outstring_log(" _   _      _ _ _____                           _ ");
+    outstring_log("| | | |    | | |  __ \\                         | |");
+    outstring_log("| |_| | ___| | | |  \\/_ __ ___  _   _ _ __   __| |");
+    outstring_log("|  _  |/ _ \\ | | | __| '__/ _ \\| | | | '_ \\ / _` |");
+    outstring_log("| | | |  __/ | | |_\\ \\ | | (_) | |_| | | | | (_| |");
+    outstring_log("\\_| |_/\\___|_|_|\\____/_|  \\___/ \\__,_|_| |_|\\__,_|");
+    outstring_log("http://hellground.net based on http://TrinityCore.org");
+    outstring_log("Trinity Script initializing %s", _FULLVERSION);
 
     /// worldd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");

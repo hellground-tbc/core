@@ -55,14 +55,14 @@ HELLGROUND_DLL_EXPORT
 void InitScriptLibrary()
 {
     //Trinity Script startup
-    outstring_log(" _____     _       _ _         ____            _       _");
-    outstring_log("|_   _| __(_)_ __ (_) |_ _   _/ ___|  ___ _ __(_)_ __ | |_ ");
-    outstring_log("  | || '__| | '_ \\| | __| | | \\___ \\ / __| \'__| | \'_ \\| __|");
-    outstring_log("  | || |  | | | | | | |_| |_| |___) | (__| |  | | |_) | |_ ");
-    outstring_log("  |_||_|  |_|_| |_|_|\\__|\\__, |____/ \\___|_|  |_| .__/ \\__|");
-    outstring_log("                         |___/                  |_|        ");
+    outstring_log(" _   _      _ _ _____                           _ ");
+    outstring_log("| | | |    | | |  __ \\                         | |");
+    outstring_log("| |_| | ___| | | |  \\/_ __ ___  _   _ _ __   __| |");
+    outstring_log("|  _  |/ _ \\ | | | __| '__/ _ \\| | | | '_ \\ / _` |");
+    outstring_log("| | | |  __/ | | |_\\ \\ | | (_) | |_| | | | | (_| |");
+    outstring_log("\\_| |_/\\___|_|_|\\____/_|  \\___/ \\__,_|_| |_|\\__,_|");
+    outstring_log("http://hellground.net based on http://TrinityCore.org");
     outstring_log("Trinity Script initializing %s", _FULLVERSION);
-    outstring_log("");
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.
     LoadDatabase();
