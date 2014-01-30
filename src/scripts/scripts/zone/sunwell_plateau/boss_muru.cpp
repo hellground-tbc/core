@@ -644,13 +644,6 @@ struct npc_void_sentinelAI : public ScriptedAI
             me->DisappearAndDie();
     };
 
-    void AttackStart(Unit* who)
-    {
-        if (ActivationTimer)
-            return;
-        ScriptedAI::AttackStart(who);
-    }
-
     void EnterEvadeMode()
     {
         me->DisappearAndDie();
@@ -681,6 +674,7 @@ struct npc_void_sentinelAI : public ScriptedAI
             }
             else
                 ActivationTimer -= diff;
+            return;
         }
 
         if (!UpdateVictim())
@@ -729,13 +723,6 @@ struct mob_void_spawnAI : public ScriptedAI
             me->DisappearAndDie();
     };
 
-    void AttackStart(Unit* who)
-    {
-        if (ActivationTimer)
-            return;
-        ScriptedAI::AttackStart(who);
-    }
-
     void UpdateAI(const uint32 diff)
     {
         if(ActivationTimer)
@@ -748,6 +735,7 @@ struct mob_void_spawnAI : public ScriptedAI
             }
             else
                 ActivationTimer -= diff;
+            return;
         }
 
         if (!UpdateVictim())
@@ -966,13 +954,6 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
         SpellFury = urand(25000, 35000);
     }
 
-    void AttackStart(Unit* who)
-    {
-        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE || ActivationTimer)
-            return;
-        ScriptedAI::AttackStart(who);
-    }
-
     void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
     {
         if (aur->GetId() == SPELL_SPELL_FURY)
@@ -1003,6 +984,13 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+        {
+            if (me->GetSelection())
+                me->SetSelection(NULL);
+            return;
+        }
+
         if(ActivationTimer)
         {
             if(ActivationTimer <= diff)
@@ -1016,6 +1004,7 @@ struct mob_shadowsword_fury_mageAI : public ScriptedAI
             }
             else
                 ActivationTimer -= diff;
+            return;
         }
 
         if(!UpdateVictim())
@@ -1077,13 +1066,6 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
         Flurry = urand(16000, 20000);
     }
 
-    void AttackStart(Unit* who)
-    {
-        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE || ActivationTimer)
-            return;
-        ScriptedAI::AttackStart(who);
-    }
-
     void MovementInform(uint32 Type, uint32 Id)
     {
         if(Type == POINT_MOTION_TYPE && Id == 1)
@@ -1096,6 +1078,13 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+        {
+            if (me->GetSelection())
+                me->SetSelection(NULL);
+            return;
+        }
+
         if(ActivationTimer)
         {
             if(ActivationTimer <= diff)
@@ -1108,6 +1097,7 @@ struct mob_shadowsword_berserkerAI : public ScriptedAI
             }
             else
                 ActivationTimer -= diff;
+            return;
         }
 
         if(!UpdateVictim())
