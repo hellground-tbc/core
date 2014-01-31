@@ -950,9 +950,7 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                     }
 
                     if (winner_arena_team && loser_arena_team)
-                    {
                         loser_arena_team->MemberLost(plr, winner_arena_team->GetRating(), winner_arena_team->GetAverageMMR(GetBgRaid(win)));
-                    }
                 }
             }
 

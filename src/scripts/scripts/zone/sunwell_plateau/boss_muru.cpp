@@ -842,14 +842,16 @@ struct npc_blackholeAI : public ScriptedAI
         {
             if(ChasingTimer <= diff)
             {
-                Unit* victim = me->GetUnit(victimGUID);
-                if(me->IsWithinDistInMap(victim, 6.0))
+                if (Unit* victim = me->GetUnit(victimGUID))
                 {
-                    if(Unit* victim = SelectUnit(SELECT_TARGET_NEAREST, 0, 200, true, me->getVictimGUID(), 10.0))
+                    if(me->IsWithinDistInMap(victim, 6.0))
+                    {
+                        if(Unit* victim = SelectUnit(SELECT_TARGET_NEAREST, 0, 200, true, me->getVictimGUID(), 10.0))
+                            me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
+                    }
+                    else
                         me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
                 }
-                else
-                    me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
                 ChasingTimer = 2000;
             }
             else

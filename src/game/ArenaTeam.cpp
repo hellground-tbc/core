@@ -628,7 +628,6 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
             // update the unit fields
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 2, itr->games_week);
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 3, itr->games_season);
-            return;
         }
     }
 }
@@ -658,7 +657,6 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHidd
             // update unit fields
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 2, itr->games_week);
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 3, itr->games_season);
-            return;
         }
     }
 }

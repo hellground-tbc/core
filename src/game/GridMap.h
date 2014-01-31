@@ -256,7 +256,7 @@ class HELLGROUND_IMPORT_EXPORT TerrainInfo : public Referencable<AtomicLong>
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
         bool IsOutdoors(float x, float y, float z) const;
 
-        TerrainSpecifics const* GetSpecifics() const { return &specifics; }
+        TerrainSpecifics const* GetSpecifics() const { return m_specifics; }
 
         //this method should be used only by TerrainManager
         //to cleanup unreferenced GridMap objects - they are too heavy
@@ -287,7 +287,7 @@ class HELLGROUND_IMPORT_EXPORT TerrainInfo : public Referencable<AtomicLong>
 
         const uint32 m_mapId;
 
-        TerrainSpecifics specifics;
+        TerrainSpecifics* m_specifics;
 
         GridMap *m_GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         int16 m_GridRef[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];

@@ -610,7 +610,7 @@ bool GridMap::ExistVMap(uint32 mapid,int gx,int gy)
 }
 
 //////////////////////////////////////////////////////////////////////////
-TerrainInfo::TerrainInfo(uint32 mapid, TerrainSpecifics terrainspecifics) : m_mapId(mapid), specifics(terrainspecifics)
+TerrainInfo::TerrainInfo(uint32 mapid, TerrainSpecifics terrainspecifics) : m_mapId(mapid)
 {
     for (int k = 0; k < MAX_NUMBER_OF_GRIDS; ++k)
     {
@@ -628,6 +628,8 @@ TerrainInfo::TerrainInfo(uint32 mapid, TerrainSpecifics terrainspecifics) : m_ma
 
     i_timer.SetInterval(iCleanUpInterval * 1000);
     i_timer.SetCurrent(iRandomStart * 1000);
+
+    m_specifics = new MapTemplate(terrainspecifics);
 }
 
 TerrainInfo::~TerrainInfo()
@@ -638,6 +640,9 @@ TerrainInfo::~TerrainInfo()
 
      VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(m_mapId);
      MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(m_mapId);
+
+     delete m_specifics;
+     m_specifics = nullptr;
 }
 
 GridMap * TerrainInfo::Load(const uint32 x, const uint32 y)
