@@ -248,13 +248,15 @@ void Database::Ping()
 
     {
         SqlConnection::Lock guard(m_pAsyncConn);
-        guard->Query(sql);
+        if (guard->Query(sql) == QueryResultAutoPtr(nullptr))
+            abort();
     }
 
     for (int i = 0; i < m_nQueryConnPoolSize; ++i)
     {
         SqlConnection::Lock guard(m_pQueryConnections[i]);
-        guard->Query(sql);
+        if (guard->Query(sql) == QueryResultAutoPtr(nullptr))
+            abort();
     }
 }
 
