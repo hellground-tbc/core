@@ -2945,47 +2945,36 @@ void SpellMgr::LoadSpellCustomAttr()
         switch (i)
         {
             /* FIXED DAMAGE SPELLS */
-            // Ignite
-            case 12654:
+            case 12654: // Ignite
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_FIXED_DAMAGE;
                 break;
-            case 16614:
-                spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF; //Storm Gauntlets - temporary workaround for hell too big spell coef
-                break;
-            case 7714:
-                spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF; //Fiery Plate Gauntlets - temporary workaround for hell too big spell coef (the same problem as Storm Gauntlets
-                break;
+            case 20532: // Intense Heat (Majordomo Executus lava pit)
+                spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_CANT_CRIT;
+                // no break here
             /* NO SPELL DMG COEFF */
-            // Enduring Light - T6 proc
-            case 40471:
-            // Enduring Judgement - T6 proc
-            case 40472:
-            // Judgement of Blood
-            case 32221:
-            case 32220:
-            // Flame Cap, Scalding Water, Fiery Blaze
-            case 28715:
-            case 37284:
-            case 6297:
-            // Deathfrost
-            case 46579:
-            // Mana Tap
-            case 28734:
-            // SW: Death
-            case 32409:
+            case 16614: // Storm Gauntlets
+            case 7714:  // Fiery Plate Gauntlets
+            case 40471: // Enduring Light - T6 proc
+            case 40472: // Enduring Judgement - T6 proc
+            case 32221: // Seal of Blood
+            case 32220: // Judgement of Blood
+            case 28715: // Flame Cap
+            case 37284: // Scalding Water
+            case 6297:  // Fiery Blaze
+            case 46579: // Deathfrost
+            case 28734: // Mana Tap
+            case 32409: // SW: Death
+
             // Six Demon Bag spells
-            case 45297:   // Chain Lightning
-            case 2310:    // Frostbolt!
-            case 9487:    // Fireball !
-            // Shattered Sun Pendant of Acumen: Scryers ex proc
-            case 45429:
-            // Heart of Wyrmthalak: Flame Lash proc
-            case 27655:
-            case 45055:
-            // The Lightning Capacitor, lightning bolt spell
-            case 37661:
-            // Arcane Torrent
-            case 28733:
+            case 45297: // Chain Lightning
+            case 23102: // Frostbolt
+            case 9487:  // Fireball
+
+            case 45429: // Shattered Sun Pendant of Acumen: Scryers ex proc
+            case 27655: // Heart of Wyrmthalak: Flame Lash proc
+            case 45055: // Shadow Bolt (Timbal's Focusing Crystal)
+            case 37661: // The Lightning Capacitor, lightning bolt spell
+            case 28733: // Arcane Torrent
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 break;
             /* WELL FEED */
