@@ -352,7 +352,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                 if (ok)
                 {
                     CastSpell(ok, goInfo->trap.spellId);
-                    m_cooldownTime = time(NULL) + goInfo->trap.cooldown ? goInfo->trap.cooldown : 4;    // default 4 sec cooldown??
+                    m_cooldownTime = time(NULL) + (goInfo->trap.cooldown ? goInfo->trap.cooldown : 4);  // default 4 sec cooldown??
                     SendCustomAnimation();
 
                     if (NeedDespawn)
