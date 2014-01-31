@@ -21,8 +21,9 @@
 #include "CellImpl.h"
 #include "Log.h"
 #include "Player.h"
+#include "ObjectAccessor.h"
 
-Camera::Camera(Player* pl) : _owner(*pl), _source(pl)
+Camera::Camera(Player* pl) : _owner(*pl), _source(pl), m_ownerGUID(pl->GetGUID())
 {
     _source->GetViewPoint().Attach(this);
 }
@@ -157,5 +158,18 @@ ViewPoint::~ViewPoint()
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: ViewPoint destructor called, but some cameras referenced to it");
         _cameras.clear();
+    }
+}
+
+void ViewPoint::CameraCall(void (Camera::*handler)())
+{
+    if (!_cameras.empty())
+    {
+        for(CameraList::iterator itr = _cameras.begin(); itr != _cameras.end(); ++itr)
+        {
+            Player* owner = ObjectAccessor::GetPlayer( *itr );
+            if ( owner != nullptr )
+                (owner->GetCamera().*handler)();
+        }
     }
 }
