@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Nethermancer_Sepethrea
-SD%Complete: 90
-SDComment: Need adjustments to initial summons
+SD%Complete: 99
+SDComment: Check melee dmg and immunities
 SDCategory: Tempest Keep, The Mechanar
 EndScriptData */
 
@@ -25,7 +25,7 @@ EndScriptData */
 #include "def_mechanar.h"
 
 #define SAY_AGGRO                       -1554013
-#define SAY_SUMMON                      -1554014
+#define SAY_SUMMON                      -1554014    // using this when resummoning adds, used on timer here to prevent double yell
 #define SAY_DRAGONS_BREATH_1            -1554015
 #define SAY_DRAGONS_BREATH_2            -1554016
 #define SAY_SLAY1                       -1554017
@@ -35,11 +35,10 @@ EndScriptData */
 #define SPELL_SUMMON_RAGIN_FLAMES       35275
 #define H_SPELL_SUMMON_RAGIN_FLAMES     39084
 
-#define SPELL_FROST_ATTACK              35263
+#define SPELL_FROST_ATTACK              45195
 #define SPELL_ARCANE_BLAST              35314
 #define SPELL_DRAGONS_BREATH            35250
-#define SPELL_KNOCKBACK                 37317
-#define SPELL_SOLARBURN                 35267
+//#define SPELL_SOLARBURN                 35267 // its an NPC ability, not this boss
 
 struct boss_nethermancer_sepethreaAI : public ScriptedAI
 {
@@ -55,17 +54,15 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
 
     uint32 arcane_blast_Timer;
     uint32 dragons_breath_Timer;
-    uint32 knockback_Timer;
-    uint32 solarburn_Timer;
+    uint32 yell_timer;
 
     SummonList summons;
 
     void Reset()
     {
         arcane_blast_Timer = urand(12000, 18000);
-        dragons_breath_Timer = urand(18000, 22000);
-        knockback_Timer = urand(22000, 28000);
-        solarburn_Timer = 30000;
+        dragons_breath_Timer = urand(22000, 28000);
+        yell_timer = 5000;
 
         pInstance->SetData(DATA_NETHERMANCER_EVENT, NOT_STARTED);
 
@@ -77,7 +74,7 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
         pInstance->SetData(DATA_NETHERMANCER_EVENT, IN_PROGRESS);
 
         DoScriptText(SAY_AGGRO, me);
-        AddSpellToCastWithScriptText(HeroicMode ? H_SPELL_SUMMON_RAGIN_FLAMES : SPELL_SUMMON_RAGIN_FLAMES, CAST_SELF, SAY_SUMMON);
+        AddSpellToCast(HeroicMode ? H_SPELL_SUMMON_RAGIN_FLAMES : SPELL_SUMMON_RAGIN_FLAMES, CAST_SELF);
     }
 
     void KilledUnit(Unit* victim)
@@ -99,10 +96,11 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
             summons.Summon(summoned);
     }
 
-    void DamageMade(Unit * target, uint32 & damage, bool direct)
+    void DamageMade(Unit* target, uint32 & , bool direct, uint8 school_mask)
     {
-        if (direct)
-            me->CastSpell(target, SPELL_FROST_ATTACK, true);
+        if (direct && !me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED))
+            if(roll_chance_i(40))
+                me->CastSpell(target, SPELL_FROST_ATTACK, true);
     }
 
     void UpdateAI(const uint32 diff)
@@ -111,11 +109,12 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
-        //Arcane Blast
+        //Arcane Blast with knockback, reducing threat by 50%
         if (arcane_blast_Timer < diff)
         {
             AddSpellToCast(SPELL_ARCANE_BLAST, CAST_TANK);
-            arcane_blast_Timer = urand(12500, 17500);
+            arcane_blast_Timer = urand(25000, 35000);
+            me->getThreatManager().modifyThreatPercent(me->getVictim(), -50.0f);
         }
         else
             arcane_blast_Timer -= diff;
@@ -124,28 +123,21 @@ struct boss_nethermancer_sepethreaAI : public ScriptedAI
         if (dragons_breath_Timer < diff)
         {
             AddSpellToCastWithScriptText(SPELL_DRAGONS_BREATH, CAST_TANK, RAND(SAY_DRAGONS_BREATH_1, SAY_DRAGONS_BREATH_2, 0, 0));
-            dragons_breath_Timer = urand(12000 ,22000);
+            dragons_breath_Timer = urand(30000, 35000);
         }
         else
             dragons_breath_Timer -= diff;
 
-        //Knockback
-        if (knockback_Timer < diff)
+        if(yell_timer)
         {
-            AddSpellToCast(SPELL_KNOCKBACK, CAST_TANK);
-            knockback_Timer = urand(15000, 25000);
+            if (yell_timer <= diff)
+            {
+                DoScriptText(SAY_SUMMON, me);
+                yell_timer = 0;
+            }
+            else
+                yell_timer -= diff;
         }
-        else
-            knockback_Timer -= diff;
-
-        //Solarburn
-        if (solarburn_Timer < diff)
-        {
-            AddSpellToCast(SPELL_SOLARBURN, CAST_RANDOM);
-            solarburn_Timer = 30000;
-        }
-        else
-            solarburn_Timer -= diff;
 
         CastNextSpellIfAnyAndReady();
         DoMeleeAttackIfReady();
@@ -157,8 +149,7 @@ CreatureAI* GetAI_boss_nethermancer_sepethrea(Creature *_Creature)
     return new boss_nethermancer_sepethreaAI (_Creature);
 }
 
-#define SPELL_INFERNO                   35268
-#define H_SPELL_INFERNO                 39346
+#define SPELL_INFERNO                   39346
 #define SPELL_FIRE_TAIL                 35278
 
 struct mob_ragin_flamesAI : public ScriptedAI
@@ -172,24 +163,25 @@ struct mob_ragin_flamesAI : public ScriptedAI
     ScriptedInstance *pInstance;
 
     bool HeroicMode;
-
+    bool canMelee;
     uint32 infernoTimer;
     uint64 currentTarget;
 
     void Reset()
     {
-        infernoTimer = urand(0,10000);
+        infernoTimer = urand(8000,13000);
+        canMelee = true;
 
         me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
         me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, true);
         me->SetSpeed(MOVE_RUN, HeroicMode ? 0.8f : 0.5f);
 
-        SetAutocast(SPELL_FIRE_TAIL, 500, false, CAST_SELF);
+        SetAutocast(SPELL_FIRE_TAIL, HeroicMode ? 700 : 1200, true, CAST_SELF);
     }
 
     void ChangeTarget()
     {
-        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0, 5000, true))
+        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 500, true, me->getVictimGUID()))
         {
             Unit * prevTarUnit = me->GetMap()->GetUnit(currentTarget);
             if (prevTarUnit)
@@ -205,7 +197,25 @@ struct mob_ragin_flamesAI : public ScriptedAI
     {
         DoZoneInCombat();
         ChangeTarget();
-        StartAutocast();
+    }
+
+    void OnAuraApply(Aura* aur, Unit* caster, bool stackApply)
+    {
+        if (aur->GetId() == SPELL_INFERNO)
+        {
+            StopAutocast();
+            canMelee = false;
+        }
+    }
+
+    void OnAuraRemove(Aura* aur, bool stackApply)
+    {
+        if (aur->GetId() == SPELL_INFERNO)
+        {
+            StartAutocast();
+            ChangeTarget();
+            canMelee = true;
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -217,16 +227,15 @@ struct mob_ragin_flamesAI : public ScriptedAI
 
         if (infernoTimer < diff)
         {
-            AddSpellToCast(HeroicMode ? H_SPELL_INFERNO : SPELL_INFERNO, CAST_SELF);
-            ChangeTarget();
-
-            infernoTimer = 10000;
+            AddSpellToCast(SPELL_INFERNO, CAST_SELF);
+            infernoTimer = urand(16000,21000);
         }
         else
             infernoTimer -= diff;
 
-        CastNextSpellIfAnyAndReady();
-        DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady(diff);
+        if(canMelee)
+            DoMeleeAttackIfReady();
     }
 
 };
