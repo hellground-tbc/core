@@ -438,7 +438,6 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
         uint32 GetArenaTeamIdForTeam(uint32 Team) const { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
         void SetArenaTeamRatingChangeForTeam(uint32 Team, int32 RatingChange) { m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)] = RatingChange; }
         int32 GetArenaTeamRatingChangeForTeam(uint32 Team) const { return m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)]; }
-        void CheckArenaWinConditions();
         void AddToArenaTeamMMR(uint32 Team, uint32 hidden) { m_ArenaTeamHiddenRatingSum[GetTeamIndexByTeamId(Team)] += hidden; }
         uint32 GetArenaTeamMMRSum(uint32 team) { return m_ArenaTeamHiddenRatingSum[GetTeamIndexByTeamId(team)]; }
 

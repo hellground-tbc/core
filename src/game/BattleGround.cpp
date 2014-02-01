@@ -316,7 +316,16 @@ void BattleGround::Update(uint32 diff)
     {
         if (!sBattleGroundMgr.IsArenaEndAfterAlwaysDraw())
         {
-            CheckArenaWinConditions();
+            if(GetAlivePlayersCountByTeam(HORDE) > GetAlivePlayersCountByTeam(ALLIANCE))
+            {
+                EndBattleGround(HORDE);
+                return;
+            }
+            else if (GetAlivePlayersCountByTeam(HORDE) < GetAlivePlayersCountByTeam(ALLIANCE))
+            {
+                EndBattleGround(ALLIANCE);
+                return;
+            }
         }
 
         EndBattleGround(0);
@@ -1196,19 +1205,6 @@ void BattleGround::AddOrSetPlayerToCorrectBgGroup(Player *plr, uint64 plr_guid, 
         group->Create(plr_guid, plr->GetName());
     }
 }
-
-// This method should be called when player logs out from running battleground
-void BattleGround::EventPlayerLoggedOut(Player* player)
-{
- 	if( GetStatus() == STATUS_IN_PROGRESS )
- 	{
- 	    if( isBattleGround() )
-            EventPlayerDroppedFlag(player);
-        else
-            CheckArenaWinConditions();
- 	}
-}
-
 /* This method should be called only once ... it adds pointer to queue */
 void BattleGround::AddToBGFreeSlotQueue()
 {
@@ -1848,12 +1844,17 @@ void BattleGround::HandleKillUnit(Creature *creature, Player *killer)
 {
 }
 
-void BattleGround::CheckArenaWinConditions()
+// This method should be called when player logs out from running battleground
+void BattleGround::EventPlayerLoggedOut(Player* player)
 {
-    if( !GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE) )
-        EndBattleGround(HORDE);
-    else if( GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE) )
-        EndBattleGround(ALLIANCE);
+    if (GetStatus() == STATUS_IN_PROGRESS)
+    {
+        if (isBattleGround())
+            EventPlayerDroppedFlag(player);
+    }
+
+    if (isArena())
+        RemovePlayerAtLeave(player->GetGUID(), true, true);
 }
 
 void BattleGround::SetBgRaid( uint32 TeamID, Group *bg_raid )
