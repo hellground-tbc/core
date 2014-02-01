@@ -56,6 +56,12 @@ void HmacHash::UpdateData(const std::string &str)
     UpdateData((uint8 const*)str.c_str(), str.length());
 }
 
+void HmacHash::UpdateData(const uint8* data, size_t len)
+{
+    HMAC_Update(&m_ctx, data, len);
+}
+
+
 void HmacHash::Initialize()
 {
     HMAC_Init_ex(&m_ctx, &m_key, SEED_KEY_SIZE, EVP_sha1(), NULL);

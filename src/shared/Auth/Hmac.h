@@ -37,6 +37,7 @@ class HmacHash
         ~HmacHash();
         void UpdateBigNumber(BigNumber *bn);
         void UpdateData(const uint8 *data, int length);
+        void UpdateData(const uint8* data, size_t len);
         void UpdateData(const std::string &str);
         void Initialize();
         void Finalize();

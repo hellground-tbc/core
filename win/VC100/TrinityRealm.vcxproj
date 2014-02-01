@@ -549,6 +549,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     <ClInclude Include="..\..\src\trinityrealm\PatchHandler.h" />
     <ClInclude Include="..\..\src\trinityrealm\RealmList.h" />
     <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
+    <ClInclude Include="..\..\src\trinityrealm\TOTP.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\trinityrealm\AuthSocket.cpp" />
@@ -557,6 +558,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     <ClCompile Include="..\..\src\trinityrealm\PatchHandler.cpp" />
     <ClCompile Include="..\..\src\trinityrealm\RealmList.cpp" />
     <ClCompile Include="..\..\src\shared\WheatyExceptionReport.cpp" />
+    <ClCompile Include="..\..\src\trinityrealm\TOTP.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\trinityrealm\TrinityRealm.rc" />

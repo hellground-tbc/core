@@ -78,6 +78,7 @@ class AuthSocket: public BufferedSocket
         bool _authed;
 
         std::string _login;
+        std::string _tokenKey;
         std::string _safelogin;
         std::string localIp_;
         uint8 OS;

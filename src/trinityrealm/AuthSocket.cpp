@@ -27,6 +27,7 @@
 #include "RealmList.h"
 #include "AuthSocket.h"
 #include "AuthCodes.h"
+#include "TOTP.h"
 #include "PatchHandler.h"
 
 #include <openssl/md5.h>
@@ -430,7 +431,7 @@ bool AuthSocket::_HandleLogonChallenge()
     ///- Get the account details from the account table
     // No SQL injection (escaped user name)
 
-    result = AccountsDatabase.PQuery("SELECT pass_hash, account.account_id, account_state_id, last_ip, permission_mask, email "
+    result = AccountsDatabase.PQuery("SELECT pass_hash, account.account_id, account_state_id, token_key, last_ip, permission_mask, email "
                                      "FROM account JOIN account_permissions ON account.account_id = account_permissions.account_id "
                                      "WHERE username = '%s'", _safelogin.c_str());
 
@@ -532,6 +533,11 @@ bool AuthSocket::_HandleLogonChallenge()
     pkt.append(s.AsByteArray(), s.GetNumBytes());// 32 bytes
     pkt.append(unk3.AsByteArray(16), 16);
     uint8 securityFlags = 0;
+    // Check if token is used
+    _tokenKey = fields[3].GetString();
+        if (!_tokenKey.empty())
+            securityFlags = 4;
+
     pkt << uint8(securityFlags);            // security flags (0x0...0x04)
 
     if (securityFlags & 0x01)                // PIN input
@@ -663,6 +669,25 @@ bool AuthSocket::_HandleLogonProof()
     sha.Initialize();
     sha.UpdateData(t1, 16);
     sha.Finalize();
+        
+	// Check auth token
+        if ((lp.securityFlags & 0x04) || !_tokenKey.empty())
+        {
+            uint8 size;
+            recv((char*)&size, 1);
+            char* token = new char[size + 1];
+            token[size] = '\0';
+            recv(token, size);
+            unsigned int validToken = TOTP::GenerateToken(_tokenKey.c_str());
+            unsigned int incomingToken = atoi(token);
+            delete[] token;
+            if (validToken != incomingToken)
+            {
+                char data[4] = { CMD_AUTH_LOGON_PROOF, WOW_FAIL_UNKNOWN_ACCOUNT, 3, 0};
+                send(data, sizeof(data));
+                return false;
+            }
+        }
     for (int i = 0; i < 20; ++i)
     {
         vK[i * 2] = sha.GetDigest()[i];
