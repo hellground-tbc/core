@@ -98,12 +98,8 @@ void BattleGroundBE::Update(uint32 diff)
             for (BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                 if (Player *plr = sObjectMgr.GetPlayer(itr->first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
-
-            if (!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
-                EndBattleGround(HORDE);
-            else if (GetPlayersCountByTeam(ALLIANCE) && !GetPlayersCountByTeam(HORDE))
-                EndBattleGround(ALLIANCE);
-        }
+		}
+            CheckArenaWinConditions();
     }
 
     /*if(GetStatus() == STATUS_IN_PROGRESS)
@@ -154,16 +150,8 @@ void BattleGroundBE::HandleKillPlayer(Player *player, Player *killer)
     UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(HORDE));
 
-    if (!GetAlivePlayersCountByTeam(ALLIANCE))
-    {
-        // all opponents killed
-        EndBattleGround(HORDE);
-    }
-    else if (!GetAlivePlayersCountByTeam(HORDE))
-    {
-        // all opponents killed
-        EndBattleGround(ALLIANCE);
-    }
+
+    CheckArenaWinConditions();
 }
 
 bool BattleGroundBE::HandlePlayerUnderMap(Player *player, float z)
