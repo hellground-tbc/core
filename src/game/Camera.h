@@ -57,8 +57,6 @@ class HELLGROUND_IMPORT_EXPORT Camera
         // updates visibility of worldobjects around viewpoint for camera's owner
         void UpdateVisibilityForOwner();
 
-        uint64 GetOwnerGUID() const { return m_ownerGUID; }
-
     private:
         // called when viewpoint changes visibility state
         void Event_AddedToWorld();
@@ -74,8 +72,6 @@ class HELLGROUND_IMPORT_EXPORT Camera
     public:
         GridReference<Camera>& GetGridRef() { return _gridRef; }
         bool isActiveObject() const { return false; }
-
-        uint64 m_ownerGUID;
     private:
         GridReference<Camera> _gridRef;
 };
@@ -85,15 +81,26 @@ class HELLGROUND_IMPORT_EXPORT ViewPoint
 {
     friend class Camera;
 
-    typedef std::list<uint64> CameraList;
+    typedef std::list<Camera*> CameraList;
 
     CameraList _cameras;
     GridType * _grid;
 
-    void Attach(Camera* c) { _cameras.push_back(c->GetOwnerGUID()); }
-    void Detach(Camera* c) { _cameras.remove(c->GetOwnerGUID()); }
+    void Attach(Camera* c) { _cameras.push_back(c); }
+    void Detach(Camera* c) { _cameras.remove(c); }
 
-    void CameraCall(void (Camera::*handler)());
+    void CameraCall(void (Camera::*handler)())
+    {
+        if (!_cameras.empty())
+        {
+            for(CameraList::iterator itr = _cameras.begin(); itr != _cameras.end();)
+            {
+                if (Camera *c = *(itr++))
+                    (c->*handler)();
+            }
+        }
+    }
+
 public:
 
     ViewPoint() : _grid(0) {}
