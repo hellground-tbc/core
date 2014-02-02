@@ -451,7 +451,7 @@ bool AuthSocket::_HandleLogonChallenge()
         {
             DEBUG_LOG("[AuthChallenge] Account '%s' is locked to IP - '%s'", _login.c_str(), (*result)[3].GetString());
             DEBUG_LOG("[AuthChallenge] Player address is '%s'", get_remote_address().c_str());
-            if (strcmp(fields[3].GetString(), get_remote_address().c_str()))
+            if (strcmp(fields[4].GetString(), get_remote_address().c_str()))
             {
                 DEBUG_LOG("[AuthChallenge] Account IP differs");
                     pkt << (uint8) WOW_FAIL_LOCKED_ENFORCED;
