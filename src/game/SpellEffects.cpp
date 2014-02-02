@@ -8122,5 +8122,6 @@ void Spell::EffectFriendSummon(uint32 eff_idx)
     location.coord_z = m_caster->GetPositionZ();
     location.orientation = m_caster->GetOrientation();
 
+    target->InterruptTaxiFlying();
     target->TeleportTo(location);
 }
