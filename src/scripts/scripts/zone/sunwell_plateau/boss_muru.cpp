@@ -655,11 +655,15 @@ struct npc_void_sentinelAI : public ScriptedAI
             Muru->ToCreature()->AI()->JustSummoned(me);
     }
 
-    void JustDied(Unit* killer)
+    void DamageTaken(Unit*, uint32 &damage)
     {
-        if(killer->GetGUID() != me->GetGUID())
+        if(damage >= me->GetHealth())
+        {
+            damage = 0;
             for(uint8 i = 0; i < 8; ++i)
-                DoCast(me, SPELL_SUMMON_VOID_SPAWN);
+                DoCast(me, SPELL_SUMMON_VOID_SPAWN, true);
+            me->Kill(me, false);
+        }
     }
 
     void UpdateAI(const uint32 diff)

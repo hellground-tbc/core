@@ -118,7 +118,7 @@ struct instance_sunwell_plateau : public ScriptedInstance
         for(uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
         GauntletProgress = NOT_STARTED;
-        MuruCounter = 6;
+        MuruCounter = 5;
         MuruTesting = NOT_STARTED;
 
         requiredEncounterToMobs.clear();
