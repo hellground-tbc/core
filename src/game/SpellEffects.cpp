@@ -1468,9 +1468,16 @@ void Spell::EffectDummy(uint32 i)
                 }*/
                 // Polarity Shift (Thaddius)
                 case 28089:
-                    if (unitTarget)
-                        unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 28059 : 28084, true, NULL, NULL, m_caster->GetGUID());
+                {
+                    if (!unitTarget)
+                        break;
+
+                    uint32 spellId = roll_chance_i(50) ? 28059 : 28084;
+                    unitTarget->RemoveAurasDueToSpell(spellId == 28059 ? 28084 : 28059);
+                    unitTarget->CastSpell(unitTarget, spellId, true, NULL, NULL, m_caster->GetGUID());
+
                     break;
+                }
                 // Polarity Shift (Mechano-Lord Capacitus)
                 case 39096:
                     if (unitTarget)
