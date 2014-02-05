@@ -2542,10 +2542,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 40133:                                     // Summon Fire Elemental
                 caster->SummonCreature(23099, -2459.64, 4754.64, 153.20, 4.89, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
                 break;
-            case 39850:                                     // Rocket Blast
-                if (roll_chance_i(20))                       // backfire stun
-                    m_target->CastSpell(m_target, 51581, true, NULL, this);
-                return;
             case 6946:                                     // Curse of Bleakheart
                 if (!m_target->HasAura(6947, 0))
                     m_target->CastSpell(m_target, 6947, true);
