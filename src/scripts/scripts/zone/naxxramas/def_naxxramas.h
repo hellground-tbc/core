@@ -19,4 +19,6 @@
 #define DATA_STALAGG                    15
 #define DATA_FEUGEN                     16
 
+#define ENCOUNTERS                      17
+
 #endif

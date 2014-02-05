@@ -8,8 +8,6 @@ EndScriptData */
 #include "precompiled.h"
 #include "def_naxxramas.h"
 
-#define ENCOUNTERS 15
-
 // This spawns 5 corpse scarabs ontop of us (most likely the player casts this on death)
 #define SPELL_SELF_SPAWN_5  29105
 
@@ -28,6 +26,7 @@ struct instance_naxxramas : public ScriptedInstance
 
     uint8 deadHorsemans;
 
+    uint64 m_thaddiusGUID;
     uint64 m_stalaggGUID;
     uint64 m_feugenGUID;
     uint64 m_lady_blaumeuxGUID;
@@ -42,6 +41,7 @@ struct instance_naxxramas : public ScriptedInstance
         for (uint8 i = 0; i < ENCOUNTERS; ++i)
             Encounters[i] = NOT_STARTED;
 
+        m_thaddiusGUID = 0;
         m_stalaggGUID = 0;
         m_feugenGUID = 0;
         deadHorsemans = 0;
@@ -106,6 +106,9 @@ struct instance_naxxramas : public ScriptedInstance
     {
         switch (creature_entry)
         {
+            case 15928:
+                m_thaddiusGUID = creature->GetGUID();
+                break;
             case 15929:
                 m_stalaggGUID = creature->GetGUID();
                 break;
@@ -256,6 +259,8 @@ struct instance_naxxramas : public ScriptedInstance
     {
         switch (identifier)
         {
+            case DATA_THADDIUS:
+                return m_thaddiusGUID;
             case DATA_STALAGG:
                 return m_stalaggGUID;
             case DATA_FEUGEN:
