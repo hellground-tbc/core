@@ -2785,7 +2785,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     bool canParry = !isCasting && !lostControl;
     bool canBlock = spell->AttributesEx3 & SPELL_ATTR_EX3_UNK3 && !isCasting && !lostControl;
 
-    if (Player* player = ToPlayer())
+    if (Player* player = pVictim->ToPlayer())
     {
         Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
         if (!tmpitem || !tmpitem->GetProto()->Block)
