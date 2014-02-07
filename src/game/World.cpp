@@ -624,6 +624,7 @@ void World::LoadConfigSettings(bool reload)
        sMapMgr.SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
 
     m_configs[CONFIG_ARENA_STATUS_INFO] = sConfig.GetBoolDefault("Arena.StatusInfo");
+    m_configs[CONFIG_ARENA_ELO_COEFFICIENT] = sConfig.GetIntDefault("Arena.ELOCoefficient",32);
     m_configs[CONFIG_BATTLEGROUND_ANNOUNCE_START] = sConfig.GetIntDefault("BattleGround.AnnounceStart", 0);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_INFO] = sConfig.GetIntDefault("BattleGround.QueueInfo", 0);
     m_configs[CONFIG_BATTLEGROUND_TIMER_INFO] = sConfig.GetBoolDefault("BattleGround.TimerInfo");
