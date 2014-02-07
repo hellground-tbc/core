@@ -611,7 +611,8 @@ void Loot::saveLootToDB(Player *owner)
     RemoveSavedLootFromDB(pCreature);
 
     std::stringstream ss;
-    ss << "Player's group: " << owner->GetName() << ":(" << owner->GetGUIDLow() << ") " << "LootedItems: ";
+    ss << "Player's group: " << owner->GetName() << ":(" << owner->GetGUIDLow() << ") Map: " << m_mapID.nMapId
+        << " Id: " << m_mapID.nInstanceId << " Generated loot: ";
 
     std::stringstream guids;
 
@@ -879,10 +880,15 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
     }
 }
 
-void Loot::setItemLooted(LootItem *pLootItem)
+void Loot::setItemLooted(LootItem *pLootItem, Player* looter)
 {
     pLootItem->is_looted = true;
+    if (pLootItem->freeforall || pLootItem->conditionId) // those are not saved, trying to remove them will cause log spam
+        return;
     removeItemFromSavedLoot(pLootItem);
+    if(looter && m_creatureGUID)
+        sLog.outLog(LOG_BOSS,"Map: %u ID: %u ; Item [%u] looted by %s (%u)",
+        m_mapID.nMapId,m_mapID.nInstanceId,pLootItem->itemid,looter->GetName(),looter->GetGUIDLow());
 }
 
 LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem **qitem, QuestItem **ffaitem, QuestItem **conditem)

@@ -861,7 +861,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                 uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, roll->itemid, item->count);
                 if (msg == EQUIP_ERR_OK)
                 {
-                    roll->getLoot()->setItemLooted(item);
+                    roll->getLoot()->setItemLooted(item,player);
                     roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
 
                     --roll->getLoot()->unlootedCount;
@@ -909,7 +909,7 @@ void Group::CountTheRoll(Rolls::iterator rollI, uint32 NumberOfPlayers)
                 uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, roll->itemid, item->count);
                 if (msg == EQUIP_ERR_OK)
                 {
-                    roll->getLoot()->setItemLooted(item);
+                    roll->getLoot()->setItemLooted(item,player);
                     roll->getLoot()->NotifyItemRemoved(roll->itemSlot);
 
                     --roll->getLoot()->unlootedCount;

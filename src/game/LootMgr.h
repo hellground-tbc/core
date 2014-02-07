@@ -296,7 +296,7 @@ struct Loot
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
 
-    void setItemLooted(LootItem *pLootItem);
+    void setItemLooted(LootItem *pLootItem, Player* looter);
     void removeItemFromSavedLoot(LootItem *pLootItem);
 
     void setCreatureGUID(Creature *pCreature);
