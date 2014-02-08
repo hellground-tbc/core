@@ -841,6 +841,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADBGCOORD              = 17,
     PLAYER_LOGIN_QUERY_LOADMAILS                = 18,
     PLAYER_LOGIN_QUERY_LOADMAILEDITEMS          = 19,
+    PLAYER_LOGIN_QUERY_LOADDAILYARENA           = 20,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1867,6 +1868,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void ModifyHonorPoints(int32 value);
         void ModifyArenaPoints(int32 value);
         uint32 GetMaxPersonalArenaRatingRequirement();
+        uint16 m_DailyArenasWon;
 
         //End of PvP System
 
@@ -2437,7 +2439,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_Tutorials[8];
         bool m_TutorialsChanged;
 
-        bool m_DailyQuestChanged;
+        bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
         uint32 m_drunkTimer;

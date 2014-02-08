@@ -233,7 +233,6 @@ class BattleGroundMgr
         uint32 GetMaxRatingDifference() const;
         uint32 GetRatingDiscardTimer()  const;
         uint32 GetPrematureFinishTime() const;
-        float GetELOCoefficient() {return ELOCoefficient;};
 
         bool IsPrematureFinishTimerEnabled() const;
         bool IsWSGEndAfterEnabled() const;
@@ -280,7 +279,6 @@ class BattleGroundMgr
         bool   m_ArenaTesting;
         bool   m_Testing;
         bool   m_ApAnnounce;
-        float  ELOCoefficient;
 };
 
 #define sBattleGroundMgr (*ACE_Singleton<BattleGroundMgr, ACE_Null_Mutex>::instance())

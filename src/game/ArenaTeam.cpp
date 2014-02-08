@@ -553,7 +553,7 @@ int32 ArenaTeam::WonAgainst(uint32 againstRating)
     //'chance' calculation - to beat the opponent
     float chance = GetChanceAgainst(stats.rating, againstRating);
     // calculate the rating modification (ELO system with k=32)
-    int32 mod = (int32)floor(sBattleGroundMgr.GetELOCoefficient() * (1.0f - chance));
+    int32 mod = (int32)floor((float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT) * (1.0f - chance));
     // modify the team stats accordingly
     stats.rating += mod;
     stats.games_week += 1;
@@ -579,7 +579,7 @@ int32 ArenaTeam::LostAgainst(uint32 againstRating)
     //'chance' calculation - to loose to the opponent
     float chance = GetChanceAgainst(stats.rating, againstRating);
     // calculate the rating modification (ELO system with k=32)
-    int32 mod = (int32)ceil(sBattleGroundMgr.GetELOCoefficient() * (0.0f - chance));
+    int32 mod = (int32)ceil((float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT) * (0.0f - chance));
     // modify the team stats accordingly
     stats.rating += mod;
     stats.games_week += 1;
@@ -607,7 +607,7 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
         {
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
-            int32 mod = (int32)ceil(sBattleGroundMgr.GetELOCoefficient()* (0.0f - chance));
+            int32 mod = (int32)ceil((float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT)* (0.0f - chance));
 
             // NEED to check hiddenRatingbeforePenalty
             if (sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING) && sWorld.getConfig(CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS))
@@ -620,7 +620,7 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
 
             // update matchmaker rating
             chance = GetChanceAgainst(itr->matchmaker_rating, againstHiddenRating);
-            mod = (int32)ceil(sBattleGroundMgr.GetELOCoefficient() * (0.0f - chance));
+            mod = (int32)ceil((float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT) * (0.0f - chance));
             itr->ModifyMatchmakerRating(mod, GetType());
 
             // update personal played stats
@@ -630,6 +630,7 @@ void ArenaTeam::MemberLost(Player * plr, uint32 againstRating, uint32 againstHid
             // update the unit fields
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 2, itr->games_week);
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 3, itr->games_season);
+
         }
     }
 }
@@ -643,12 +644,12 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHidd
         {
             // update personal rating
             float chance = GetChanceAgainst(itr->personal_rating, againstRating);
-            int32 mod = (int32)floor(sBattleGroundMgr.GetELOCoefficient() * (1.0f - chance));
+            int32 mod = (int32)floor((float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT) * (1.0f - chance));
             itr->ModifyPersonalRating(plr, mod, GetSlot());
 
             // update matchmaker rating
             chance = GetChanceAgainst(itr->matchmaker_rating, againstHiddenRating);
-            mod = (int32)ceil(sBattleGroundMgr.GetELOCoefficient() * (1.0f - chance));
+            mod = (int32)ceil((float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT) * (1.0f - chance));
             itr->ModifyMatchmakerRating(mod, GetType());
 
             // update personal stats
@@ -659,6 +660,16 @@ void ArenaTeam::MemberWon(Player * plr, uint32 againstRating, uint32 againstHidd
             // update unit fields
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 2, itr->games_week);
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 6 * GetSlot() + 3, itr->games_season);
+
+            if(uint16 requirement = sWorld.getConfig(CONFIG_ARENA_DAILY_REQUIREMENT))
+            {
+                plr->m_DailyArenasWon++;
+                if(plr->m_DailyArenasWon == requirement)
+                {
+                    plr->ModifyArenaPoints(sWorld.getConfig(CONFIG_ARENA_DAILY_AP_REWARD));
+                    sLog.outLog(LOG_ARENA,"Player %s (%u) awarded from daily arena",plr->GetName(),plr->GetGUIDLow());
+                }
+            }
         }
     }
 }

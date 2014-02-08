@@ -1067,7 +1067,6 @@ BattleGroundMgr::BattleGroundMgr() : m_AutoDistributionTimeChecker(0), m_ArenaTe
 
     m_NextRatingDiscardUpdate = sWorld.getConfig(CONFIG_ARENA_RATING_DISCARD_TIMER);
     m_Testing=false;
-    ELOCoefficient = (float)sWorld.getConfig(CONFIG_ARENA_ELO_COEFFICIENT);
 
     inArenasCount[0] = 0;
     inArenasCount[1] = 0;

@@ -352,6 +352,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
+    m_DailyArenasWon = 0;
 
     for (uint8 i=0; i< MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
@@ -15025,6 +15026,12 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         RealmDataDatabase.PExecute("UPDATE characters SET changeRaceTo = '0' WHERE guid ='%u'", GetGUIDLow());
     }
 
+    result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYARENA);
+    if(result)
+    {
+        m_DailyArenasWon = result->Fetch()->GetUInt16();
+    }
+
     return true;
 }
 
@@ -16072,8 +16079,8 @@ void Player::SaveToDB()
     stmt.PExecute(GetGUIDLow());
 
     static SqlStatementID updateStats;
-    stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?)");
-    stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY), GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
+    stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?, ?)");
+    stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY), GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS),m_DailyArenasWon);
 
     static SqlStatementID deleteCharacter;
     static SqlStatementID insertCharacter;
@@ -19332,6 +19339,7 @@ void Player::ResetDailyQuestStatus()
     // DB data deleted in caller
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
+    m_DailyArenasWon = 0;
 }
 
 BattleGround* Player::GetBattleGround() const

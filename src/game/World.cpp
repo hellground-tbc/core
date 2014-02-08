@@ -625,6 +625,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_ARENA_STATUS_INFO] = sConfig.GetBoolDefault("Arena.StatusInfo");
     m_configs[CONFIG_ARENA_ELO_COEFFICIENT] = sConfig.GetIntDefault("Arena.ELOCoefficient",32);
+    m_configs[CONFIG_ARENA_DAILY_REQUIREMENT] = sConfig.GetIntDefault("Arena.DailyRequirement",0);
+    m_configs[CONFIG_ARENA_DAILY_AP_REWARD] = sConfig.GetIntDefault("Arena.DailyAPReward",0);
     m_configs[CONFIG_BATTLEGROUND_ANNOUNCE_START] = sConfig.GetIntDefault("BattleGround.AnnounceStart", 0);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_INFO] = sConfig.GetIntDefault("BattleGround.QueueInfo", 0);
     m_configs[CONFIG_BATTLEGROUND_TIMER_INFO] = sConfig.GetBoolDefault("BattleGround.TimerInfo");
@@ -2854,6 +2856,7 @@ void World::ResetDailyQuests()
 {
     sLog.outDetail("Daily quests reset for all characters.");
     RealmDataDatabase.Execute("DELETE FROM character_queststatus_daily");
+    RealmDataDatabase.Execute("UPDATE character_stats_ro SET dailyarenawins = 0");
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();

@@ -270,6 +270,11 @@ bool ChatHandler::HandleServerEventsCommand(const char*)
 {
     std::string active_events = sGameEventMgr.getActiveEventsString();
     PSendSysMessage(active_events.c_str());//ChatHandler::FillMessageData(&data, this, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), active_events, NULL);
+    if(sWorld.getConfig(CONFIG_ARENA_DAILY_REQUIREMENT))
+    {
+        PSendSysMessage("Daily Arenas! Get %u AP for winning %u rated arenas",
+            sWorld.getConfig(CONFIG_ARENA_DAILY_AP_REWARD),sWorld.getConfig(CONFIG_ARENA_DAILY_REQUIREMENT));
+    }
     return true;
 }
 
@@ -402,7 +407,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
 
 bool ChatHandler::HandleServerPVPCommand(const char* /*args*/)
 {
-    Player *player=m_session->GetPlayer();
+    Player *player = m_session->GetPlayer();
 
     if (!sWorld.getConfig(CONFIG_BATTLEGROUND_QUEUE_INFO))
         PSendSysMessage("Battleground queue info is disabled");
@@ -469,6 +474,10 @@ bool ChatHandler::HandleServerPVPCommand(const char* /*args*/)
             sBattleGroundMgr.inArenasCount[0],sBattleGroundMgr.inArenasCount[1],sBattleGroundMgr.inArenasCount[2]);
     else
         PSendSysMessage("Arena status is disabled");
+
+    if(sWorld.getConfig(CONFIG_ARENA_DAILY_REQUIREMENT))
+        PSendSysMessage("Today you won %u rated arenas (%u required for reward)",
+            player->m_DailyArenasWon,sWorld.getConfig(CONFIG_ARENA_DAILY_REQUIREMENT));
 
     return true;
 }
