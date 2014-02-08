@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -36,7 +36,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A3A04E47-43A2-4C08-90B3-029CEF558594}</ProjectGuid>
-    <RootNamespace>trinitycore</RootNamespace>
+    <RootNamespace>hellgroundcore</RootNamespace>
+    <ProjectName>HellgroundCore</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -129,17 +130,17 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\bin\$(Platform)_$(Configuration)\lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\trinitycore__$(Platform)_$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\trinitycore__$(Platform)_$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\trinitycore__$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\trinitycore__$(Platform)_$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\trinitycore__$(Platform)_$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\trinitycore__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\trinitycore__$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\trinitycore__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\hellgroundcore__$(Platform)_$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -168,7 +169,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
-      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
@@ -217,12 +218,12 @@
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist</Command>
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">
     <Midl>
-      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
@@ -271,12 +272,12 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configu
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\precompiled\Release\*.dll ..\..\bin\$(Platform)_$(Configuration)
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist</Command>
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">
     <Midl>
-      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
@@ -326,12 +327,12 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configu
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\HellgroundCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
-      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
@@ -378,28 +379,28 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configu
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\precompiled\Debug\*.dll ..\..\bin\$(Platform)_$(Configuration)\lib\
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityCore.conf.dist</Command>
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\HellgroundCore.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\trinitycore_$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore_$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\trinitycore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\hellgroundcore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinitycore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinitycore__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinitycore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundcore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -411,22 +412,22 @@ copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configu
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
-      <ImportLibrary>$(OutDir)TrinityCore.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)HellgroundCore.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\$(Platform)_$(Configuration)\*.dll ..\..\bin\$(Platform)_$(Configuration)
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.conf.dist
 copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
 </Command>
     </PostBuildEvent>
@@ -434,22 +435,22 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\trinitycore_$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore_$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\trinitycore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\hellgroundcore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinitycore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinitycore__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinitycore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundcore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -461,22 +462,22 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
-      <ImportLibrary>$(OutDir)TrinityCore.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)HellgroundCore.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\$(Platform)_$(Configuration)\*.dll ..\..\bin\$(Platform)_$(Configuration)
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.conf.dist
 copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
 </Command>
     </PostBuildEvent>
@@ -484,22 +485,22 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\trinitycore_$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore_$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\trinitycore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\hellgroundcore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinitycore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinitycore__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinitycore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundcore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -511,22 +512,22 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
-      <ImportLibrary>$(OutDir)TrinityCore.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)HellgroundCore.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\$(Platform)_$(Configuration)\*.dll ..\..\bin\$(Platform)_$(Configuration)
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.conf.dist
 copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
 </Command>
     </PostBuildEvent>
@@ -534,21 +535,21 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.tlb</TypeLibraryName>
+      <TypeLibraryName>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\trinitycore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;TRINITY_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\hellgroundcore;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;HELLGROUND_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinitycore__$(Platform)_$(Configuration)\trinitycore.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinitycore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinitycore__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinitycore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundcore__$(Platform)_$(Configuration)\hellgroundcore.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundcore__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundcore__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -560,47 +561,47 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;framework.lib;msvcrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.exe</OutputFile>
       <Version>
       </Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\framework__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityCore.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <FixedBaseAddress>false</FixedBaseAddress>
-      <ImportLibrary>$(OutDir)TrinityCore.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)HellgroundCore.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\$(Platform)_$(Configuration)\*.dll ..\..\bin\$(Platform)_$(Configuration)
-copy ..\..\src\trinitycore\trinitycore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityCore.conf.dist
+copy ..\..\src\hellgroundcore\hellgroundcore.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundCore.conf.dist
 copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\..\Readme" />
-    <None Include="..\..\src\trinitycore\trinitycore.conf.dist" />
+    <None Include="..\..\src\hellgroundcore\hellgroundcore.conf.dist" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\trinitycore\CliRunnable.cpp" />
-    <ClCompile Include="..\..\src\trinitycore\Main.cpp" />
-    <ClCompile Include="..\..\src\trinitycore\Master.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\CliRunnable.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\Main.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\Master.cpp" />
     <ClCompile Include="..\..\src\shared\WheatyExceptionReport.cpp" />
-    <ClCompile Include="..\..\src\trinitycore\WorldRunnable.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\WorldRunnable.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\trinitycore\CliRunnable.h" />
-    <ClInclude Include="..\..\src\trinitycore\Master.h" />
-    <ClInclude Include="..\..\src\trinitycore\resource.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\CliRunnable.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\Master.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\resource.h" />
     <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
-    <ClInclude Include="..\..\src\trinitycore\WorldRunnable.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\WorldRunnable.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\trinitycore\TrinityCore.rc" />
+    <ResourceCompile Include="..\..\src\hellgroundcore\HellgroundCore.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="framework.vcxproj">
@@ -614,7 +615,7 @@ copy ..\..\README.* ..\..\bin\$(Platform)_$(Configuration)
       <Project>{90297c34-f231-4df4-848e-a74bcc0e40ed}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="TrinityRealm.vcxproj">
+    <ProjectReference Include="HellgroundRealm.vcxproj">
       <Project>{563e9905-3657-460c-ae63-0ac39d162e23}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

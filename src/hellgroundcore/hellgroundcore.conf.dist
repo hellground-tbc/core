@@ -1,5 +1,5 @@
 ##########################################
-# Trinity Core worldd configuration file #
+# Hellground Core worldd configuration file #
 ##########################################
 [CoreConf]
 ConfVersion=2012070901
@@ -14,7 +14,7 @@ ConfVersion=2012070901
 #        Data directory setting.
 #        Important: DataDir needs to be quoted, as it is a string which may contain space characters.
 #        Important: In linux daemon mode string must be full path.
-#        Example: "/share/trinitycore"
+#        Example: "/share/hellgroundcore"
 #
 #    LogsDir
 #        Logs directory setting.
@@ -55,9 +55,9 @@ ConfVersion=2012070901
 RealmID = 1
 DataDir = "."
 LogsDir = ""
-LoginDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;realmd"
-WorldDatabaseInfo     = "127.0.0.1;3306;trinity;trinity;world"
-CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
+LoginDatabaseInfo     = "127.0.0.1;3306;username;password;realmd"
+WorldDatabaseInfo     = "127.0.0.1;3306;username;password;world"
+CharacterDatabaseInfo = "127.0.0.1;3306;username;password;characters"
 LoginDatabaseConnections = 1
 WorldDatabaseConnections = 1
 CharacterDatabaseConnections = 1

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,8 +37,8 @@
 
 #ifdef WIN32
 #include "ServiceWin32.h"
-char serviceName[] = "Trinityd";
-char serviceLongName[] = "Trinity core service";
+char serviceName[] = "Hellground";
+char serviceLongName[] = "hellground core service";
 char serviceDescription[] = "Massive Network Game Object Server";
 #else
 #include "PosixDaemon.h"
@@ -75,7 +75,7 @@ void usage(const char *prog)
         , prog);
 }
 
-/// Launch the Trinity server
+/// Launch the server
 extern int main(int argc, char **argv)
 {
     ///- Command line parsing
@@ -217,7 +217,7 @@ extern int main(int argc, char **argv)
     if (confVersion < _HELLGROUND_CORE_CONFVER)
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: *********************************************************************************");
-        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your trinitycore.conf version indicates your conf file is out of date!");
+        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your hellgroundcore.conf version indicates your conf file is out of date!");
         sLog.outLog(LOG_DEFAULT, "ERROR:           Please check for updates, as your current default values may cause");
         sLog.outLog(LOG_DEFAULT, "ERROR:           strange behavior.");
         sLog.outLog(LOG_DEFAULT, "ERROR: *********************************************************************************");
@@ -239,7 +239,7 @@ extern int main(int argc, char **argv)
     // at sMaster return function exist with codes
     // 0 - normal shutdown
     // 1 - shutdown at error
-    // 2 - restart command used, this code can be used by restarter for restart Trinityd
+    // 2 - restart command used, this code can be used by restarter for restart
 }
 
 /// @}

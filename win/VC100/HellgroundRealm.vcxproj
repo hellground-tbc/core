@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -37,6 +37,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{563E9905-3657-460C-AE63-0AC39D162E23}</ProjectGuid>
     <RootNamespace>realmd</RootNamespace>
+    <ProjectName>HellgroundRealm</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -129,17 +130,17 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)..\bin\$(Platform)_$(Configuration)\lib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(Platform)_$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\trinityrealm__$(Platform)_$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\hellgroundrealm__$(Platform)_$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -212,7 +213,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -263,7 +264,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -314,7 +315,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\HellgroundRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -362,7 +363,7 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\TrinityRealm.conf.dist
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\lib\HellgroundRealm.conf.dist
 if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -381,10 +382,10 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinityrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinityrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -396,18 +397,18 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist</Command>
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'">
@@ -425,10 +426,10 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinityrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinityrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -440,18 +441,18 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist</Command>
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'">
@@ -469,10 +470,10 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinityrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinityrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -484,18 +485,18 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist</Command>
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -507,15 +508,15 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\realmd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;TRINITY_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VERSION=0.12.0-SVN;WIN32;_DEBUG;HELLGROUND_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\trinityrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\trinityrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\trinityrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\hellgroundrealm__$(Platform)_$(Configuration)\realmd.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\hellgroundrealm__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\hellgroundrealm__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -527,41 +528,41 @@ if exist $(TargetPath) move $(TargetPath) $(OutDir)..</Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>zthread.lib;libmySQL.lib;libeay32.lib;ws2_32.lib;winmm.lib;odbc32.lib;odbccp32.lib;advapi32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.exe</OutputFile>
+      <OutputFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\dep\lib\$(Platform)_$(Configuration);..\..\dep\ACE_wrappers\lib;.\zthread__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.pdb</ProgramDatabaseFile>
       <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.map</MapFileName>
+      <MapFileName>..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.map</MapFileName>
       <SubSystem>Console</SubSystem>
       <FixedBaseAddress>false</FixedBaseAddress>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Command>copy ..\..\src\trinityrealm\trinityrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\TrinityRealm.conf.dist</Command>
+      <Command>copy ..\..\src\hellgroundrealm\hellgroundrealm.conf.dist ..\..\bin\$(Platform)_$(Configuration)\HellgroundRealm.conf.dist</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\trinityrealm\AuthCodes.h" />
-    <ClInclude Include="..\..\src\trinityrealm\AuthSocket.h" />
-    <ClInclude Include="..\..\src\trinityrealm\BufferedSocket.h" />
-    <ClInclude Include="..\..\src\trinityrealm\PatchHandler.h" />
-    <ClInclude Include="..\..\src\trinityrealm\RealmList.h" />
+    <ClInclude Include="..\..\src\hellgroundrealm\AuthCodes.h" />
+    <ClInclude Include="..\..\src\hellgroundrealm\AuthSocket.h" />
+    <ClInclude Include="..\..\src\hellgroundrealm\BufferedSocket.h" />
+    <ClInclude Include="..\..\src\hellgroundrealm\PatchHandler.h" />
+    <ClInclude Include="..\..\src\hellgroundrealm\RealmList.h" />
     <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
-    <ClInclude Include="..\..\src\trinityrealm\TOTP.h" />
+    <ClInclude Include="..\..\src\hellgroundrealm\TOTP.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\trinityrealm\AuthSocket.cpp" />
-    <ClCompile Include="..\..\src\trinityrealm\BufferedSocket.cpp" />
-    <ClCompile Include="..\..\src\trinityrealm\Main.cpp" />
-    <ClCompile Include="..\..\src\trinityrealm\PatchHandler.cpp" />
-    <ClCompile Include="..\..\src\trinityrealm\RealmList.cpp" />
+    <ClCompile Include="..\..\src\hellgroundrealm\AuthSocket.cpp" />
+    <ClCompile Include="..\..\src\hellgroundrealm\BufferedSocket.cpp" />
+    <ClCompile Include="..\..\src\hellgroundrealm\Main.cpp" />
+    <ClCompile Include="..\..\src\hellgroundrealm\PatchHandler.cpp" />
+    <ClCompile Include="..\..\src\hellgroundrealm\RealmList.cpp" />
     <ClCompile Include="..\..\src\shared\WheatyExceptionReport.cpp" />
-    <ClCompile Include="..\..\src\trinityrealm\TOTP.cpp" />
+    <ClCompile Include="..\..\src\hellgroundrealm\TOTP.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\trinityrealm\TrinityRealm.rc" />
+    <ResourceCompile Include="..\..\src\hellgroundrealm\HellgroundRealm.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="shared.vcxproj">

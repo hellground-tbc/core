@@ -69,12 +69,12 @@ BEGIN
     BEGIN
         BLOCK "080004b0"
         BEGIN
-            VALUE "FileDescription", "TrinityRealm"
+            VALUE "FileDescription", "HellgroundRealm"
             VALUE "FileVersion", STRFILEVER
-            VALUE "InternalName", "TrinityRealm"
-            VALUE "LegalCopyright", "Copyright (C) 2008-2009"
-            VALUE "OriginalFilename", "TrinityRealm.exe"
-            VALUE "ProductName", "TrinityRealm"
+            VALUE "InternalName", "HellgroundRealm"
+            VALUE "LegalCopyright", "Copyright (C) 2008-2014"
+            VALUE "OriginalFilename", "HellgroundRealm.exe"
+            VALUE "ProductName", "HellgroundRealm"
             VALUE "ProductVersion", STRPRODUCTVER
         END
     END

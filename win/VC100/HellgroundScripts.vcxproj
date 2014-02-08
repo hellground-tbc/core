@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_PCH|Win32">
@@ -35,7 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>TrinityScripts</ProjectName>
+    <ProjectName>HellgroundScripts</ProjectName>
     <ProjectGuid>{4295C8A9-79B7-4354-8064-F05FB9CA0C96}</ProjectGuid>
     <RootNamespace>ScriptDev2</RootNamespace>
     <Keyword>Win32Proj</Keyword>
@@ -159,10 +159,10 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release_PCH|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|x64'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">trinityscript</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">trinityscript</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">trinityscript</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">trinityscript</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release_PCH|Win32'">hellgroundscript</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug_PCH|Win32'">hellgroundscript</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">hellgroundscript</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">hellgroundscript</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -183,7 +183,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hellgroundcore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -222,7 +222,7 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hellgroundcore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -264,7 +264,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hellgroundcore.lib;libmySQL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
@@ -306,7 +306,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hellgroundcore.lib;libmySQL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(OutDir);..\..\dep\lib\precompiled\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Windows</SubSystem>
@@ -347,16 +347,16 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>hellgroundcore.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hellgroundscript.dll</OutputFile>
+      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\hellgroundcore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)MaNGOSScript.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)trinityscript.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)hellgroundscript.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -380,9 +380,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>hellgroundcore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hellgroundscript.dll</OutputFile>
+      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\hellgroundcore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -390,7 +390,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)trinityscript.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)hellgroundscript.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -414,9 +414,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>hellgroundcore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hellgroundscript.dll</OutputFile>
+      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\hellgroundcore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -424,7 +424,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)trinityscript.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)hellgroundscript.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -448,9 +448,9 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>trinitycore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)trinityscript.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\trinitycore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>hellgroundcore.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)hellgroundscript.dll</OutputFile>
+      <AdditionalLibraryDirectories>..\..\dep\ACE_wrappers\lib;..\..\dep\lib\$(Platform)_$(Configuration);..\..\win\VC90\zthread__$(Platform)_$(Configuration);..\..\win\VC90\hellgroundcore__$(Platform)_$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -458,7 +458,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(OutDir)trinityscript.lib</ImportLibrary>
+      <ImportLibrary>$(OutDir)hellgroundscript.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
@@ -906,13 +906,13 @@
     <ClInclude Include="..\..\src\scripts\ScriptMgr.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\scripts\trinityscripts.rc" />
+    <ResourceCompile Include="..\..\src\scripts\hellgroundscripts.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="shared.vcxproj">
       <Project>{90297c34-f231-4df4-848e-a74bcc0e40ed}</Project>
     </ProjectReference>
-    <ProjectReference Include="TrinityCore.vcxproj">
+    <ProjectReference Include="HellgroundCore.vcxproj">
       <Project>{a3a04e47-43a2-4c08-90b3-029cef558594}</Project>
     </ProjectReference>
   </ItemGroup>

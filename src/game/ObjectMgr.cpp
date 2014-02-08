@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1919,7 +1919,7 @@ void ObjectMgr::LoadPetLevelInfo()
                 if (current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     sLog.outLog(LOG_DB_ERR, "Wrong (> %u) level %u in `pet_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    sLog.outDetail("Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `pet_levelstats` table, ignoring.",current_level);
+                    sLog.outDetail("Unused (> MaxPlayerLevel) level %u in `pet_levelstats` table, ignoring.",current_level);
                 continue;
             }
             else if (current_level < 1)
@@ -2295,7 +2295,7 @@ void ObjectMgr::LoadPlayerInfo()
                 if (current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     sLog.outLog(LOG_DB_ERR, "Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    sLog.outDetail("Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
+                    sLog.outDetail("Unused (> MaxPlayerLevel) level %u in `player_classlevelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -2388,7 +2388,7 @@ void ObjectMgr::LoadPlayerInfo()
                 if (current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     sLog.outLog(LOG_DB_ERR, "Wrong (> %u) level %u in `player_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    sLog.outDetail("Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_levelstats` table, ignoring.",current_level);
+                    sLog.outDetail("Unused (> MaxPlayerLevel) level %u in `player_levelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -5928,7 +5928,7 @@ bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32
 
         sLog.outString();
         if (min_value == MIN_HELLGROUND_STRING_ID)              // error only in case internal strings
-            sLog.outLog(LOG_DB_ERR, ">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
+            sLog.outLog(LOG_DB_ERR, ">> Loaded 0 hellground strings. DB table `%s` is empty. Cannot continue.",table);
         else
             sLog.outString(">> Loaded 0 string templates. DB table `%s` is empty.",table);
         return false;
@@ -5956,7 +5956,7 @@ bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32
             continue;
         }
 
-        TrinityStringLocale& data = mHellgroundStringLocaleMap[entry];
+        HellgroundStringLocale& data = mHellgroundStringLocaleMap[entry];
 
         if (data.Content.size() > 0)
         {
@@ -5989,19 +5989,19 @@ bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32
     } while (result->NextRow());
 
     sLog.outString();
-    if (min_value == MIN_HELLGROUND_STRING_ID)               // internal Trinity strings
-        sLog.outString(">> Loaded %u Trinity strings from table %s", count,table);
+    if (min_value == MIN_HELLGROUND_STRING_ID)               // internal Hellground strings
+        sLog.outString(">> Loaded %u hellground strings from table %s", count,table);
     else
         sLog.outString(">> Loaded %u string templates from %s", count,table);
 
     return true;
 }
 
-const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
+const char *ObjectMgr::GetHellgroundString(int32 entry, int locale_idx) const
 {
     // locale_idx==-1 -> default, locale_idx >= 0 in to idx+1
-    // Content[0] always exist if exist TrinityStringLocale
-    if (TrinityStringLocale const *msl = GetTrinityStringLocale(entry))
+    // Content[0] always exist if exist HellgroundStringLocale
+    if (HellgroundStringLocale const *msl = GetHellgroundStringLocale(entry))
     {
         if (msl->Content.size() > locale_idx+1 && !msl->Content[locale_idx+1].empty())
             return msl->Content[locale_idx+1].c_str();
@@ -6012,7 +6012,7 @@ const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
     if (entry > 0)
         sLog.outLog(LOG_DB_ERR, "Entry %i not found in `HELLGROUND_string` table.",entry);
     else
-        sLog.outLog(LOG_DB_ERR, "Trinity string entry %i not found in DB.",entry);
+        sLog.outLog(LOG_DB_ERR, "hellground string entry %i not found in DB.",entry);
     return "<error>";
 }
 

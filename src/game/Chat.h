@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TRINITYCORE_CHAT_H
-#define TRINITYCORE_CHAT_H
+#ifndef _CHAT_H
+#define _CHAT_H
 
 #include "SharedDefines.h"
 
@@ -63,7 +63,7 @@ class ChatHandler
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
         static std::string GetNameLink(const std::string & name);
 
-        virtual const char *GetTrinityString(int32 entry) const;
+        virtual const char *GetHellgroundString(int32 entry) const;
 
         virtual void SendSysMessage( const char *str);
         void SendSysMessage(         int32     entry);
@@ -625,7 +625,7 @@ class CliHandler : public ChatHandler
         explicit CliHandler(Print* zprint) : m_print(zprint) {}
 
         // overwrite functions
-        const char *GetTrinityString(int32 entry) const;
+        const char *GetHellgroundString(int32 entry) const;
         bool isAvailable(ChatCommand const& cmd) const;
         void SendSysMessage(const char *str);
         char const* GetName() const;

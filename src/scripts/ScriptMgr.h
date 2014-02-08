@@ -1,9 +1,12 @@
-/* Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+/*
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * Thanks to the original authors: ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  *
  * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
+ * Please see the included DOCS/LICENSE.TXT for more information
+ */
 
 #ifndef SC_SCRIPTMGR_H
 #define SC_SCRIPTMGR_H
@@ -29,7 +32,7 @@ struct ItemPrototype;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
-#define DEFAULT_TEXT        "<Trinity Script Text Entry Missing!>"
+#define DEFAULT_TEXT        "<Hellground Script Text Entry Missing!>"
 
 struct Script
 {

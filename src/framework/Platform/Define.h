@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2012 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@
 
 typedef ACE_SHLIB_HANDLE HELLGROUND_LIBRARY_HANDLE;
 
-#define HELLGROUND_SCRIPT_NAME "trinityscript"
+#define HELLGROUND_SCRIPT_NAME "hellgroundscript"
 #define HELLGROUND_SCRIPT_SUFFIX ACE_DLL_SUFFIX
 #define HELLGROUND_SCRIPT_PREFIX ACE_DLL_PREFIX
 #define HELLGROUND_LOAD_LIBRARY(libname)    ACE_OS::dlopen(libname)

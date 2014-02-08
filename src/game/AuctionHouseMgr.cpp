@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,12 +98,12 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
         bidderAccId = sObjectMgr.GetPlayerAccountIdByGUID(bidderGuid);
         bidderPermissions = bidderAccId ? AccountMgr::GetPermissions(bidderAccId) : PERM_PLAYER;
         if (!sObjectMgr.GetPlayerNameByGUID(bidderGuid, bidderName))
-            bidderName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+            bidderName = sObjectMgr.GetHellgroundStringForDBCLocale(LANG_UNKNOWN);
     }
 
     std::string ownerName;
     if (!sObjectMgr.GetPlayerNameByGUID(ownerGuid, ownerName))
-        ownerName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+        ownerName = sObjectMgr.GetHellgroundStringForDBCLocale(LANG_UNKNOWN);
 
     uint32 ownerAccId = sObjectMgr.GetPlayerAccountIdByGUID(ownerGuid);
 
@@ -383,7 +384,7 @@ void AuctionHouseMgr::LoadAuctions()
             {
                 std::string plName;
                 if (!sObjectMgr.GetPlayerNameByGUID(ObjectGuid(HIGHGUID_PLAYER, auction->owner), plName))
-                    plName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+                    plName = sObjectMgr.GetHellgroundStringForDBCLocale(LANG_UNKNOWN);
 
                 Utf8toWStr(plName, plWName);
             }

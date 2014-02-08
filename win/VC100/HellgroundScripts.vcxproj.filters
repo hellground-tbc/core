@@ -349,9 +349,6 @@
     <Filter Include="Scripts\zone\Exodar">
       <UniqueIdentifier>{8bfc661a-5388-4fa9-ae04-6f8d01871fdd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scripts\zone\Exodar\Hinterlands">
-      <UniqueIdentifier>{89a055ed-8643-4655-994c-0adee1a4b6fc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scripts\zone\Iron Forge">
       <UniqueIdentifier>{d4e9bd8b-2d59-47fb-bb8b-44909a56c972}</UniqueIdentifier>
     </Filter>
@@ -1689,6 +1686,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\scripts\trinityscripts.rc" />
+    <ResourceCompile Include="..\..\src\scripts\hellgroundscripts.rc" />
   </ItemGroup>
 </Project>

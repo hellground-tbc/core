@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +27,7 @@
 #include "revision.h"
 
 
-#define _PACKAGENAME "TrinityCore "
+#define _PACKAGENAME "HellgroundCore "
 #define _CODENAME "YUME"
 
 #if HELLGROUND_ENDIAN == HELLGROUND_BIGENDIAN
@@ -49,8 +48,8 @@
 # define SYSCONFDIR ""
 #endif
 
-#define _HELLGROUND_CORE_CONFIG SYSCONFDIR "trinitycore.conf"
-#define _HELLGROUND_REALM_CONFIG SYSCONFDIR "trinityrealm.conf"
+#define _HELLGROUND_CORE_CONFIG SYSCONFDIR "hellgroundcore.conf"
+#define _HELLGROUND_REALM_CONFIG SYSCONFDIR "hellgroundrealm.conf"
 
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.

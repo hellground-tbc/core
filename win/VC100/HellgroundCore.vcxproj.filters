@@ -9,7 +9,7 @@
     <None Include="..\..\Readme">
       <Filter>doc</Filter>
     </None>
-    <None Include="..\..\src\trinitycore\trinitycore.conf.dist" />
+    <None Include="..\..\src\trinitycore\hellgroundcore.conf.dist" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\trinitycore\CliRunnable.cpp" />
@@ -26,6 +26,6 @@
     <ClInclude Include="..\..\src\trinitycore\WorldRunnable.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\trinitycore\TrinityCore.rc" />
+    <ResourceCompile Include="..\..\src\trinitycore\HellgroundCore.rc" />
   </ItemGroup>
 </Project>

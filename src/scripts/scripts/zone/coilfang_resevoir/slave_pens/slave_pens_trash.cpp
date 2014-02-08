@@ -1,3 +1,13 @@
+/* 
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ */
+
 #include "precompiled.h"
 
 #define SPELL_HAMSTRING     9080

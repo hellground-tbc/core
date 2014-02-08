@@ -1,6 +1,10 @@
-/* Copyright (C) 2006 - 2008 TrinityScript <https://scriptdev2.svn.sourceforge.net/>
+/*
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
+ * Please see the included DOCS/LICENSE.TXT for more information
+ */
 
 #include "precompiled.h"
 #include "Database/DatabaseEnv.h"
@@ -12,10 +16,10 @@
 
 #include "../game/ScriptMgr.h"
 
-#define _FULLVERSION "TrinityScript"
+#define _FULLVERSION "HellgroundScript"
 
 #ifndef _HELLGROUND_SCRIPT_CONFIG
-# define _HELLGROUND_SCRIPT_CONFIG  "trinitycore.conf"
+# define _HELLGROUND_SCRIPT_CONFIG  "hellgroundcore.conf"
 #endif // _HELLGROUND_SCRIPT_CONFIG
 
 int num_sc_scripts;
@@ -54,7 +58,7 @@ void FreeScriptLibrary()
 HELLGROUND_DLL_EXPORT
 void InitScriptLibrary()
 {
-    //Trinity Script startup
+    //Hellground Script startup
     outstring_log(" _   _      _ _ _____                           _ ");
     outstring_log("| | | |    | | |  __ \\                         | |");
     outstring_log("| |_| | ___| | | |  \\/_ __ ___  _   _ _ __   __| |");
@@ -62,7 +66,7 @@ void InitScriptLibrary()
     outstring_log("| | | |  __/ | | |_\\ \\ | | (_) | |_| | | | | (_| |");
     outstring_log("\\_| |_/\\___|_|_|\\____/_|  \\___/ \\__,_|_| |_|\\__,_|");
     outstring_log("http://hellground.net based on http://TrinityCore.org");
-    outstring_log("Trinity Script initializing %s", _FULLVERSION);
+    outstring_log("Hellground Script initializing %s", _FULLVERSION);
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.
     LoadDatabase();
@@ -252,7 +256,7 @@ void Script::RegisterSelf(bool bReportError)
 HELLGROUND_DLL_EXPORT
 char const* GetScriptLibraryVersion()
 {
-    return "Default Trinity scripting library";
+    return "Default Hellground scripting library";
 }
 
 HELLGROUND_DLL_EXPORT

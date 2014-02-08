@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -483,7 +483,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 
         void DoorOpen(uint32 type);
         void DoorClose(uint32 type);
-        const char *GetTrinityString(int32 entry);
+        const char *GetHellgroundString(int32 entry);
 
         virtual bool HandlePlayerUnderMap(Player * plr, float z);
         void AddOrSetPlayerToCorrectBgGroup(Player *plr, uint64 guid, uint32 team);

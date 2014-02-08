@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +46,7 @@
 #ifdef WIN32
 #include "ServiceWin32.h"
 char serviceName[] = "realmd";
-char serviceLongName[] = "Trinity realm service";
+char serviceLongName[] = "Hellground realm service";
 char serviceDescription[] = "Massive Network Game Object Server";
 #else
 #include "PosixDaemon.h"
@@ -193,7 +194,7 @@ extern int main(int argc, char **argv)
     if (confVersion < _REALMDCONFVERSION)
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: **********************************************************************************");
-        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your trinityrealm.conf version indicates your conf file is out of date!");
+        sLog.outLog(LOG_DEFAULT, "ERROR:  WARNING: Your hellgroundrealm.conf version indicates your conf file is out of date!");
         sLog.outLog(LOG_DEFAULT, "ERROR:           Please check for updates, as your current default values may cause");
         sLog.outLog(LOG_DEFAULT, "ERROR:           strange behavior.");
         sLog.outLog(LOG_DEFAULT, "ERROR: **********************************************************************************");
@@ -273,7 +274,7 @@ extern int main(int argc, char **argv)
 
     if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: TrinityRealm can not bind to %s:%d", bind_ip.c_str(), rmport);
+        sLog.outLog(LOG_DEFAULT, "ERROR: HellgroundRealm can not bind to %s:%d", bind_ip.c_str(), rmport);
         return 1;
     }
 
@@ -314,9 +315,9 @@ extern int main(int argc, char **argv)
         if(Prio)
         {
             if(SetPriorityClass(hProcess,HIGH_PRIORITY_CLASS))
-                sLog.outString("TrinityRealm process priority class set to HIGH");
+                sLog.outString("HellgroundRealm process priority class set to HIGH");
             else
-                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set TrinityRealm process priority class.");
+                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set HellgroundRealm process priority class.");
         }
     }
     #endif

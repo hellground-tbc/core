@@ -1,11 +1,12 @@
-/* Copyright (C) 2008 - 2010 HelgroundDev <http://gamefreedom.pl/>
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-*/
+/* 
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ */
 
 /* ScriptData
 SDName: Instance_Slave_Pens

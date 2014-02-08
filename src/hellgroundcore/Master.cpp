@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ int Master::Run()
     outstring_log("| | | |  __/ | | |_\\ \\ | | (_) | |_| | | | | (_| |");
     outstring_log("\\_| |_/\\___|_|_|\\____/_|  \\___/ \\__,_|_| |_|\\__,_|");
     outstring_log("http://hellground.net based on http://TrinityCore.org");
-    outstring_log("Trinity Script initializing %s", _FULLVERSION);
+    outstring_log("Hellground Script initializing %s", _FULLVERSION);
 
     /// worldd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
@@ -220,7 +220,7 @@ int Master::Run()
 
                 if(!curAff)
                 {
-                    sLog.outLog(LOG_DEFAULT, "ERROR: Processors marked in UseProcessors bitmask (hex) %x not accessible for Trinityd. Accessible processors bitmask (hex): %x", Aff, appAff);
+                    sLog.outLog(LOG_DEFAULT, "ERROR: Processors marked in UseProcessors bitmask (hex) %x not accessible for Hellground. Accessible processors bitmask (hex): %x", Aff, appAff);
                 }
                 else
                 {
@@ -238,9 +238,9 @@ int Master::Run()
         if(Prio)
         {
             if(SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
-                sLog.outString("TrinityCore process priority class set to HIGH");
+                sLog.outString("HellgroundCore process priority class set to HIGH");
             else
-                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set TrinityCore process priority class.");
+                sLog.outLog(LOG_DEFAULT, "ERROR: Can't set HellgroundCore process priority class.");
         }
     }
     #endif

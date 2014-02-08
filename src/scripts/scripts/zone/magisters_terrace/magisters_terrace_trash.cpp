@@ -1,4 +1,5 @@
-/* Copyright (C) 2008 - 2010 HellgroundDev <http://gamefreedom.pl/>
+/*
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of

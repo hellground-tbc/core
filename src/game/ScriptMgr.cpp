@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -324,7 +325,7 @@ void ScriptMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)
         {
             if (itrM->second.dataint)
             {
-                if (!sObjectMgr.GetTrinityStringLocale (itrM->second.dataint))
+                if (!sObjectMgr.GetHellgroundStringLocale (itrM->second.dataint))
                     sLog.outLog(LOG_DB_ERR, "Table `db_script_string` has not existed string id  %u", itrM->first);
 
                 if (ids.count(itrM->second.dataint))
@@ -600,7 +601,7 @@ void ScriptMgr::LoadDbScriptStrings()
     std::set<int32> ids;
 
     for (int32 i = MIN_DB_SCRIPT_STRING_ID; i < MAX_DB_SCRIPT_STRING_ID; ++i)
-        if (sObjectMgr.GetTrinityStringLocale(i))
+        if (sObjectMgr.GetHellgroundStringLocale(i))
             ids.insert(i);
 
     CheckScripts(sQuestEndScripts,ids);
