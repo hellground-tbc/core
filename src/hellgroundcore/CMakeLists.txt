@@ -1,10 +1,10 @@
 
-set(EXECUTABLE_NAME trinitycore)
+set(EXECUTABLE_NAME hellgroundcore)
 file(GLOB_RECURSE EXECUTABLE_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
 
 if(WIN32)
   list(APPEND EXECUTABLE_SRCS
-    TrinityCore.rc
+    HellgroundCore.rc
   )
 endif()
 
@@ -76,8 +76,8 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
 
 install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR})
 #install(FILES run-mangosd DESTINATION ${BIN_DIR})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/trinitycore.conf.dist ${CMAKE_CURRENT_BINARY_DIR}/trinitycore.conf.dist)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/trinitycore.conf.dist DESTINATION ${CONF_DIR})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hellgroundcore.conf.dist ${CMAKE_CURRENT_BINARY_DIR}/hellgroundcore.conf.dist)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/hellgroundcore.conf.dist DESTINATION ${CONF_DIR})
 
 if(WIN32 AND MSVC)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/\${BUILD_TYPE}/${EXECUTABLE_NAME}.pdb DESTINATION ${BIN_DIR} CONFIGURATIONS Debug)

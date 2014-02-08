@@ -1,9 +1,9 @@
-set(EXECUTABLE_NAME trinityrealm)
+set(EXECUTABLE_NAME hellgroundrealm)
 file(GLOB_RECURSE EXECUTABLE_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp *.h)
 
 if(WIN32)
   list(APPEND EXECUTABLE_SRCS
-    TrinityRealm.rc
+    HellgroundRealm.rc
   )
 endif()
 
@@ -66,7 +66,7 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS
 )
 
 install(TARGETS ${EXECUTABLE_NAME} DESTINATION ${BIN_DIR})
-install(FILES trinityrealm.conf.dist DESTINATION ${CONF_DIR} RENAME trinityrealm.conf.dist)
+install(FILES hellgroundrealm.conf.dist DESTINATION ${CONF_DIR} RENAME hellgroundrealm.conf.dist)
 
 if(WIN32 AND MSVC)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/\${BUILD_TYPE}/${EXECUTABLE_NAME}.pdb DESTINATION ${BIN_DIR} CONFIGURATIONS Debug)

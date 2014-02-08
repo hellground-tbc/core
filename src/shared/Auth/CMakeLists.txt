@@ -1,7 +1,7 @@
 
 ########### next target ###############
 
-SET(trinityauth_STAT_SRCS
+SET(hellgroundauth_STAT_SRCS
    AuthCrypt.cpp
    AuthCrypt.h
    BigNumber.cpp
@@ -17,4 +17,4 @@ SET(trinityauth_STAT_SRCS
    WardenKeyGeneration.h
 )
 
-add_library(trinityauth STATIC ${trinityauth_STAT_SRCS})
+add_library(hellgroundauth STATIC ${hellgroundauth_STAT_SRCS})

@@ -1,4 +1,4 @@
-SET(trinitydatabase_STAT_SRCS
+SET(hellgrounddatabase_STAT_SRCS
    Database.cpp
    Database.h
    DatabaseEnv.h
@@ -25,4 +25,4 @@ SET(trinitydatabase_STAT_SRCS
    dbcfile.h
 )
 
-add_library(trinitydatabase STATIC ${trinitydatabase_STAT_SRCS})
+add_library(hellgrounddatabase STATIC ${hellgrounddatabase_STAT_SRCS})
