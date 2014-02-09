@@ -114,6 +114,8 @@ struct SpellModifier
 typedef UNORDERED_MAP<uint16, PlayerSpell> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
 
+typedef UNORDERED_MAP<uint64, std::pair<uint32, uint64>> ConsecutiveKillsMap;
+
 struct SpellCooldown
 {
     time_t end;
@@ -2536,6 +2538,13 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
+        
+        void AddConsecutiveKill(uint64 guid);
+        uint32 GetConsecutiveKillsCount(uint64 guid);
+
+        void UpdateConsecutiveKills();
+
+        ConsecutiveKillsMap m_consecutiveKills;
 
         // Current teleport data
         WorldLocation m_teleport_dest;

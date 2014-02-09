@@ -1442,6 +1442,8 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     // group update
     SendUpdateToOutOfRangeGroupMembers();
 
+    UpdateConsecutiveKills();
+
     _preventUpdate = false;
     updateMutex.release();
 }
@@ -6118,6 +6120,50 @@ void Player::UpdateHonorFields()
     m_lastHonorUpdateTime = now;
 }
 
+void Player::UpdateConsecutiveKills()
+{
+    if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY) == false)
+        return;
+
+    Map* map = GetMap();
+    if (map == nullptr || map->IsBattleGroundOrArena())
+        return;
+
+    uint64 currentTime = sWorld.GetGameTime();
+    uint64 expireTime = sWorld.getConfig(CONFIG_GANKING_PENALTY_EXPIRE);
+
+    for (auto itr = m_consecutiveKills.begin(); itr != m_consecutiveKills.end();)
+    {
+        uint32 diff = currentTime - itr->second.second;
+        if (diff > expireTime)
+            m_consecutiveKills.erase(itr++);
+        else
+            ++itr;
+    }
+}
+
+void Player::AddConsecutiveKill(uint64 victimGuid)
+{
+    if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY) == false)
+        return;
+
+    auto itr = m_consecutiveKills.find(victimGuid);
+    if (itr == m_consecutiveKills.end())
+        return void(m_consecutiveKills.insert(std::make_pair(victimGuid, std::make_pair(1, sWorld.GetGameTime()))));
+
+    ++itr->second.first;
+    itr->second.second = sWorld.GetGameTime();
+}
+
+uint32 Player::GetConsecutiveKillsCount(uint64 victimGuid)
+{
+    auto itr = m_consecutiveKills.find(victimGuid);
+    if (itr != m_consecutiveKills.end())
+        return itr->second.first;
+
+    return 0;
+}
+
 ///Calculate the amount of honor gained based on the victim
 ///and the size of the group for which the honor is divided
 ///An exact honor value can also be given (overriding the calcs)
@@ -6163,6 +6209,10 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
             if (GetTeam() == pVictim->GetTeam() && !sWorld.IsFFAPvPRealm())
                 return false;
+
+            uint32 killsCount = GetConsecutiveKillsCount(victim_guid);
+
+            AddConsecutiveKill(victim_guid);
 
             float f = 1;                                    //need for total kills (?? need more info)
             uint32 k_grey = 0;
@@ -6214,6 +6264,23 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
             honor = ((f * diff_level * (190 + v_rank*10))/6);
             honor *= ((float)k_level) / 70.0f;              //factor of dependence on levels of the killer
+
+            Map* map = GetMap();
+            if (map && !map->IsBattleGroundOrArena())
+            {
+                if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY))
+                    honor *= 1.0f - killsCount / 10.0f;
+
+                if (killsCount >= 10)
+                {
+                    std::stringstream stream;
+                    stream << "Possible HK / Honor farming exploit (killer: " << GetName() << ", victim: " << pVictim->GetName() << ") kills count: " << killsCount;
+        
+                    sWorld.SendGMText(LANG_POSSIBLE_CHEAT, stream.str().c_str(), GetName(), GetName());
+                    sLog.outLog(LOG_CHEAT, "%s", stream.str().c_str());
+                    return false;
+                }
+            }
 
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);

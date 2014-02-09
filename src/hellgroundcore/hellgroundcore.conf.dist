@@ -1840,3 +1840,14 @@ RAF.MaxReferals         = 5
 RAF.MaxReferers         = 5
 Rate.RAF.XP             = 3
 Rate.RAF.LevelPerLevel  = 0.5
+
+###################################################################################################################
+#   Ganking penalty system
+#    
+#   PVP.EnableGankingPenalty     = 1         ( on / off )
+#   PVP.GankingPenaltyExpireTime = 600       ( time in secs that need to pass after kill, to penalty wear off )
+#
+###################################################################################################################
+
+PVP.EnableGankingPenalty = 1
+PVP.GankingPenaltyExpireTime = 600;

@@ -1123,6 +1123,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ENABLE_FAKE_WHO_ON_ARENA] = sConfig.GetBoolDefault("Arena.EnableFakeWho", false);
     m_configs[CONFIG_ENABLE_FAKE_WHO_IN_GUILD] = sConfig.GetBoolDefault("Arena.EnableFakeWho.ForGuild", false);
 
+    m_configs[CONFIG_ENABLE_GANKING_PENALTY] = sConfig.GetBoolDefault("PVP.EnableGankingPenalty", false);
+    m_configs[CONFIG_GANKING_PENALTY_EXPIRE] = sConfig.GetIntDefault("PVP.GankingPenaltyExpireTime", 600000);
+
     sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 0);
 
     // VMSS system
