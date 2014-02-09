@@ -1853,3 +1853,7 @@ Rate.RAF.LevelPerLevel  = 0.5
 
 PVP.EnableGankingPenalty = 1
 PVP.GankingPenaltyExpireTime = 600;
+PVP.GankingPenaltyPerKill = 0.1
+PVP.GankingPenaltyKillsAlert = 10
+
+Npc.InstaKillGuardianRange = 100
