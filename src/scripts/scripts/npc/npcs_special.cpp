@@ -3079,6 +3079,30 @@ CreatureAI* GetAI_npc_nearly_dead_combat_dummy(Creature *_Creature)
     return new npc_nearly_dead_combat_dummyAI(_Creature);
 }
 
+struct npc_instakill_guardianAI : public Scripted_NoMovementAI
+{
+    npc_instakill_guardianAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        me->SetReactState(REACT_PASSIVE);
+    }
+
+    void MoveInLineOfSight(Unit* who)
+    {
+        Player* player = who->ToPlayer();
+        if (player && !player->isGameMaster() && player->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE)))
+            who->Kill(player);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+    }
+};
+
+CreatureAI* GetAI_npc_instakill_guardian(Creature *_Creature)
+{
+    return new npc_instakill_guardianAI(_Creature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -3289,5 +3313,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name="npc_nearly_dead_combat_dummy";
     newscript->GetAI = &GetAI_npc_nearly_dead_combat_dummy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name="npc_instakill_guardian";
+    newscript->GetAI = &GetAI_npc_instakill_guardian;
     newscript->RegisterSelf();
 }
