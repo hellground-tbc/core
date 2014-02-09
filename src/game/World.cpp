@@ -1125,6 +1125,8 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_ENABLE_GANKING_PENALTY] = sConfig.GetBoolDefault("PVP.EnableGankingPenalty", false);
     m_configs[CONFIG_GANKING_PENALTY_EXPIRE] = sConfig.GetIntDefault("PVP.GankingPenaltyExpireTime", 600000);
+    m_configs[CONFIG_GANKING_KILLS_ALERT] = sConfig.GetIntDefault("PVP.GankingPenaltyKillsAlert", 10);
+    rate_values[CONFIG_GANKING_PENALTY_PER_KILL] = sConfig.GetFloatDefault("PVP.GankingPenaltyPerKill", 0.1);
 
     sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 0);
 

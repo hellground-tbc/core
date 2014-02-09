@@ -6269,17 +6269,19 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
             if (map && !map->IsBattleGroundOrArena())
             {
                 if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY))
-                    honor *= 1.0f - killsCount / 10.0f;
+                    honor *= 1.0f - killsCount * sWorld.getConfig(CONFIG_GANKING_PENALTY_PER_KILL);
 
-                if (killsCount >= 10)
+                if (killsCount >= sWorld.getConfig(CONFIG_GANKING_KILLS_ALERT))
                 {
                     std::stringstream stream;
                     stream << "Possible HK / Honor farming exploit (killer: " << GetName() << ", victim: " << pVictim->GetName() << ") kills count: " << killsCount;
         
                     sWorld.SendGMText(LANG_POSSIBLE_CHEAT, stream.str().c_str(), GetName(), GetName());
                     sLog.outLog(LOG_CHEAT, "%s", stream.str().c_str());
-                    return false;
                 }
+
+                if (honor <= 0.0f)
+                    return false;
             }
 
             // count the number of playerkills in one day
