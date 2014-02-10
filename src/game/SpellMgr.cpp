@@ -58,7 +58,7 @@ SpellMgr::SpellMgr()
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:  //105
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:  //106
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:  //107
-            case SPELL_EFFECT_SUMMON_DEAD_PET:      //109
+            case SPELL_EFFECT_RESURRECT_PET:        //109
             case SPELL_EFFECT_SUMMON_DEMON:         //112
             case SPELL_EFFECT_TRIGGER_SPELL_2:      //151 ritual of summon
                 EffectTargetType[i] = SPELL_REQUIRE_DEST;
