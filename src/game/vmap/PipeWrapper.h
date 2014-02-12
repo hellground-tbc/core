@@ -26,8 +26,6 @@
 #include <ace/FIFO_Send.h>
 #include <ace/FIFO_Recv.h>
 
-#define sLogMP (*ACE_Singleton<VMAP::MultiProcessLog, ACE_Null_Mutex>::instance())
-
 class ByteBuffer;
 
 namespace VMAP
@@ -107,20 +105,6 @@ namespace VMAP
 
     private:
         LockType m_lock;
-    };
-
-    class MultiProcessLog
-    {
-    public:
-        explicit MultiProcessLog();
-        ~MultiProcessLog();
-
-        void outString(const char *fmt, ...);
-        void outError(const char *fmt, ...);
-
-    private:
-        FILE* m_logFile;
-        bool m_includeTime;
     };
 
 }

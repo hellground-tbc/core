@@ -23,10 +23,7 @@
 
 #include "ace/Singleton.h"
 #include "ace/Thread_Mutex.h"
-
 #include "Common.h"
-
-class Config;
 
 // bitmask
 enum LogFilters
@@ -34,25 +31,6 @@ enum LogFilters
     LOG_FILTER_TRANSPORT_MOVES    = 1,
     LOG_FILTER_CREATURE_MOVES     = 2,
     LOG_FILTER_VISIBILITY_CHANGES = 4
-};
-
-enum Color
-{
-    BLACK,
-    RED,
-    GREEN,
-    BROWN,
-    BLUE,
-    MAGENTA,
-    CYAN,
-    GREY,
-    YELLOW,
-    LRED,
-    LGREEN,
-    LBLUE,
-    LMAGENTA,
-    LCYAN,
-    WHITE
 };
 
 enum LogNames
@@ -80,8 +58,6 @@ enum LogNames
     LOG_MAX_FILES
 };
 
-const int Color_count = int(WHITE)+1;
-
 class Log
 {
     friend class ACE_Singleton<Log, ACE_Thread_Mutex>;
@@ -100,7 +76,6 @@ class Log
 
     public:
         void Initialize();
-        void InitColors(const std::string& init_str);
         void outTitle(const char * str);
         void outCommand(uint32 account, const char * str, ...) ATTR_PRINTF(3,4);
                                                             // any log level
@@ -119,16 +94,12 @@ class Log
         void outWhisp(uint32 account, const char * str, ...) ATTR_PRINTF(3, 4);
         void outPacket(uint32 glow, const char * str, ...) ATTR_PRINTF(3, 4);
 
-        void SetLogLevel(char * Level);
         void SetLogFileLevel(char * Level);
-        void SetColor(bool stdout_stream, Color color);
-        void ResetColor(bool stdout_stream);
         void outTime();
         static bool outTimestamp(FILE* file);
         static std::string GetTimestampStr();
         uint32 getLogFilter() const { return m_logFilter; }
-        bool IsOutDebug() const { return m_logLevel > 2 || (m_logFileLevel > 2 && logFile[LOG_DEFAULT]); }
-        bool IsOutCharDump() const { return m_charLog_Dump; }
+        bool IsOutDebug() const { return (m_logFileLevel > 2 && logFile[LOG_DEFAULT]); }
         bool IsIncludeTime() const { return m_includeTime; }
 
         bool IsLogEnabled(LogNames log) const { return logFile[log] != NULL; }
@@ -143,25 +114,18 @@ class Log
         FILE* openWhisplogPerAccount(uint32 account);
 
         // log/console control
-        uint32 m_logLevel;
         uint32 m_logFileLevel;
-        bool m_colored;
         bool m_includeTime;
-        Color m_colors[4];
         uint32 m_logFilter;
 
         // cache values for after initilization use (like gm log per account case)
         std::string m_logsDir;
         std::string m_logsTimestamp;
 
-        // char log control
-        bool m_charLog_Dump;
-
         // gm log control
         bool m_gmlog_per_account;
 
         std::string m_gmlog_filename_format;
-
         std::string m_whisplog_filename_format;
 };
 

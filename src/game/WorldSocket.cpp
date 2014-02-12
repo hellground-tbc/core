@@ -45,7 +45,6 @@
 #include "WorldSession.h"
 #include "WorldSocketMgr.h"
 #include "Log.h"
-#include "WorldLog.h"
 #include "DBCStores.h"
 
 #if defined(__GNUC__)
@@ -140,27 +139,6 @@ int WorldSocket::SendPacket(const WorldPacket& pct)
 
     if (closing_)
         return -1;
-
-    // Dump outgoing packet.
-    if (sWorldLog.LogWorld())
-    {
-        sWorldLog.Log("SERVER:\nSOCKET: %u\nLENGTH: %u\nOPCODE: %s(0x%.4X)\nDATA:\n",
-                    (uint32) get_handle(),
-                     pct.size(),
-                     LookupOpcodeName(pct.GetOpcode()),
-                     pct.GetOpcode());
-
-        uint32 p = 0;
-        while (p < pct.size())
-        {
-            for (uint32 j = 0; j < 16 && p < pct.size(); j++)
-                sWorldLog.Log("%.2X ", const_cast<WorldPacket&>(pct)[p++]);
-
-            sWorldLog.Log("\n");
-        }
-
-        sWorldLog.Log("\n\n");
-    }
 
     if (iSendPacket(pct) == -1)
     {
@@ -578,25 +556,6 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     if (closing_)
         return -1;
 
-    // Dump received packet.
-    if (sWorldLog.LogWorld())
-    {
-        sWorldLog.Log("CLIENT:\nSOCKET: %u\nLENGTH: %u\nOPCODE: %s(0x%.4X)\nDATA:\n",
-                    (uint32) get_handle(),
-                     new_pct->size(),
-                     LookupOpcodeName(new_pct->GetOpcode()),
-                     new_pct->GetOpcode());
-
-        uint32 p = 0;
-        while (p < new_pct->size())
-        {
-            for (uint32 j = 0; j < 16 && p < new_pct->size(); j++)
-                sWorldLog.Log("%.2X ",(*new_pct)[p++]);
-            sWorldLog.Log("\n");
-        }
-        sWorldLog.Log("\n\n");
-    }
-
     try
     {
         switch (opcode)
@@ -830,7 +789,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Check locked state for server
     sWorld.UpdateRequiredPermissions();
     uint64 minimumPermissions = sWorld.GetMinimumPermissionMask();
-    sLog.outDebug("Allowed Level: %u Player Level %u", minimumPermissions, permissionMask);
+    sLog.outDebug("Allowed permission mask: %u Player permission mask: %u", minimumPermissions, permissionMask);
     if (!(permissionMask & minimumPermissions))
     {
         WorldPacket Packet(SMSG_AUTH_RESPONSE, 1);

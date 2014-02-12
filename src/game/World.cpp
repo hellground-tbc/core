@@ -111,7 +111,7 @@ void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
 World::World()
 {
     m_playerLimit = 0;
-    m_requiredPermissionMask = 0;
+    m_requiredPermissionMask = PERM_PLAYER;
     m_allowMovement = true;
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
@@ -274,7 +274,6 @@ void World::AddSession_ (WorldSession* s)
     m_sessions[s->GetAccountId()] = s;
 
     uint32 Sessions = GetActiveAndQueuedSessionCount ();
-    uint32 pLimit = GetPlayerAmountLimit ();
     uint32 QueueSize = GetQueueSize (); //number of players in the queue
 
     //so we don't count the user trying to
@@ -282,7 +281,7 @@ void World::AddSession_ (WorldSession* s)
     if (decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && !s->HasPermissions(PERM_GMT_HDEV))
+    if (m_playerLimit > 0 && Sessions >= m_playerLimit && !s->HasPermissions(PERM_GMT_HDEV))
     {
         if (!sObjectMgr.IsUnqueuedAccount(s->GetAccountId()) && !HasRecentlyDisconnected(s))
         {
@@ -304,10 +303,10 @@ void World::AddSession_ (WorldSession* s)
     UpdateMaxSessionCounters();
 
     // Updates the population
-    if (pLimit > 0)
+    if (m_playerLimit > 0)
     {
         float popu = GetActiveSessionCount (); //updated number of users on the server
-        popu /= pLimit;
+        popu /= m_playerLimit;
         popu *= 2;
         AccountsDatabase.PExecute ("UPDATE realms SET population = '%f' WHERE realm_id = '%u'", popu, realmID);
         sLog.outDetail ("Server Population (%f).", popu);
@@ -480,7 +479,7 @@ void World::LoadConfigSettings(bool reload)
     }
 
     ///- Read the player limit and the Message of the day from the config file
-    SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true);
+    SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
     SetMotd(sConfig.GetStringDefault("Motd", "Welcome to a HellgroundCore Server."));
 
     ///- Get string for new logins (newly created characters)
@@ -1690,7 +1689,7 @@ void World::Update(uint32 diff)
             sLog.outLog(LOG_DIFF, "Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
             sLog.outLog(LOG_STATUS, "%u %u %u %u %u %u %s %u %u %u %u %u",
                         GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(),
-                        GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances.value(), loggedInHordes.value(), sWorld.GetGameTime());
+                        m_playerLimit, _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances.value(), loggedInHordes.value(), sWorld.GetGameTime());
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
@@ -2876,9 +2875,21 @@ void World::ResetDailyQuests()
     //sGameEventMgr.LoadFromDB();
 }
 
-void World::SetPlayerLimit(int32 limit, bool needUpdate)
+void World::SetPlayerLimit(int32 limit)
 {
-    m_playerLimit = limit;
+    if(limit >= 0)
+    {
+        m_playerLimit = limit;
+        m_requiredPermissionMask = PERM_PLAYER;
+        return;
+    }
+    
+    if(limit == -1)
+        m_requiredPermissionMask = PERM_GMT_DEV;
+    if(limit == -2)
+        m_requiredPermissionMask = PERM_HIGH_GMT | PERM_HEAD_DEVELOPER;
+    if(limit == -3)
+        m_requiredPermissionMask = PERM_ADM;
 }
 
 void World::UpdateMaxSessionCounters()

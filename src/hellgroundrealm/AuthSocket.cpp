@@ -23,7 +23,6 @@
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
-#include "Config/Config.h"
 #include "Log.h"
 #include "RealmList.h"
 #include "AuthSocket.h"
@@ -383,7 +382,7 @@ bool AuthSocket::_HandleLogonChallenge()
         OS = CLIENT_OS_WIN;
     else if (operatingSystem_ == "OSX")
         OS = CLIENT_OS_OSX;
-    else if (sRealmList.ChatboxOsName != "" && operatingSystem_ == sRealmList.ChatboxOsName)
+    else if (sRealmList.m_ChatboxOsName != "" && operatingSystem_ == sRealmList.m_ChatboxOsName)
         OS = CLIENT_OS_CHAT;
     else {
         sLog.outLog(LOG_WARDEN, "Client %s got unsupported operating system (%s)", _login.c_str(), operatingSystem_.c_str());
@@ -805,8 +804,8 @@ bool AuthSocket::_HandleLogonProof()
         }
         sLog.outBasic("[AuthChallenge] account %s tried to login with wrong password!",_login.c_str ());
 
-        uint32 MaxWrongPassCount = sConfig.GetIntDefault("WrongPass.MaxCount", 0);
-        if (MaxWrongPassCount > 0)
+        
+        if (sRealmList.m_WrongPassCount)
         {
             static SqlStatementID updateAccountFailedLogins;
             //Increment number of failed logins by one and if it reaches the limit temporarily ban that account or IP
@@ -819,27 +818,24 @@ bool AuthSocket::_HandleLogonProof()
                 Field* fields = loginfail->Fetch();
                 uint32 failed_logins = fields[1].GetUInt32();
 
-                if (failed_logins >= MaxWrongPassCount)
+                if (failed_logins >= sRealmList.m_WrongPassCount)
                 {
-                    uint32 WrongPassBanTime = sConfig.GetIntDefault("WrongPass.BanTime", 600);
-                    bool WrongPassBanType = sConfig.GetBoolDefault("WrongPass.BanType", false);
-
-                    if (WrongPassBanType)
+                    if (sRealmList.m_WrongPassBanType)
                     {
                         uint32 acc_id = fields[0].GetUInt32();
                         AccountsDatabase.PExecute("INSERT INTO account_punishment VALUES ('%u', '%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, 'Realm', 'Incorrect password for: %u times. Ban for: %u seconds', '1')",
-                                                acc_id, PUNISHMENT_BAN, WrongPassBanTime, failed_logins, WrongPassBanTime);
+                                                acc_id, PUNISHMENT_BAN, sRealmList.m_WrongPassBanTime, failed_logins, sRealmList.m_WrongPassBanTime);
                         sLog.outBasic("[AuthChallenge] account %s got banned for '%u' seconds because it failed to authenticate '%u' times",
-                            _login.c_str(), WrongPassBanTime, failed_logins);
+                            _login.c_str(), sRealmList.m_WrongPassBanTime, failed_logins);
                     }
                     else
                     {
                         std::string current_ip = get_remote_address();
                         AccountsDatabase.escape_string(current_ip);
                         AccountsDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','Realm','Incorrect password for: %u times. Ban for: %u seconds')",
-                            current_ip.c_str(), WrongPassBanTime, failed_logins, WrongPassBanTime);
+                            current_ip.c_str(), sRealmList.m_WrongPassBanTime, failed_logins, sRealmList.m_WrongPassBanTime);
                         sLog.outBasic("[AuthChallenge] IP %s got banned for '%u' seconds because account %s failed to authenticate '%u' times",
-                            current_ip.c_str(), WrongPassBanTime, _login.c_str(), failed_logins);
+                            current_ip.c_str(), sRealmList.m_WrongPassBanTime, _login.c_str(), failed_logins);
                     }
                 }
             }
