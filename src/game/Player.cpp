@@ -502,8 +502,7 @@ Player::~Player ()
 
     delete m_declinedname;
 
-    DeleteCharmAI();
-    sSocialMgr.canWhisperToGMList.remove(GetGUID());
+    DeleteCharmAI();    
 }
 
 void Player::CleanupsBeforeDelete()
@@ -526,6 +525,7 @@ void Player::CleanupsBeforeDelete()
 
         // just to be sure that we are removed from all outdoorpvp before we are deleted
         sOutdoorPvPMgr.HandlePlayerLeave(this);
+        sSocialMgr.canWhisperToGMList.remove(GetGUID());
     }
 
     ClearLFG();
