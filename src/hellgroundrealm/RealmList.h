@@ -71,11 +71,10 @@ class RealmList
         RealmMap::const_iterator begin() const { return m_realms.begin(); }
         RealmMap::const_iterator end() const { return m_realms.end(); }
         uint32 size() const { return m_realms.size(); }
-
-        std::string m_ChatboxOsName;
-        uint32   m_WrongPassCount;
-        uint32   m_WrongPassBanTime;
-        bool     m_WrongPassBanType;
+        std::string GetChatboxOsName() const {return m_ChatboxOsName;}
+        uint32 GetWrongPassCount() const {return m_WrongPassCount;}
+        uint32 GetWrongPassBanTime() const {return m_WrongPassBanTime;}
+        bool GetWrongPassBanType() const {return m_WrongPassBanType;}
     private:
         void UpdateRealms(bool init);
         void UpdateRealm(uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, RealmFlags realmflags, uint8 timezone, uint64 requiredPermissionMask, float popu, const std::string& builds);
@@ -83,6 +82,10 @@ class RealmList
         RealmMap m_realms;                                  ///< Internal map of realms
         uint32   m_UpdateInterval;
         time_t   m_NextUpdateTime;
+        std::string m_ChatboxOsName;
+        uint32   m_WrongPassCount;
+        uint32   m_WrongPassBanTime;
+        bool     m_WrongPassBanType;
 };
 
 #define sRealmList RealmList::Instance()

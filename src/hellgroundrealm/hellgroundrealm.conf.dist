@@ -1,6 +1,6 @@
-##########################################
-# Trinity Core realm configuration file  #
-##########################################
+#######################################
+# HellgroundRealm configuration file  #
+#######################################
 [RealmConf]
 ConfVersion=2014021201
 
