@@ -3089,7 +3089,7 @@ struct npc_instakill_guardianAI : public Scripted_NoMovementAI
     void MoveInLineOfSight(Unit* who)
     {
         Player* player = who->ToPlayer();
-        if (player && !player->isGameMaster() && player->IsWithinDistInMap(who, sWorld.getConfig(CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE)))
+        if (player && !player->isGameMaster() && player->IsWithinDistInMap(me, sWorld.getConfig(CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE)))
             who->Kill(player);
     }
 
