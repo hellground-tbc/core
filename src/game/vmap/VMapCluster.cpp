@@ -20,7 +20,7 @@
 #include "ByteBuffer.h"
 #include "IVMapManager.h"
 #include "VMapFactory.h"
-#include "..\World.h"
+#include "../World.h"
 
 #include <stdio.h>
 #include <ace/Process.h>
