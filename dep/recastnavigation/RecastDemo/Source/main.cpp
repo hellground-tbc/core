@@ -299,14 +299,14 @@ int main(int /*argc*/, char** /*argv*/)
 						if (mouseOverMenu)
 							mscroll--;
 						else
-							scrollZoom -= 1.0f;
+							scrollZoom -= 5.0f;
 					}
 					else if (event.button.button == SDL_BUTTON_WHEELDOWN)
 					{
 						if (mouseOverMenu)
 							mscroll++;
 						else
-							scrollZoom += 1.0f;
+							scrollZoom += 5.0f;
 					}
 					break;
 					
