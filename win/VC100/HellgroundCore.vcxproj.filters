@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="doc">
+      <UniqueIdentifier>{c9298846-540e-4c6c-bf08-9881b7c593db}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Readme">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\src\hellgroundcore\hellgroundcore.conf.dist" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\shared\WheatyExceptionReport.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\CliRunnable.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\Main.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\Master.cpp" />
+    <ClCompile Include="..\..\src\hellgroundcore\WorldRunnable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\CliRunnable.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\Master.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\resource.h" />
+    <ClInclude Include="..\..\src\hellgroundcore\WorldRunnable.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\src\hellgroundcore\HellgroundCore.rc" />
+  </ItemGroup>
+</Project>
