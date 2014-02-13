@@ -87,8 +87,8 @@ class HELLGROUND_IMPORT_EXPORT ViewPoint
     CameraList _cameras;
     GridType * _grid;
 
-    void Attach(Camera* c) { _cameras.push_back(c); }
-    void Detach(Camera* c) { _cameras.remove(c); }
+    void Attach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.push_back(c); }
+    void Detach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.remove(c); }
 
     void CameraCall(void (Camera::*handler)())
     {
@@ -101,6 +101,8 @@ class HELLGROUND_IMPORT_EXPORT ViewPoint
             }
         }
     }
+private:
+    ACE_Thread_Mutex m_mutex;
 
 public:
 

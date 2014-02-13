@@ -26,16 +26,6 @@
 #include "Config/Config.h"
 #include "Util.h"
 
-enum LogType
-{
-    LogNormal = 0,
-    LogDetails,
-    LogDebug,
-    LogError
-};
-
-const int LogType_count = int(LogError) +1;
-
 const char* logToStr[LOG_MAX_FILES][3] =
 {     // file name conf    mode  timestamp conf name
     { "GMLogFile",          "a", "GmLogTimestamp" },    // LOG_GM
@@ -59,137 +49,12 @@ const char* logToStr[LOG_MAX_FILES][3] =
     { "TradeLogFile",       "a", NULL }                 // LOG_TRADE
 };
 
-Log::Log() : m_colored(false), m_includeTime(false), m_gmlog_per_account(false)
+Log::Log() : m_includeTime(false), m_gmlog_per_account(false)
 {
     for (uint8 i = LOG_DEFAULT; i < LOG_MAX_FILES; i++)
         logFile[i] = NULL;
 
     Initialize();
-}
-
-void Log::InitColors(const std::string& str)
-{
-    if(str.empty())
-    {
-        m_colored = false;
-        return;
-    }
-
-    int color[4];
-
-    std::istringstream ss(str);
-
-    for(int i = 0; i < LogType_count; ++i)
-    {
-        ss >> color[i];
-
-        if(!ss)
-            return;
-
-        if(color[i] < 0 || color[i] >= Color_count)
-            return;
-    }
-
-    for(int i = 0; i < LogType_count; ++i)
-        m_colors[i] = Color(color[i]);
-
-    m_colored = true;
-}
-
-void Log::SetColor(bool stdout_stream, Color color)
-{
-    #if PLATFORM == PLATFORM_WINDOWS
-
-    static WORD WinColorFG[Color_count] =
-    {
-        0,                                                  // BLACK
-        FOREGROUND_RED,                                     // RED
-        FOREGROUND_GREEN,                                   // GREEN
-        FOREGROUND_RED | FOREGROUND_GREEN,                  // BROWN
-        FOREGROUND_BLUE,                                    // BLUE
-        FOREGROUND_RED |                    FOREGROUND_BLUE,// MAGENTA
-        FOREGROUND_GREEN | FOREGROUND_BLUE,                 // CYAN
-        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,// WHITE
-                                                            // YELLOW
-        FOREGROUND_RED | FOREGROUND_GREEN |                   FOREGROUND_INTENSITY,
-                                                            // RED_BOLD
-        FOREGROUND_RED |                                      FOREGROUND_INTENSITY,
-                                                            // GREEN_BOLD
-        FOREGROUND_GREEN |                   FOREGROUND_INTENSITY,
-        FOREGROUND_BLUE | FOREGROUND_INTENSITY,             // BLUE_BOLD
-                                                            // MAGENTA_BOLD
-        FOREGROUND_RED |                    FOREGROUND_BLUE | FOREGROUND_INTENSITY,
-                                                            // CYAN_BOLD
-        FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
-                                                            // WHITE_BOLD
-        FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY
-    };
-
-    HANDLE hConsole = GetStdHandle(stdout_stream ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE );
-    SetConsoleTextAttribute(hConsole, WinColorFG[color]);
-    #else
-
-    enum ANSITextAttr
-    {
-        TA_NORMAL=0,
-        TA_BOLD=1,
-        TA_BLINK=5,
-        TA_REVERSE=7
-    };
-
-    enum ANSIFgTextAttr
-    {
-        FG_BLACK=30, FG_RED,  FG_GREEN, FG_BROWN, FG_BLUE,
-        FG_MAGENTA,  FG_CYAN, FG_WHITE, FG_YELLOW
-    };
-
-    enum ANSIBgTextAttr
-    {
-        BG_BLACK=40, BG_RED,  BG_GREEN, BG_BROWN, BG_BLUE,
-        BG_MAGENTA,  BG_CYAN, BG_WHITE
-    };
-
-    static uint8 UnixColorFG[Color_count] =
-    {
-        FG_BLACK,                                           // BLACK
-        FG_RED,                                             // RED
-        FG_GREEN,                                           // GREEN
-        FG_BROWN,                                           // BROWN
-        FG_BLUE,                                            // BLUE
-        FG_MAGENTA,                                         // MAGENTA
-        FG_CYAN,                                            // CYAN
-        FG_WHITE,                                           // WHITE
-        FG_YELLOW,                                          // YELLOW
-        FG_RED,                                             // LRED
-        FG_GREEN,                                           // LGREEN
-        FG_BLUE,                                            // LBLUE
-        FG_MAGENTA,                                         // LMAGENTA
-        FG_CYAN,                                            // LCYAN
-        FG_WHITE                                            // LWHITE
-    };
-
-    fprintf((stdout_stream? stdout : stderr), "\x1b[%d%sm",UnixColorFG[color],(color>=YELLOW&&color<Color_count ?";1":""));
-    #endif
-}
-
-void Log::ResetColor(bool stdout_stream)
-{
-    #if PLATFORM == PLATFORM_WINDOWS
-    HANDLE hConsole = GetStdHandle(stdout_stream ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE );
-    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED );
-    #else
-    fprintf(( stdout_stream ? stdout : stderr ), "\x1b[0m");
-    #endif
-}
-
-void Log::SetLogLevel(char *Level)
-{
-    int32 NewLevel =atoi((char*)Level);
-    if ( NewLevel <0 )
-        NewLevel = 0;
-    m_logLevel = NewLevel;
-
-    printf( "LogLevel is %u\n",m_logLevel );
 }
 
 void Log::SetLogFileLevel(char *Level)
@@ -221,10 +86,10 @@ void Log::Initialize()
     else
     {
         // GM log settings for per account case
-        m_gmlog_filename_format = sConfig.GetStringDefault("GmLogDir", "gmLogs/") + sConfig.GetStringDefault(logToStr[LOG_GM][0], logToStr[LOG_GM][2]);
+        m_gmlog_filename_format =  sConfig.GetStringDefault(logToStr[LOG_GM][0],"gm_commands.log");
         if(!m_gmlog_filename_format.empty())
         {
-            bool m_gmlog_timestamp = sConfig.GetBoolDefault("GmLogTimestamp",false);
+            bool m_gmlog_timestamp = sConfig.GetBoolDefault(logToStr[LOG_GM][2],false);
 
             size_t dot_pos = m_gmlog_filename_format.find_last_of(".");
             if(dot_pos!=m_gmlog_filename_format.npos)
@@ -242,7 +107,7 @@ void Log::Initialize()
                     m_gmlog_filename_format += m_logsTimestamp;
             }
 
-            m_gmlog_filename_format = m_logsDir + m_gmlog_filename_format;
+            m_gmlog_filename_format = (m_logsDir.empty() ? "" : m_logsDir + m_gmlog_filename_format);
         }
     }
 
@@ -253,9 +118,7 @@ void Log::Initialize()
 
     // Main log file settings
     m_includeTime  = sConfig.GetBoolDefault("LogTime", false);
-    m_logLevel     = sConfig.GetIntDefault("LogLevel", 0);
     m_logFileLevel = sConfig.GetIntDefault("LogFileLevel", 0);
-    InitColors(sConfig.GetStringDefault("LogColors", ""));
 
     m_logFilter = 0;
 
@@ -265,9 +128,6 @@ void Log::Initialize()
         m_logFilter |= LOG_FILTER_CREATURE_MOVES;
     if(sConfig.GetBoolDefault("LogFilter_VisibilityChanges", true))
         m_logFilter |= LOG_FILTER_VISIBILITY_CHANGES;
-
-    // Char log settings
-    m_charLog_Dump = sConfig.GetBoolDefault("CharLogDump", false);
 
 }
 
@@ -373,24 +233,12 @@ void Log::outTitle( const char * str)
     if( !str )
         return;
 
-    if(m_colored)
-        SetColor(true,WHITE);
-
-    // not expected utf8 and then send as-is
-    //printf( str );
-
-    if(m_colored)
-        ResetColor(true);
-
-    //printf( "\n" );
     if(logFile[LOG_DEFAULT])
     {
         fprintf(logFile[LOG_DEFAULT], str);
         fprintf(logFile[LOG_DEFAULT], "\n" );
         fflush(logFile[LOG_DEFAULT]);
     }
-
-    //flush(stdout);
 }
 
 void Log::outString()
@@ -412,16 +260,10 @@ void Log::outString( const char * str, ... )
     if( !str )
         return;
 
-    if(m_colored)
-        SetColor(true,m_colors[LogNormal]);
-
     if(m_includeTime)
         outTime();
 
     UTF8PRINTF(stdout,str,);
-
-    if(m_colored)
-        ResetColor(true);
 
     printf( "\n" );
     if(logFile[LOG_DEFAULT])
@@ -444,18 +286,6 @@ void Log::outBasic(const char * str, ...)
     if (!str)
         return;
 
-    if (m_logLevel > 0)
-    {
-        if (m_colored)
-            SetColor(true,m_colors[LogDetails]);
-
-        if (m_includeTime)
-            outTime();
-
-        if (m_colored)
-            ResetColor(true);
-    }
-
     if (logFile[LOG_DEFAULT] && m_logFileLevel > 0)
     {
         va_list ap;
@@ -472,19 +302,6 @@ void Log::outDetail(const char * str, ...)
 {
     if (!str)
         return;
-
-    if (m_logLevel > 1)
-    {
-
-        if (m_colored)
-            SetColor(true,m_colors[LogDetails]);
-
-        if (m_includeTime)
-            outTime();
-
-        if (m_colored)
-            ResetColor(true);
-    }
 
     if (logFile[LOG_DEFAULT] && m_logFileLevel > 1)
     {
@@ -503,15 +320,6 @@ void Log::outDebugInLine(const char * str, ...)
     if (!str)
         return;
 
-    if (m_logLevel > 2)
-    {
-        if (m_colored)
-            SetColor(true,m_colors[LogDebug]);
-
-        if (m_colored)
-            ResetColor(true);
-    }
-
     if(logFile[LOG_DEFAULT] && m_logFileLevel > 2)
     {
         va_list ap;
@@ -525,18 +333,6 @@ void Log::outDebug(const char * str, ...)
 {
     if(!str)
         return;
-
-    if (m_logLevel > 2)
-    {
-        if (m_colored)
-            SetColor(true,m_colors[LogDebug]);
-
-        if (m_includeTime)
-            outTime();
-
-        if (m_colored)
-            ResetColor(true);
-    }
 
     if (logFile[LOG_DEFAULT] && m_logFileLevel > 2)
     {
@@ -556,18 +352,6 @@ void Log::outCommand(uint32 account, const char * str, ...)
 {
     if (!str)
         return;
-
-    if (m_logLevel > 1)
-    {
-        if (m_colored)
-            SetColor(true,m_colors[LogDetails]);
-
-        if (m_includeTime)
-            outTime();
-
-        if (m_colored)
-            ResetColor(true);
-    }
 
     if (logFile[LOG_DEFAULT] && m_logFileLevel > 1)
     {

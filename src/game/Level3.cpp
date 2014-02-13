@@ -47,7 +47,6 @@
 #include "SkillDiscovery.h"
 #include "SkillExtraItems.h"
 #include "SystemConfig.h"
-#include "Config/Config.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
 #include "BattleGroundMgr.h"
@@ -5865,18 +5864,8 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
         if (!param)
             return false;
 
-        int l = strlen(param);
-
-        if (strncmp(param,"reset",l) == 0)
-            sWorld.SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
-        else
-        {
-            int val = atoi(param);
-            if (val < 0)
-                sWorld.SetMinimumPermissionMask(-val);
-            else
-                sWorld.SetPlayerLimit(val);
-        }
+        int val = atoi(param);
+        sWorld.SetPlayerLimit(val);
 
         // kick all low security level players
         if (!sWorld.GetMinimumPermissionMask() & PERM_PLAYER)

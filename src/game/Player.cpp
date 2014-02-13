@@ -502,8 +502,7 @@ Player::~Player ()
 
     delete m_declinedname;
 
-    DeleteCharmAI();
-    sSocialMgr.canWhisperToGMList.remove(GetGUID());
+    DeleteCharmAI();    
 }
 
 void Player::CleanupsBeforeDelete()
@@ -526,6 +525,7 @@ void Player::CleanupsBeforeDelete()
 
         // just to be sure that we are removed from all outdoorpvp before we are deleted
         sOutdoorPvPMgr.HandlePlayerLeave(this);
+        sSocialMgr.canWhisperToGMList.remove(GetGUID());
     }
 
     ClearLFG();
@@ -21093,7 +21093,22 @@ bool Player::IsReferAFriendLinked(Player* target)
 
 void Player::ChangeRace(uint8 new_race)
 {
-    static uint16 CapitalForRace[] = {0,72,76,47,69,68,81,54,530,0,911,930};
+    static uint16 CapitalForRace[12] = {0,72,76,47,69,68,81,54,530,0,911,930};
+
+    static uint16 MountsForRace[12][7] = {
+        {0,0,0,0,0,0,0},
+        {2411,2414,5655,5656,18776,18777,18778},
+        {1132,5665,5668,1132,18796,18797,18798},
+        {5864,5872,5873,5864,18785,18786,18787},
+        {8629,8631,8632,8629,18766,18767,18902},
+        {13331,13332,13333,13331,13334,18791,0},
+        {15277,15290,15277,15290,18793,18794,18795},
+        {8595,8563,13321,13322,18772,18773,18774},
+        {8588,8591,8592,8588,18788,18789,18790},
+        {0,0,0,0,0,0,0},
+        {28927,29220,29221,29222,29223,29224,28936},
+        {28481,29743,29744,28481,29745,29746,29747}
+    };
 
     sLog.outLog(LOG_CHAR,"Starting race change for player %s [%u]",GetName(),GetGUIDLow());
     Races old_race = Races(getRace());
@@ -21162,7 +21177,50 @@ void Player::ChangeRace(uint8 new_race)
     setFaction(Player::getFactionForRace(new_race));
     GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]);
 
-    //Items??
+    //Mounts
+    for (uint8 type = 0;type<7;type++){
+        for (uint16 i = INVENTORY_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
+        {
+            Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            if (pItem && pItem->GetEntry() == MountsForRace[old_race][type])
+            {
+                DestroyItem(INVENTORY_SLOT_BAG_0,i,true);
+                EquipNewItem((INVENTORY_SLOT_BAG_0 <<8) + i,MountsForRace[new_race][type],true);
+            }
+        }
+        for (uint16 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
+        {
+            Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            if (pBag)
+            {
+                for (uint32 j = 0; j < pBag->GetBagSize(); j++)
+                {
+                    Item* pItem = pBag->GetItemByPos(j);
+                    if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
+                    {
+                        DestroyItem(i,j,true);
+                        EquipNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                    }
+                }
+            }
+        }
+        for (uint16 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        {
+            Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            if (pBag)
+            {
+                for (uint32 j = 0; j < pBag->GetBagSize(); j++)
+                {
+                    Item* pItem = pBag->GetItemByPos(j);
+                    if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
+                    {
+                        DestroyItem(i,j,true);
+                        EquipNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                    }
+                }
+            }
+        }
+    }
     sLog.outLog(LOG_CHAR,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
 }
 

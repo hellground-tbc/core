@@ -174,7 +174,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectSummonObject,                             //106 SPELL_EFFECT_SUMMON_OBJECT_SLOT3
     &Spell::EffectSummonObject,                             //107 SPELL_EFFECT_SUMMON_OBJECT_SLOT4
     &Spell::EffectDispelMechanic,                           //108 SPELL_EFFECT_DISPEL_MECHANIC
-    &Spell::EffectSummonDeadPet,                            //109 SPELL_EFFECT_SUMMON_DEAD_PET
+    &Spell::EffectResurrectPet,                             //109 SPELL_EFFECT_RESURRECT_PET
     &Spell::EffectDestroyAllTotems,                         //110 SPELL_EFFECT_DESTROY_ALL_TOTEMS
     &Spell::EffectDurabilityDamage,                         //111 SPELL_EFFECT_DURABILITY_DAMAGE
     &Spell::EffectSummonDemon,                              //112 SPELL_EFFECT_SUMMON_DEMON
@@ -1468,16 +1468,9 @@ void Spell::EffectDummy(uint32 i)
                 }*/
                 // Polarity Shift (Thaddius)
                 case 28089:
-                {
-                    if (!unitTarget)
-                        break;
-
-                    uint32 spellId = roll_chance_i(50) ? 28059 : 28084;
-                    unitTarget->RemoveAurasDueToSpell(spellId == 28059 ? 28084 : 28059);
-                    unitTarget->CastSpell(unitTarget, spellId, true, NULL, NULL, m_caster->GetGUID());
-
+                    if (unitTarget)
+                        unitTarget->CastSpell(unitTarget, roll_chance_i(50) ? 28059 : 28084, true, NULL, NULL, m_caster->GetGUID());
                     break;
-                }
                 // Polarity Shift (Mechano-Lord Capacitus)
                 case 39096:
                     if (unitTarget)
@@ -7599,7 +7592,7 @@ void Spell::EffectDispelMechanic(uint32 i)
     return;
 }
 
-void Spell::EffectSummonDeadPet(uint32 /*i*/)
+void Spell::EffectResurrectPet(uint32 /*i*/)
 {
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;

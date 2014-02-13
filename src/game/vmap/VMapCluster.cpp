@@ -17,10 +17,10 @@
  */
 
 #include "VMapCluster.h"
-#include "Config/Config.h"
 #include "ByteBuffer.h"
 #include "IVMapManager.h"
 #include "VMapFactory.h"
+#include "../World.h"
 
 #include <stdio.h>
 #include <ace/Process.h>
@@ -238,7 +238,7 @@ namespace VMAP
     VMapClusterProcess::VMapClusterProcess(uint32 processId) : m_processId(processId), m_masterPid(0)
     {
         // data path for vmaps loading
-        m_dataPath = sConfig.GetStringDefault("DataDir","./");
+        m_dataPath = sWorld.GetDataPath();
         if (m_dataPath.at(m_dataPath.length()-1)!='/' && m_dataPath.at(m_dataPath.length()-1)!='\\')
             m_dataPath.append("/");
 

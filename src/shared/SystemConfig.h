@@ -60,7 +60,7 @@
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
 #ifndef _REALMDCONFVERSION
-# define _REALMDCONFVERSION 2011092901
+# define _REALMDCONFVERSION 2014021201
 #endif
 
 #endif

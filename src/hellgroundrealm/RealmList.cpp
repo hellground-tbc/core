@@ -70,15 +70,6 @@ RealmList& sRealmList
     return realmlist;
 }
 
-/// Load the realm list from the database
-void RealmList::Initialize(uint32 updateInterval)
-{
-    m_UpdateInterval = updateInterval;
-
-    ///- Get the content of the realmlist table in the database
-    UpdateRealms(true);
-}
-
 void RealmList::UpdateRealm( uint32 ID, const std::string& name, const std::string& address, uint32 port, uint8 icon, RealmFlags realmflags, uint8 timezone, uint64 requiredPermissionMask, float popu, const std::string& builds)
 {
     ///- Create new if not exist or update existed

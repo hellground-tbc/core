@@ -659,12 +659,11 @@ class HELLGROUND_EXPORT World
         void RemoveWeather(uint32 zone_id);
 
         /// Get the active session server limit (or security level limitations)
-        uint32 GetPlayerAmountLimit() const { return m_playerLimit >= 0 ? m_playerLimit : 0; }
+        uint32 GetPlayerAmountLimit() const { return m_playerLimit; }
         uint64 GetMinimumPermissionMask() const { return m_requiredPermissionMask; }
 
         /// Set the active session server limit (or security level limitation)
-        void SetPlayerLimit(int32 limit, bool needUpdate = false);
-        void SetMinimumPermissionMask(uint64 perms) { m_requiredPermissionMask = perms; }
+        void SetPlayerLimit(int32 limit);
 
         //player Queue
         typedef std::list<WorldSession*> Queue;
@@ -907,7 +906,7 @@ class HELLGROUND_EXPORT World
 
         float rate_values[MAX_RATES];
         uint32 m_configs[CONFIG_VALUE_COUNT];
-        int32 m_playerLimit;
+        uint32 m_playerLimit;
         uint64 m_requiredPermissionMask;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
         uint32 m_availableDbcLocaleMask;                       // by loaded DBC

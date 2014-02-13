@@ -238,11 +238,11 @@ extern int main(int argc, char **argv)
     if(!StartDB())
         return 1;
 
-    ///- Get the list of realms for the server
-    sRealmList.Initialize(sConfig.GetIntDefault("RealmsStateUpdateDelay", 20));
+    ///- start realm list
+    sRealmList.Initialize();
     if (sRealmList.size() == 0)
         sLog.outLog(LOG_DEFAULT, "ERROR: No valid realms specified.");
-    sRealmList.ChatboxOsName = sConfig.GetStringDefault("ChatboxClientOsName","");
+    
 
 #ifdef REGEX_NAMESPACE
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip_pattern, local_ip_pattern FROM pattern_banned");
@@ -427,6 +427,18 @@ void UnhookSignals()
     #ifdef _WIN32
     signal(SIGBREAK, 0);
     #endif
+}
+
+void RealmList::Initialize()
+{
+    m_UpdateInterval = sConfig.GetIntDefault("RealmsStateUpdateDelay", 20);
+    m_WrongPassCount = sConfig.GetIntDefault("WrongPass.MaxCount", 0);
+    m_WrongPassBanTime = sConfig.GetIntDefault("WrongPass.BanTime", 600);
+    m_WrongPassBanType = sConfig.GetBoolDefault("WrongPass.BanType", false);
+    m_ChatboxOsName = sConfig.GetStringDefault("ChatboxClientOsName","");
+    
+    ///- Get the content of the realmlist table in the database
+    UpdateRealms(true);
 }
 
 /// @}

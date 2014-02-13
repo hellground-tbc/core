@@ -395,20 +395,6 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
     return true;
 }
 
-/// Set the level of logging
-bool ChatHandler::HandleServerSetLogLevelCommand(const char *args)
-{
-    if(!*args)
-        return false;
-
-    char *NewLevel = strtok((char*)args, " ");
-    if (!NewLevel)
-        return false;
-
-    sLog.SetLogLevel(NewLevel);
-    return true;
-}
-
 /// set diff time record interval
 bool ChatHandler::HandleServerSetDiffTimeCommand(const char *args)
 {

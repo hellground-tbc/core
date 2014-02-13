@@ -85,7 +85,6 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand serverSetCommandTable[] =
     {
         { "difftime",       PERM_CONSOLE,   true,   &ChatHandler::HandleServerSetDiffTimeCommand,   "", NULL },
-        { "loglevel",       PERM_CONSOLE,   true,   &ChatHandler::HandleServerSetLogLevelCommand,   "", NULL },
         { "motd",           PERM_ADM,       true,   &ChatHandler::HandleServerSetMotdCommand,       "", NULL },
         { NULL,             0,              false,  NULL,                                           "", NULL }
     };
