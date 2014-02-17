@@ -382,7 +382,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 23417: cEntry[0] = 16975; break; // Sanctified Crystal
         case 32698: cEntry[0] = 22181; break; // Wrangling Rope
         case 34257: cEntry[0] = 24918; targetState = T_ALIVE; break; // Fel Siphon
-        case 28547: cEntry[0] = 17157; cEntry[1] = 18865; break;
+        case 28547: cEntry[0] = 18881; cEntry[1] = 18865; break; //Elemental power extractor
         case 12284: cEntry[0] = 7047; cEntry[1] = 7048; cEntry[2] = 7049; break; // Draco-Incarcinatrix 900
         case 23337: cEntry[0] = 16880; targetState = T_ALIVE; break;    // Cenarion Antidote
         case 29818: cEntry[0] = 20774; targetState = T_ALIVE; break;    // Energy Field Modulator
