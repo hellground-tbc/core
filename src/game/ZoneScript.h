@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef ZONE_SCRIPT_H_
-#define ZONE_SCRIPT_H_
+#ifndef HELLGROUND_ZONE_SCRIPT_H
+#define HELLGROUND_ZONE_SCRIPT_H
 
 #include "Common.h"
 #include "Creature.h"

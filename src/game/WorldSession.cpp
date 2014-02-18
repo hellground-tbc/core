@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /** \file
@@ -707,7 +707,7 @@ void WorldSession::SendNotification(const char *format,...)
 
 void WorldSession::SendNotification(int32 string_id,...)
 {
-    char const* format = GetTrinityString(string_id);
+    char const* format = GetHellgroundString(string_id);
     if (format)
     {
         va_list ap;
@@ -723,9 +723,9 @@ void WorldSession::SendNotification(int32 string_id,...)
     }
 }
 
-const char * WorldSession::GetTrinityString(int32 entry) const
+const char * WorldSession::GetHellgroundString(int32 entry) const
 {
-    return sObjectMgr.GetTrinityString(entry,GetSessionDbLocaleIndex());
+    return sObjectMgr.GetHellgroundString(entry,GetSessionDbLocaleIndex());
 }
 
 void WorldSession::Handle_NULL(WorldPacket& recvPacket)

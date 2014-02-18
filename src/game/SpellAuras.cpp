@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -2542,10 +2542,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 40133:                                     // Summon Fire Elemental
                 caster->SummonCreature(23099, -2459.64, 4754.64, 153.20, 4.89, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
                 break;
-            case 39850:                                     // Rocket Blast
-                if (roll_chance_i(20))                       // backfire stun
-                    m_target->CastSpell(m_target, 51581, true, NULL, this);
-                return;
             case 6946:                                     // Curse of Bleakheart
                 if (!m_target->HasAura(6947, 0))
                     m_target->CastSpell(m_target, 6947, true);

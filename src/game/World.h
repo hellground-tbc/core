@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,20 +10,20 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /// \addtogroup world The World
 /// @{
 /// \file
 
-#ifndef __WORLD_H
-#define __WORLD_H
+#ifndef HELLGROUND_WORLD_H
+#define HELLGROUND_WORLD_H
 
 #include "ace/Singleton.h"
 
@@ -227,6 +227,9 @@ enum WorldConfigs
     CONFIG_ARENA_END_AFTER_TIME,
     CONFIG_ARENA_END_AFTER_ALWAYS_DRAW,
     CONFIG_ARENA_STATUS_INFO,
+    CONFIG_ARENA_ELO_COEFFICIENT,
+    CONFIG_ARENA_DAILY_REQUIREMENT,
+    CONFIG_ARENA_DAILY_AP_REWARD,
 
     CONFIG_BATTLEGROUND_INVITATION_TYPE,
     CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH,
@@ -291,6 +294,10 @@ enum WorldConfigs
     CONFIG_HIDDEN_RATING_PENALTY,
     CONFIG_ENABLE_HIDDEN_RATING_LOWER_LOSS,
 
+    CONFIG_ENABLE_GANKING_PENALTY,
+    CONFIG_GANKING_PENALTY_EXPIRE,
+    CONFIG_GANKING_KILLS_ALERT,
+
     CONFIG_ENABLE_FAKE_WHO_ON_ARENA,
     CONFIG_ENABLE_FAKE_WHO_IN_GUILD,
 
@@ -346,6 +353,8 @@ enum WorldConfigs
     CONFIG_UINT32_RAF_MAXGRANTLEVEL,
     CONFIG_UINT32_RAF_MAXREFERALS,
     CONFIG_UINT32_RAF_MAXREFERERS,
+
+    CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE,
 
     CONFIG_VALUE_COUNT
 };
@@ -411,6 +420,7 @@ enum Rates
     RATE_DURABILITY_LOSS_ABSORB,
     RATE_DURABILITY_LOSS_BLOCK,
 
+    CONFIG_GANKING_PENALTY_PER_KILL,
     CONFIG_FLOAT_RATE_RAF_XP,
     CONFIG_FLOAT_RATE_RAF_LEVELPERLEVEL,
 
@@ -649,12 +659,11 @@ class HELLGROUND_EXPORT World
         void RemoveWeather(uint32 zone_id);
 
         /// Get the active session server limit (or security level limitations)
-        uint32 GetPlayerAmountLimit() const { return m_playerLimit >= 0 ? m_playerLimit : 0; }
+        uint32 GetPlayerAmountLimit() const { return m_playerLimit; }
         uint64 GetMinimumPermissionMask() const { return m_requiredPermissionMask; }
 
         /// Set the active session server limit (or security level limitation)
-        void SetPlayerLimit(int32 limit, bool needUpdate = false);
-        void SetMinimumPermissionMask(uint64 perms) { m_requiredPermissionMask = perms; }
+        void SetPlayerLimit(int32 limit);
 
         //player Queue
         typedef std::list<WorldSession*> Queue;
@@ -897,7 +906,7 @@ class HELLGROUND_EXPORT World
 
         float rate_values[MAX_RATES];
         uint32 m_configs[CONFIG_VALUE_COUNT];
-        int32 m_playerLimit;
+        uint32 m_playerLimit;
         uint64 m_requiredPermissionMask;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales
         uint32 m_availableDbcLocaleMask;                       // by loaded DBC

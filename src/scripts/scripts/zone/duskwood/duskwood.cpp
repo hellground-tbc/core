@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -39,7 +42,6 @@ bool AreaTrigger_at_twilight_grove(Player* pPlayer, AreaTriggerEntry const* at)
         if(TCorrupter)
         {
             TCorrupter->setFaction(14);
-            TCorrupter->SetMaxHealth(832750 * sConfig.GetFloatDefault("Rate.Creature.Elite.WORLDBOSS.HP", 1.0f));
             CorrupterSummoned = true;
         }
         Unit* CorrupterSpeaker = pPlayer->SummonCreature(1,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ()-1,0,TEMPSUMMON_TIMED_DESPAWN,15000);

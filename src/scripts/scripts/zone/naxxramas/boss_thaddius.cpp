@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -106,6 +109,29 @@ struct boss_thaddiusAI : public BossAI
         events.ScheduleEvent(EVENT_POLARITY_SHIFT, 30000);
         events.ScheduleEvent(EVENT_BERSERK, 300000);
         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(15000, 45000));   // GUESSED
+
+        me->SetReactState(REACT_PASSIVE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    }
+
+    void EnterEvadeMode()
+    {
+        if (Creature *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
+            if (!pStalagg->isAlive())
+                pStalagg->Respawn();
+
+        if (Creature *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
+            if (!pFeugen->isAlive())
+                pFeugen->Respawn();
+    }
+
+    void Engage()
+    {
+        me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        DoZoneInCombat();
     }
 
     void EnterCombat(Unit*)
@@ -229,6 +255,13 @@ struct boss_stalaggAI : public BossAI
         me->RemoveAurasDueToSpell(SPELL_TESLA_PASSIVE_S);
     }
 
+    void EnterEvadeMode()
+    {
+        if (Creature *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
+            if (!pFeugen->isAlive())
+                pFeugen->Respawn();
+    }
+
     void EnterCombat(Unit*)
     {
         DoScriptText(SAY_STAL_AGGRO, me);
@@ -241,18 +274,31 @@ struct boss_stalaggAI : public BossAI
             DoScriptText(SAY_STAL_SLAY, me);
     }
 
+    void Revive()
+    {
+        me->GetMotionMaster()->Initialize();
+        me->setDeathState(JUST_DIED);
+        me->Respawn();
+        me->SetReactState(REACT_AGGRESSIVE);
+    }
+
     void JustDied(Unit *pKiller)
     {
+        DoScriptText(SAY_STAL_DEATH, me);
+
         if (Creature* pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
         {
             if (!pFeugen->HealthBelowPct(2))
             {
-                me->Respawn();
+                Revive();
                 return;
             }
-        }
 
-        DoScriptText(SAY_STAL_DEATH, me);
+            if (pFeugen->isDead())
+                if (Unit *pThaddius = instance->GetCreature(instance->GetData64(DATA_THADDIUS)))
+                    if (pThaddius->ToCreature()->AI())
+                        ((boss_thaddiusAI*) pThaddius->ToCreature()->AI())->Engage();
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -317,6 +363,13 @@ struct boss_feugenAI : public BossAI
         me->RemoveAurasDueToSpell(SPELL_TESLA_PASSIVE_F);
     }
 
+    void EnterEvadeMode()
+    {
+        if (Creature *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
+            if (!pStalagg->isAlive())
+                pStalagg->Respawn();
+    }
+
     void EnterCombat(Unit*)
     {
         DoScriptText(SAY_FEUG_AGGRO, me);
@@ -329,18 +382,31 @@ struct boss_feugenAI : public BossAI
             DoScriptText(SAY_FEUG_SLAY, me);
     }
 
+    void Revive()
+    {
+        me->GetMotionMaster()->Initialize();
+        me->setDeathState(JUST_DIED);
+        me->Respawn();
+        me->SetReactState(REACT_AGGRESSIVE);
+    }
+
     void JustDied(Unit *pKiller)
     {
+        DoScriptText(SAY_FEUG_DEATH, me);
+
         if (Creature* pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
         {
             if (!pStalagg->HealthBelowPct(2))
             {
-                me->Respawn();
+                Revive();
                 return;
             }
-        }
 
-        DoScriptText(SAY_FEUG_DEATH, me);
+            if (pStalagg->isDead())
+                if (Unit *pThaddius = instance->GetCreature(instance->GetData64(DATA_THADDIUS)))
+                    if (pThaddius->ToCreature()->AI())
+                        ((boss_thaddiusAI*) pThaddius->ToCreature()->AI())->Engage();
+        }
     }
 
     void UpdateAI(const uint32 diff)

@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,13 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -352,6 +351,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
+    m_DailyArenasWon = 0;
 
     for (uint8 i=0; i< MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
@@ -502,8 +502,7 @@ Player::~Player ()
 
     delete m_declinedname;
 
-    DeleteCharmAI();
-    sSocialMgr.canWhisperToGMList.remove(GetGUID());
+    DeleteCharmAI();    
 }
 
 void Player::CleanupsBeforeDelete()
@@ -526,6 +525,7 @@ void Player::CleanupsBeforeDelete()
 
         // just to be sure that we are removed from all outdoorpvp before we are deleted
         sOutdoorPvPMgr.HandlePlayerLeave(this);
+        sSocialMgr.canWhisperToGMList.remove(GetGUID());
     }
 
     ClearLFG();
@@ -1440,6 +1440,8 @@ void Player::Update(uint32 update_diff, uint32 p_time)
 
     // group update
     SendUpdateToOutOfRangeGroupMembers();
+
+    UpdateConsecutiveKills();
 
     _preventUpdate = false;
     updateMutex.release();
@@ -6117,6 +6119,50 @@ void Player::UpdateHonorFields()
     m_lastHonorUpdateTime = now;
 }
 
+void Player::UpdateConsecutiveKills()
+{
+    if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY) == false)
+        return;
+
+    Map* map = GetMap();
+    if (map == nullptr || map->IsBattleGroundOrArena())
+        return;
+
+    uint64 currentTime = sWorld.GetGameTime();
+    uint64 expireTime = sWorld.getConfig(CONFIG_GANKING_PENALTY_EXPIRE);
+
+    for (auto itr = m_consecutiveKills.begin(); itr != m_consecutiveKills.end();)
+    {
+        uint32 diff = currentTime - itr->second.second;
+        if (diff > expireTime)
+            m_consecutiveKills.erase(itr++);
+        else
+            ++itr;
+    }
+}
+
+void Player::AddConsecutiveKill(uint64 victimGuid)
+{
+    if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY) == false)
+        return;
+
+    auto itr = m_consecutiveKills.find(victimGuid);
+    if (itr == m_consecutiveKills.end())
+        return void(m_consecutiveKills.insert(std::make_pair(victimGuid, std::make_pair(1, sWorld.GetGameTime()))));
+
+    ++itr->second.first;
+    itr->second.second = sWorld.GetGameTime();
+}
+
+uint32 Player::GetConsecutiveKillsCount(uint64 victimGuid)
+{
+    auto itr = m_consecutiveKills.find(victimGuid);
+    if (itr != m_consecutiveKills.end())
+        return itr->second.first;
+
+    return 0;
+}
+
 ///Calculate the amount of honor gained based on the victim
 ///and the size of the group for which the honor is divided
 ///An exact honor value can also be given (overriding the calcs)
@@ -6162,6 +6208,10 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
             if (GetTeam() == pVictim->GetTeam() && !sWorld.IsFFAPvPRealm())
                 return false;
+
+            uint32 killsCount = GetConsecutiveKillsCount(victim_guid);
+
+            AddConsecutiveKill(victim_guid);
 
             float f = 1;                                    //need for total kills (?? need more info)
             uint32 k_grey = 0;
@@ -6213,6 +6263,25 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
             honor = ((f * diff_level * (190 + v_rank*10))/6);
             honor *= ((float)k_level) / 70.0f;              //factor of dependence on levels of the killer
+
+            Map* map = GetMap();
+            if (map && !map->IsBattleGroundOrArena())
+            {
+                if (sWorld.getConfig(CONFIG_ENABLE_GANKING_PENALTY))
+                    honor *= 1.0f - killsCount * sWorld.getConfig(CONFIG_GANKING_PENALTY_PER_KILL);
+
+                if (killsCount >= sWorld.getConfig(CONFIG_GANKING_KILLS_ALERT))
+                {
+                    std::stringstream stream;
+                    stream << "Possible HK / Honor farming exploit (killer: " << GetName() << ", victim: " << pVictim->GetName() << ") kills count: " << killsCount;
+        
+                    sWorld.SendGMText(LANG_POSSIBLE_CHEAT, stream.str().c_str(), GetName(), GetName());
+                    sLog.outLog(LOG_CHEAT, "%s", stream.str().c_str());
+                }
+
+                if (honor <= 0.0f)
+                    return false;
+            }
 
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
@@ -15025,6 +15094,12 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
         RealmDataDatabase.PExecute("UPDATE characters SET changeRaceTo = '0' WHERE guid ='%u'", GetGUIDLow());
     }
 
+    result = holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYARENA);
+    if(result)
+    {
+        m_DailyArenasWon = result->Fetch()->GetUInt16();
+    }
+
     return true;
 }
 
@@ -15353,7 +15428,7 @@ void Player::_LoadInventory(QueryResultAutoPtr result, uint32 timediff)
         // send by mail problematic items
         while (!problematicItems.empty())
         {
-            std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
+            std::string subject = GetSession()->GetHellgroundString(LANG_NOT_EQUIPPED_ITEM);
 
             // fill mail
             MailDraft draft(subject);
@@ -15950,7 +16025,7 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
             if (report)
             {
                 if (missingItem)
-                    GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED_AND_ITEM), ar->levelMin, ObjectMgr::GetItemPrototype(missingItem)->Name1);
+                    GetSession()->SendAreaTriggerMessage(GetSession()->GetHellgroundString(LANG_LEVEL_MINREQUIRED_AND_ITEM), ar->levelMin, ObjectMgr::GetItemPrototype(missingItem)->Name1);
                 else if (missingKey)
                     SendTransferAborted(target_map, TRANSFER_ABORT_DIFFICULTY2);
                 else if (missingHeroicQuest)
@@ -15958,7 +16033,7 @@ bool Player::Satisfy(AccessRequirement const *ar, uint32 target_map, bool report
                 else if (missingQuest)
                     GetSession()->SendAreaTriggerMessage(ar->questFailedText.c_str());
                 else if (LevelMin)
-                    GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED), LevelMin);
+                    GetSession()->SendAreaTriggerMessage(GetSession()->GetHellgroundString(LANG_LEVEL_MINREQUIRED), LevelMin);
                 else if (missingAura)
                     GetSession()->SendAreaTriggerMessage(ar->missingAuraText.c_str());
             }
@@ -16072,8 +16147,8 @@ void Player::SaveToDB()
     stmt.PExecute(GetGUIDLow());
 
     static SqlStatementID updateStats;
-    stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?)");
-    stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY), GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
+    stmt = RealmDataDatabase.CreateStatement(updateStats, "INSERT INTO character_stats_ro VALUES (?, ?, ?, ?)");
+    stmt.PExecute(GetGUIDLow(), GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY), GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS),m_DailyArenasWon);
 
     static SqlStatementID deleteCharacter;
     static SqlStatementID insertCharacter;
@@ -17315,7 +17390,7 @@ void Player::Whisper(const std::string& text, uint32 language,uint64 receiver)
     if (!isAcceptWhispers() && !isGameMaster() && !rPlayer->isGameMaster())
     {
         SetAcceptWhispers(true);
-        ChatHandler(this).PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING,ChatHandler(this).GetTrinityString(LANG_ON));
+        ChatHandler(this).PSendSysMessage(LANG_COMMAND_WHISPERACCEPTING,ChatHandler(this).GetHellgroundString(LANG_ON));
     }
 
     // announce to player that player he is whispering to is afk
@@ -19332,6 +19407,7 @@ void Player::ResetDailyQuestStatus()
     // DB data deleted in caller
     m_DailyQuestChanged = false;
     m_lastDailyQuestTime = 0;
+    m_DailyArenasWon = 0;
 }
 
 BattleGround* Player::GetBattleGround() const
@@ -21017,7 +21093,22 @@ bool Player::IsReferAFriendLinked(Player* target)
 
 void Player::ChangeRace(uint8 new_race)
 {
-    static uint16 CapitalForRace[] = {0,72,76,47,69,68,81,54,530,0,911,930};
+    static uint16 CapitalForRace[12] = {0,72,76,47,69,68,81,54,530,0,911,930};
+
+    static uint16 MountsForRace[12][7] = {
+        {0,0,0,0,0,0,0},
+        {2411,2414,5655,5656,18776,18777,18778},
+        {1132,5665,5668,1132,18796,18797,18798},
+        {5864,5872,5873,5864,18785,18786,18787},
+        {8629,8631,8632,8629,18766,18767,18902},
+        {13331,13332,13333,13331,13334,18791,0},
+        {15277,15290,15277,15290,18793,18794,18795},
+        {8595,8563,13321,13322,18772,18773,18774},
+        {8588,8591,8592,8588,18788,18789,18790},
+        {0,0,0,0,0,0,0},
+        {28927,29220,29221,29222,29223,29224,28936},
+        {28481,29743,29744,28481,29745,29746,29747}
+    };
 
     sLog.outLog(LOG_CHAR,"Starting race change for player %s [%u]",GetName(),GetGUIDLow());
     Races old_race = Races(getRace());
@@ -21086,7 +21177,50 @@ void Player::ChangeRace(uint8 new_race)
     setFaction(Player::getFactionForRace(new_race));
     GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]);
 
-    //Items??
+    //Mounts
+    for (uint8 type = 0;type<7;type++){
+        for (uint16 i = INVENTORY_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
+        {
+            Item *pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            if (pItem && pItem->GetEntry() == MountsForRace[old_race][type])
+            {
+                DestroyItem(INVENTORY_SLOT_BAG_0,i,true);
+                EquipNewItem((INVENTORY_SLOT_BAG_0 <<8) + i,MountsForRace[new_race][type],true);
+            }
+        }
+        for (uint16 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
+        {
+            Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            if (pBag)
+            {
+                for (uint32 j = 0; j < pBag->GetBagSize(); j++)
+                {
+                    Item* pItem = pBag->GetItemByPos(j);
+                    if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
+                    {
+                        DestroyItem(i,j,true);
+                        EquipNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                    }
+                }
+            }
+        }
+        for (uint16 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        {
+            Bag* pBag = (Bag*)GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            if (pBag)
+            {
+                for (uint32 j = 0; j < pBag->GetBagSize(); j++)
+                {
+                    Item* pItem = pBag->GetItemByPos(j);
+                    if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
+                    {
+                        DestroyItem(i,j,true);
+                        EquipNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                    }
+                }
+            }
+        }
+    }
     sLog.outLog(LOG_CHAR,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
 }
 

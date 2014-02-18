@@ -112,19 +112,19 @@ const float* Sample::getBoundsMax()
 
 void Sample::resetCommonSettings()
 {
-	m_cellSize = 0.3f;
-	m_cellHeight = 0.2f;
+	m_cellSize = 0.26f;
+	m_cellHeight = 0.26f;
 	m_agentHeight = 2.0f;
-	m_agentRadius = 0.6f;
-	m_agentMaxClimb = 0.9f;
-	m_agentMaxSlope = 45.0f;
-	m_regionMinSize = 8;
-	m_regionMergeSize = 20;
-	m_edgeMaxLen = 12.0f;
-	m_edgeMaxError = 1.3f;
-	m_vertsPerPoly = 6.0f;
-	m_detailSampleDist = 6.0f;
-	m_detailSampleMaxError = 1.0f;
+	m_agentRadius = 2.f;
+	m_agentMaxClimb = 4.0f;
+	m_agentMaxSlope = 60.0f;
+	m_regionMinSize = 7.74f;
+	m_regionMergeSize = 7.07f;
+	m_edgeMaxLen = 81.0f;
+	m_edgeMaxError = 2.0f;
+	m_vertsPerPoly = 80.0f;
+	m_detailSampleDist = m_cellSize* 64;
+	m_detailSampleMaxError =m_cellSize*2;
 }
 
 void Sample::handleCommonSettings()
@@ -146,9 +146,9 @@ void Sample::handleCommonSettings()
 	
 	imguiSeparator();
 	imguiLabel("Agent");
-	imguiSlider("Height", &m_agentHeight, 0.1f, 5.0f, 0.1f);
+	imguiSlider("Height", &m_agentHeight, 0.1f, 10.0f, 0.1f);
 	imguiSlider("Radius", &m_agentRadius, 0.0f, 5.0f, 0.1f);
-	imguiSlider("Max Climb", &m_agentMaxClimb, 0.1f, 5.0f, 0.1f);
+	imguiSlider("Max Climb", &m_agentMaxClimb, 0.1f, 10.0f, 0.1f);
 	imguiSlider("Max Slope", &m_agentMaxSlope, 0.0f, 90.0f, 1.0f);
 	
 	imguiSeparator();

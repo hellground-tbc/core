@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,16 +10,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITYCORE_CHAT_H
-#define TRINITYCORE_CHAT_H
+#ifndef HELLGROUND_CHAT_H
+#define HELLGROUND_CHAT_H
 
 #include "SharedDefines.h"
 
@@ -63,7 +63,7 @@ class ChatHandler
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
         static std::string GetNameLink(const std::string & name);
 
-        virtual const char *GetTrinityString(int32 entry) const;
+        virtual const char *GetHellgroundString(int32 entry) const;
 
         virtual void SendSysMessage( const char *str);
         void SendSysMessage(         int32     entry);
@@ -420,7 +420,6 @@ class ChatHandler
         bool HandleServerMuteCommand(const char* args);
         bool HandleServerRestartCommand(const char* args);
         bool HandleServerSetMotdCommand(const char* args);
-        bool HandleServerSetLogLevelCommand(const char* args);
         bool HandleServerSetDiffTimeCommand(const char* args);
         bool HandleServerShutDownCommand(const char* args);
         bool HandleServerRollShutDownCommand(const char* args);
@@ -625,7 +624,7 @@ class CliHandler : public ChatHandler
         explicit CliHandler(Print* zprint) : m_print(zprint) {}
 
         // overwrite functions
-        const char *GetTrinityString(int32 entry) const;
+        const char *GetHellgroundString(int32 entry) const;
         bool isAvailable(ChatCommand const& cmd) const;
         void SendSysMessage(const char *str);
         char const* GetName() const;

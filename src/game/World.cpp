@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /** \file
@@ -111,7 +111,7 @@ void MapUpdateDiffInfo::PrintCumulativeMapUpdateDiff()
 World::World()
 {
     m_playerLimit = 0;
-    m_requiredPermissionMask = 0;
+    m_requiredPermissionMask = PERM_PLAYER;
     m_allowMovement = true;
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
@@ -274,7 +274,6 @@ void World::AddSession_ (WorldSession* s)
     m_sessions[s->GetAccountId()] = s;
 
     uint32 Sessions = GetActiveAndQueuedSessionCount ();
-    uint32 pLimit = GetPlayerAmountLimit ();
     uint32 QueueSize = GetQueueSize (); //number of players in the queue
 
     //so we don't count the user trying to
@@ -282,7 +281,7 @@ void World::AddSession_ (WorldSession* s)
     if (decrease_session)
         --Sessions;
 
-    if (pLimit > 0 && Sessions >= pLimit && !s->HasPermissions(PERM_GMT_HDEV))
+    if (m_playerLimit > 0 && Sessions >= m_playerLimit && !s->HasPermissions(PERM_GMT_HDEV))
     {
         if (!sObjectMgr.IsUnqueuedAccount(s->GetAccountId()) && !HasRecentlyDisconnected(s))
         {
@@ -304,10 +303,10 @@ void World::AddSession_ (WorldSession* s)
     UpdateMaxSessionCounters();
 
     // Updates the population
-    if (pLimit > 0)
+    if (m_playerLimit > 0)
     {
         float popu = GetActiveSessionCount (); //updated number of users on the server
-        popu /= pLimit;
+        popu /= m_playerLimit;
         popu *= 2;
         AccountsDatabase.PExecute ("UPDATE realms SET population = '%f' WHERE realm_id = '%u'", popu, realmID);
         sLog.outDetail ("Server Population (%f).", popu);
@@ -480,8 +479,8 @@ void World::LoadConfigSettings(bool reload)
     }
 
     ///- Read the player limit and the Message of the day from the config file
-    SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT), true);
-    SetMotd(sConfig.GetStringDefault("Motd", "Welcome to a Trinity Core Server."));
+    SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
+    SetMotd(sConfig.GetStringDefault("Motd", "Welcome to a HellgroundCore Server."));
 
     ///- Get string for new logins (newly created characters)
     SetNewCharString(sConfig.GetStringDefault("PlayerStart.String", ""));
@@ -624,6 +623,9 @@ void World::LoadConfigSettings(bool reload)
        sMapMgr.SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
 
     m_configs[CONFIG_ARENA_STATUS_INFO] = sConfig.GetBoolDefault("Arena.StatusInfo");
+    m_configs[CONFIG_ARENA_ELO_COEFFICIENT] = sConfig.GetIntDefault("Arena.ELOCoefficient",32);
+    m_configs[CONFIG_ARENA_DAILY_REQUIREMENT] = sConfig.GetIntDefault("Arena.DailyRequirement",0);
+    m_configs[CONFIG_ARENA_DAILY_AP_REWARD] = sConfig.GetIntDefault("Arena.DailyAPReward",0);
     m_configs[CONFIG_BATTLEGROUND_ANNOUNCE_START] = sConfig.GetIntDefault("BattleGround.AnnounceStart", 0);
     m_configs[CONFIG_BATTLEGROUND_QUEUE_INFO] = sConfig.GetIntDefault("BattleGround.QueueInfo", 0);
     m_configs[CONFIG_BATTLEGROUND_TIMER_INFO] = sConfig.GetBoolDefault("BattleGround.TimerInfo");
@@ -644,7 +646,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
         if (val!=m_configs[CONFIG_PORT_WORLD])
-            sLog.outLog(LOG_DEFAULT, "ERROR: WorldServerPort option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldServerPort option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
     }
     else
         m_configs[CONFIG_PORT_WORLD] = sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
@@ -653,13 +655,12 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfig.GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
         if (val != m_configs[CONFIG_SOCKET_SELECTTIME])
-            sLog.outLog(LOG_DEFAULT, "ERROR: SocketSelectTime option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_SOCKET_SELECTTIME]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: SocketSelectTime option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_SOCKET_SELECTTIME]);
     }
     else
         m_configs[CONFIG_SOCKET_SELECTTIME] = sConfig.GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
 
     m_configs[CONFIG_GROUP_XP_DISTANCE] = sConfig.GetIntDefault("MaxGroupXPDistance", 74);
-    /// \todo Add MonsterSight and GuarderSight (with meaning) in Trinityd.conf or put them as define
     m_configs[CONFIG_SIGHT_MONSTER] = sConfig.GetIntDefault("MonsterSight", 50);
     m_configs[CONFIG_SIGHT_GUARDER] = sConfig.GetIntDefault("GuarderSight", 50);
 
@@ -667,7 +668,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfig.GetIntDefault("GameType", 0);
         if (val!=m_configs[CONFIG_GAME_TYPE])
-            sLog.outLog(LOG_DEFAULT, "ERROR: GameType option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: GameType option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
     }
     else
         m_configs[CONFIG_GAME_TYPE] = sConfig.GetIntDefault("GameType", 0);
@@ -676,7 +677,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfig.GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
         if (val!=m_configs[CONFIG_REALM_ZONE])
-            sLog.outLog(LOG_DEFAULT, "ERROR: RealmZone option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: RealmZone option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
     }
     else
         m_configs[CONFIG_REALM_ZONE] = sConfig.GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
@@ -739,6 +740,7 @@ void World::LoadConfigSettings(bool reload)
     setConfig(CONFIG_UINT32_RAF_MAXREFERERS, sConfig.GetIntDefault("RAF.MaxReferers", 5));
     setConfig(CONFIG_FLOAT_RATE_RAF_XP, sConfig.GetFloatDefault("Rate.RAF.XP", 3.0f));
     setConfig(CONFIG_FLOAT_RATE_RAF_LEVELPERLEVEL, sConfig.GetFloatDefault("Rate.RAF.LevelPerLevel", 0.5f));
+    setConfig(CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE, sConfig.GetIntDefault("Npc.InstaKillGuardianRange", 100.0f));
 
     m_configs[CONFIG_START_PLAYER_LEVEL] = sConfig.GetIntDefault("StartPlayerLevel", 1);
     if (m_configs[CONFIG_START_PLAYER_LEVEL] < 1)
@@ -926,7 +928,7 @@ void World::LoadConfigSettings(bool reload)
     {
         uint32 val = sConfig.GetIntDefault("Expansion",1);
         if (val!=m_configs[CONFIG_EXPANSION])
-            sLog.outLog(LOG_DEFAULT, "ERROR: Expansion option can't be changed at Trinityd.conf reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
+            sLog.outLog(LOG_DEFAULT, "ERROR: Expansion option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
     }
     else
         m_configs[CONFIG_EXPANSION] = sConfig.GetIntDefault("Expansion",1);
@@ -1037,7 +1039,7 @@ void World::LoadConfigSettings(bool reload)
     if (reload)
     {
         if (dataPath!=m_dataPath)
-            sLog.outLog(LOG_DEFAULT, "ERROR: DataDir option can't be changed at Trinityd.conf reload, using current value (%s).",m_dataPath.c_str());
+            sLog.outLog(LOG_DEFAULT, "ERROR: DataDir option can't be changed at .conf file reload, using current value (%s).",m_dataPath.c_str());
     }
     else
     {
@@ -1121,6 +1123,11 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ENABLE_FAKE_WHO_ON_ARENA] = sConfig.GetBoolDefault("Arena.EnableFakeWho", false);
     m_configs[CONFIG_ENABLE_FAKE_WHO_IN_GUILD] = sConfig.GetBoolDefault("Arena.EnableFakeWho.ForGuild", false);
 
+    m_configs[CONFIG_ENABLE_GANKING_PENALTY] = sConfig.GetBoolDefault("PVP.EnableGankingPenalty", false);
+    m_configs[CONFIG_GANKING_PENALTY_EXPIRE] = sConfig.GetIntDefault("PVP.GankingPenaltyExpireTime", 600000);
+    m_configs[CONFIG_GANKING_KILLS_ALERT] = sConfig.GetIntDefault("PVP.GankingPenaltyKillsAlert", 10);
+    rate_values[CONFIG_GANKING_PENALTY_PER_KILL] = sConfig.GetFloatDefault("PVP.GankingPenaltyPerKill", 0.1);
+
     sessionThreads = sConfig.GetIntDefault("SessionUpdate.Threads", 0);
 
     // VMSS system
@@ -1184,7 +1191,7 @@ void World::SetInitialWorldSettings()
         ||m_configs[CONFIG_EXPANSION] && (
         !MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f)))
     {
-        sLog.outLog(LOG_DEFAULT, "ERROR: Correct *.map files not found in path '%smaps' or *.vmap/*vmdir files in '%svmaps'. Please place *.map/*.vmap/*.vmdir files in appropriate directories or correct the DataDir value in the Trinityd.conf file.",m_dataPath.c_str(),m_dataPath.c_str());
+        sLog.outLog(LOG_DEFAULT, "ERROR: Correct *.map files not found in path '%smaps' or *.vmap/*vmdir files in '%svmaps'. Please place *.map/*.vmap/*.vmdir files in appropriate directories or correct the DataDir value in the .conf file.",m_dataPath.c_str(),m_dataPath.c_str());
         exit(1);
     }
 
@@ -1680,9 +1687,9 @@ void World::Update(uint32 diff)
 
             sLog.outLog(LOG_DEFAULT, "[Diff]: Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
             sLog.outLog(LOG_DIFF, "Update time diff: %u, avg: %u. Players online: %u.", m_curAvgUpdateTime, m_avgUpdateTime, GetActiveSessionCount());
-            sLog.outLog(LOG_STATUS, "%u %u %u %u %u %u %s %u %u %u %u",
+            sLog.outLog(LOG_STATUS, "%u %u %u %u %u %u %s %u %u %u %u %u",
                         GetUptime(), GetActiveSessionCount(), GetMaxActiveSessionCount(), GetQueuedSessionCount(), GetMaxQueuedSessionCount(),
-                        GetPlayerAmountLimit(), _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances.value(), loggedInHordes.value());
+                        m_playerLimit, _REVISION, m_curAvgUpdateTime, m_avgUpdateTime, loggedInAlliances.value(), loggedInHordes.value(), sWorld.GetGameTime());
 
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
@@ -2030,7 +2037,7 @@ void World::SendGuildAnnounce(uint32 team, ...)
 
             data_list = &data_cache[cache_idx];
 
-            char const* text = sObjectMgr.GetTrinityString(LANG_GUILD_ANNOUNCE,loc_idx);
+            char const* text = sObjectMgr.GetHellgroundString(LANG_GUILD_ANNOUNCE,loc_idx);
 
             char buf[1000];
 
@@ -2101,7 +2108,7 @@ void World::SendWorldText(int32 string_id, uint32 preventFlags, ...)
 
             data_list = &data_cache[cache_idx];
 
-            char const* text = sObjectMgr.GetTrinityString(string_id,loc_idx);
+            char const* text = sObjectMgr.GetHellgroundString(string_id,loc_idx);
 
             char buf[1000];
 
@@ -2162,7 +2169,7 @@ void World::SendWorldTextForLevels(uint32 minLevel, uint32 maxLevel, uint32 prev
 
             data_list = &data_cache[cache_idx];
 
-            char const* text = sObjectMgr.GetTrinityString(string_id,loc_idx);
+            char const* text = sObjectMgr.GetHellgroundString(string_id,loc_idx);
 
             char buf[1000];
 
@@ -2215,7 +2222,7 @@ void World::SendGMText(int32 string_id, ...)
 
             data_list = &data_cache[cache_idx];
 
-            char const* text = sObjectMgr.GetTrinityString(string_id,loc_idx);
+            char const* text = sObjectMgr.GetHellgroundString(string_id,loc_idx);
 
             char buf[1000];
 
@@ -2854,6 +2861,7 @@ void World::ResetDailyQuests()
 {
     sLog.outDetail("Daily quests reset for all characters.");
     RealmDataDatabase.Execute("DELETE FROM character_queststatus_daily");
+    RealmDataDatabase.Execute("UPDATE character_stats_ro SET dailyarenawins = 0");
     for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
         if (itr->second->GetPlayer())
             itr->second->GetPlayer()->ResetDailyQuestStatus();
@@ -2867,9 +2875,21 @@ void World::ResetDailyQuests()
     //sGameEventMgr.LoadFromDB();
 }
 
-void World::SetPlayerLimit(int32 limit, bool needUpdate)
+void World::SetPlayerLimit(int32 limit)
 {
-    m_playerLimit = limit;
+    if(limit >= 0)
+    {
+        m_playerLimit = limit;
+        m_requiredPermissionMask = PERM_PLAYER;
+        return;
+    }
+    
+    if(limit == -1)
+        m_requiredPermissionMask = PERM_GMT_DEV;
+    if(limit == -2)
+        m_requiredPermissionMask = PERM_HIGH_GMT | PERM_HEAD_DEVELOPER;
+    if(limit == -3)
+        m_requiredPermissionMask = PERM_ADM;
 }
 
 void World::UpdateMaxSessionCounters()

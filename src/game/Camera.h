@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,16 +9,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef HELLGROUND_CAMERA_H
+#define HELLGROUND_CAMERA_H
 
 #include "Common.h"
 #include "GridDefines.h"
@@ -86,8 +87,8 @@ class HELLGROUND_IMPORT_EXPORT ViewPoint
     CameraList _cameras;
     GridType * _grid;
 
-    void Attach(Camera* c) { _cameras.push_back(c); }
-    void Detach(Camera* c) { _cameras.remove(c); }
+    void Attach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.push_back(c); }
+    void Detach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.remove(c); }
 
     void CameraCall(void (Camera::*handler)())
     {
@@ -100,6 +101,8 @@ class HELLGROUND_IMPORT_EXPORT ViewPoint
             }
         }
     }
+private:
+    ACE_Thread_Mutex m_mutex;
 
 public:
 

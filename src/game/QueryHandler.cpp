@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResultAutoPtr result, 
     std::string name = fields[1].GetCppString();
     uint32 field     = 0;
     if (name == "")
-        name         = session->GetTrinityString(LANG_NON_EXIST_CHARACTER);
+        name         = session->GetHellgroundString(LANG_NON_EXIST_CHARACTER);
     else
         field        = fields[2].GetUInt32();
 

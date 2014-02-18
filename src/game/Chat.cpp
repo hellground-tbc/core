@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -85,7 +85,6 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand serverSetCommandTable[] =
     {
         { "difftime",       PERM_CONSOLE,   true,   &ChatHandler::HandleServerSetDiffTimeCommand,   "", NULL },
-        { "loglevel",       PERM_CONSOLE,   true,   &ChatHandler::HandleServerSetLogLevelCommand,   "", NULL },
         { "motd",           PERM_ADM,       true,   &ChatHandler::HandleServerSetMotdCommand,       "", NULL },
         { NULL,             0,              false,  NULL,                                           "", NULL }
     };
@@ -808,9 +807,9 @@ ChatCommand * ChatHandler::getCommandTable()
     return commandTable;
 }
 
-const char *ChatHandler::GetTrinityString(int32 entry) const
+const char *ChatHandler::GetHellgroundString(int32 entry) const
 {
-    return m_session->GetTrinityString(entry);
+    return m_session->GetHellgroundString(entry);
 }
 
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
@@ -881,7 +880,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
 
 void ChatHandler::SendGlobalGMSysMessage(int32 entry, ...)
 {
-    const char *format = GetTrinityString(entry);
+    const char *format = GetHellgroundString(entry);
     va_list ap;
     char str [1024];
     va_start(ap, entry);
@@ -909,12 +908,12 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
 
 void ChatHandler::SendSysMessage(int32 entry)
 {
-    SendSysMessage(GetTrinityString(entry));
+    SendSysMessage(GetHellgroundString(entry));
 }
 
 void ChatHandler::PSendSysMessage(int32 entry, ...)
 {
-    const char *format = GetTrinityString(entry);
+    const char *format = GetHellgroundString(entry);
     va_list ap;
     char str [1024];
     va_start(ap, entry);
@@ -1480,9 +1479,9 @@ bool ChatHandler::needReportToTarget(Player* chr) const
     return pl != chr && pl->IsVisibleGloballyfor (chr);
 }
 
-const char *CliHandler::GetTrinityString(int32 entry) const
+const char *CliHandler::GetHellgroundString(int32 entry) const
 {
-    return sObjectMgr.GetTrinityStringForDBCLocale(entry);
+    return sObjectMgr.GetHellgroundStringForDBCLocale(entry);
 }
 
 bool CliHandler::isAvailable(ChatCommand const& cmd) const
@@ -1499,7 +1498,7 @@ void CliHandler::SendSysMessage(const char *str)
 
 const char *CliHandler::GetName() const
 {
-    return GetTrinityString(LANG_CONSOLE_COMMAND);
+    return GetHellgroundString(LANG_CONSOLE_COMMAND);
 }
 
 bool CliHandler::needReportToTarget(Player* /*chr*/) const

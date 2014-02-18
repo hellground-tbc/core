@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,16 +10,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#ifndef HELLGROUND_PLAYER_H
+#define HELLGROUND_PLAYER_H
 
 #include "Common.h"
 
@@ -113,6 +113,8 @@ struct SpellModifier
 
 typedef UNORDERED_MAP<uint16, PlayerSpell> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
+
+typedef UNORDERED_MAP<uint64, std::pair<uint32, uint64>> ConsecutiveKillsMap;
 
 struct SpellCooldown
 {
@@ -841,6 +843,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADBGCOORD              = 17,
     PLAYER_LOGIN_QUERY_LOADMAILS                = 18,
     PLAYER_LOGIN_QUERY_LOADMAILEDITEMS          = 19,
+    PLAYER_LOGIN_QUERY_LOADDAILYARENA           = 20,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1867,6 +1870,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void ModifyHonorPoints(int32 value);
         void ModifyArenaPoints(int32 value);
         uint32 GetMaxPersonalArenaRatingRequirement();
+        uint16 m_DailyArenasWon;
 
         //End of PvP System
 
@@ -2437,7 +2441,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_Tutorials[8];
         bool m_TutorialsChanged;
 
-        bool m_DailyQuestChanged;
+        bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
         uint32 m_drunkTimer;
@@ -2534,6 +2538,13 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
+        
+        void AddConsecutiveKill(uint64 guid);
+        uint32 GetConsecutiveKillsCount(uint64 guid);
+
+        void UpdateConsecutiveKills();
+
+        ConsecutiveKillsMap m_consecutiveKills;
 
         // Current teleport data
         WorldLocation m_teleport_dest;

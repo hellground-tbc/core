@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -120,7 +123,7 @@ bool GossipSelect_npc_innkeeper(Player *player, Creature *_Creature, uint32 send
             }
             player->CastSpell(player, trickspell, true);
         }
-        return true;                                        // prevent Trinity core handling
+        return true;                                        // prevent core handling
     }
     //Trininty Gossip core handling dont work...
     else if (action == GOSSIP_OPTION_VENDOR)

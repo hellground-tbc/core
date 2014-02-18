@@ -1,22 +1,22 @@
 /*
-* Copyright(C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
-*
-* Copyright(C) 2008 Trinity <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-*/
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 #include <ace/Message_Block.h>
 #include <ace/OS_NS_string.h>
@@ -45,7 +45,6 @@
 #include "WorldSession.h"
 #include "WorldSocketMgr.h"
 #include "Log.h"
-#include "WorldLog.h"
 #include "DBCStores.h"
 
 #if defined(__GNUC__)
@@ -140,27 +139,6 @@ int WorldSocket::SendPacket(const WorldPacket& pct)
 
     if (closing_)
         return -1;
-
-    // Dump outgoing packet.
-    if (sWorldLog.LogWorld())
-    {
-        sWorldLog.Log("SERVER:\nSOCKET: %u\nLENGTH: %u\nOPCODE: %s(0x%.4X)\nDATA:\n",
-                    (uint32) get_handle(),
-                     pct.size(),
-                     LookupOpcodeName(pct.GetOpcode()),
-                     pct.GetOpcode());
-
-        uint32 p = 0;
-        while (p < pct.size())
-        {
-            for (uint32 j = 0; j < 16 && p < pct.size(); j++)
-                sWorldLog.Log("%.2X ", const_cast<WorldPacket&>(pct)[p++]);
-
-            sWorldLog.Log("\n");
-        }
-
-        sWorldLog.Log("\n\n");
-    }
 
     if (iSendPacket(pct) == -1)
     {
@@ -578,25 +556,6 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     if (closing_)
         return -1;
 
-    // Dump received packet.
-    if (sWorldLog.LogWorld())
-    {
-        sWorldLog.Log("CLIENT:\nSOCKET: %u\nLENGTH: %u\nOPCODE: %s(0x%.4X)\nDATA:\n",
-                    (uint32) get_handle(),
-                     new_pct->size(),
-                     LookupOpcodeName(new_pct->GetOpcode()),
-                     new_pct->GetOpcode());
-
-        uint32 p = 0;
-        while (p < new_pct->size())
-        {
-            for (uint32 j = 0; j < 16 && p < new_pct->size(); j++)
-                sWorldLog.Log("%.2X ",(*new_pct)[p++]);
-            sWorldLog.Log("\n");
-        }
-        sWorldLog.Log("\n\n");
-    }
-
     try
     {
         switch (opcode)
@@ -830,7 +789,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Check locked state for server
     sWorld.UpdateRequiredPermissions();
     uint64 minimumPermissions = sWorld.GetMinimumPermissionMask();
-    sLog.outDebug("Allowed Level: %u Player Level %u", minimumPermissions, permissionMask);
+    sLog.outDebug("Allowed permission mask: %u Player permission mask: %u", minimumPermissions, permissionMask);
     if (!(permissionMask & minimumPermissions))
     {
         WorldPacket Packet(SMSG_AUTH_RESPONSE, 1);

@@ -127,6 +127,10 @@ void OffMeshConnectionTool::handleClick(const float* /*s*/, const float* p, bool
 			const unsigned short flags = SAMPLE_POLYFLAGS_JUMP; 
 			geom->addOffMeshConnection(m_hitPos, p, m_sample->getAgentRadius(), m_bidir ? 1 : 0, area, flags);
 			m_hitPosSet = false;
+            float* v = new float[6];
+            	rcVcopy(&v[0], m_hitPos);
+	        rcVcopy(&v[3], p);
+            printf("572 29,29 (%.3f %.3f %.3f) (%.3f %.3f %.3f) 5.0f", v[0],v[1], v[2],v[3],v[4],v[5]);
 		}
 	}
 	
