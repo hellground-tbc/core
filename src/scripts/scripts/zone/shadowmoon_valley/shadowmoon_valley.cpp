@@ -2115,7 +2115,7 @@ struct npc_AkamaAI : public ScriptedAI
                     {
                         target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                         target->SetHealth(target->GetMaxHealth());
-                        target->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+                        target->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
                     }
                 }
                 m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, 0);
