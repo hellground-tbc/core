@@ -22,8 +22,8 @@
 
 /* ScriptData
 SDName: Boss_Muru/Entropius
-SD%Complete: 90
-SDComment: Final testing and debugging
+SD%Complete: 99
+SDComment:
 */
 
 /* Additional scripts
@@ -129,7 +129,7 @@ struct boss_muruAI : public Scripted_NoMovementAI
         TransitionTimer = 0;
         Summons.DespawnAll();
 
-        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) == DONE && pInstance->GetData(DATA_MURU_TESTING) != DONE)
+        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) == DONE)
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -147,7 +147,6 @@ struct boss_muruAI : public Scripted_NoMovementAI
 
     void EnterEvadeMode()
     {
-        pInstance->SetData(DATA_MURU_TESTING, FAIL);
         CreatureAI::EnterEvadeMode();
         pInstance->SetData(DATA_MURU_EVENT, NOT_STARTED);
         me->SetVisibility(VISIBILITY_OFF);
@@ -155,11 +154,10 @@ struct boss_muruAI : public Scripted_NoMovementAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         Summons.DespawnAll();
         HumanoidStart = 10000;
-        if(pInstance->GetData(DATA_MURU_TESTING) != DONE)
-            ResetTimer = 30000;
+        ResetTimer = 30000;
     }
 
-    void SendMessageAtStart(const char *format, ...)
+    /*void SendMessageAtStart(const char *format, ...)
     {
         va_list ap;
         char str [1024];
@@ -167,18 +165,13 @@ struct boss_muruAI : public Scripted_NoMovementAI
         vsnprintf(str,1024,format, ap);
         va_end(ap);
         me->Yell(str, 0, me->GetGUID());
-    }
+    }*/
 
     void EnterCombat(Unit *who)
     {
-        if(pInstance->GetData(DATA_MURU_TESTING) == DONE)
-        {
-            EnterEvadeMode();
-            return;
-        }
         me->SetIngoreVictimSelection(true);
-        uint32 counter = pInstance->GetData(DATA_MURU_TESTING_COUNTER);
-        SendMessageAtStart("Welcome testers! You have still: %u boss tries left. Good luck!!", counter);
+        //uint32 counter = pInstance->GetData(DATA_MURU_TESTING_COUNTER);
+        //SendMessageAtStart("Welcome testers! You have still: %u boss tries left. Good luck!!", counter);
         DoCast(me, SPELL_NEGATIVE_ENERGY_PERIODIC);
         DoCast(me, SPELL_OPEN_PORTAL_PERIODIC);
         DoCast(me, SPELL_DARKNESS_PERIODIC);
@@ -189,8 +182,6 @@ struct boss_muruAI : public Scripted_NoMovementAI
         if(ResetTimer)
             return;
         if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
-            return;
-        if(pInstance->GetData(DATA_MURU_TESTING) == DONE)
             return;
 
         ScriptedAI::MoveInLineOfSight(who);
@@ -231,14 +222,14 @@ struct boss_muruAI : public Scripted_NoMovementAI
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 60.0f);
+        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 80.0f);
 
         if (me->GetSelection())
             me->SetSelection(NULL);
 
         if (EnrageTimer < diff)
         {
-            DoCast(me, SPELL_ENRAGE);
+            DoCast(me, SPELL_ENRAGE, true);
             EnrageTimer = 60000;
         }
         else
@@ -250,7 +241,7 @@ struct boss_muruAI : public Scripted_NoMovementAI
             {
                 pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
                 // if anyone trapped outside front door, evade
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, 0, 41))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, 0, 60))
                 {
                     EnterEvadeMode();
                     return;
@@ -359,11 +350,11 @@ struct boss_entropiusAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 60.0f);
+        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 100.0f);
 
         if (EnrageTimer < diff)
         {
-            DoCast(me, SPELL_ENRAGE);
+            AddSpellToCast(me, SPELL_ENRAGE);
             EnrageTimer = 60000;
         }
         else
@@ -372,7 +363,7 @@ struct boss_entropiusAI : public ScriptedAI
         if (DarknessTimer < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-                DoCast(target, SPELL_DARKNESS);
+                AddSpellToCast(target, SPELL_DARKNESS);
             DarknessTimer = 15000;
         }
         else
@@ -381,13 +372,14 @@ struct boss_entropiusAI : public ScriptedAI
         if (BlackHole < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, me->getVictimGUID(), 10.0))
-                DoCast(target, SPELL_BLACK_HOLE);
+                AddSpellToCast(target, SPELL_BLACK_HOLE);
             BlackHole = urand(15000, 18000);
         }
         else
             BlackHole -= diff;
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
