@@ -117,6 +117,9 @@ struct boss_thaddiusAI : public BossAI
 
     void EnterEvadeMode()
     {
+        events.Reset();
+        ClearCastQueue();
+
         if (Creature *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
             if (!pStalagg->isAlive())
                 pStalagg->Respawn();
@@ -124,11 +127,13 @@ struct boss_thaddiusAI : public BossAI
         if (Creature *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
             if (!pFeugen->isAlive())
                 pFeugen->Respawn();
+
+        CreatureAI::EnterEvadeMode();
     }
 
     void Engage()
     {
-        me->ToCreature()->SetReactState(REACT_AGGRESSIVE);
+        me->SetReactState(REACT_AGGRESSIVE);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         DoZoneInCombat();
@@ -199,6 +204,8 @@ struct boss_thaddiusAI : public BossAI
         if (!UpdateVictim())
             return;
 
+        DoSpecialThings(diff, DO_EVADE_CHECK, 100.0f);
+
         events.Update(diff);
         while (uint32 eventId = events.ExecuteEvent())
         {
@@ -260,6 +267,8 @@ struct boss_stalaggAI : public BossAI
         if (Creature *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
             if (!pFeugen->isAlive())
                 pFeugen->Respawn();
+
+        CreatureAI::EnterEvadeMode();
     }
 
     void EnterCombat(Unit*)
@@ -274,30 +283,22 @@ struct boss_stalaggAI : public BossAI
             DoScriptText(SAY_STAL_SLAY, me);
     }
 
-    void Revive()
-    {
-        me->GetMotionMaster()->Initialize();
-        me->setDeathState(JUST_DIED);
-        me->Respawn();
-        me->SetReactState(REACT_AGGRESSIVE);
-    }
-
     void JustDied(Unit *pKiller)
     {
         DoScriptText(SAY_STAL_DEATH, me);
 
-        if (Creature* pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
+        if (Creature *pFeugen = instance->GetCreature(instance->GetData64(DATA_FEUGEN)))
         {
             if (!pFeugen->HealthBelowPct(2))
             {
-                Revive();
+                me->setDeathState(JUST_DIED);
+                me->Respawn();
                 return;
             }
 
             if (pFeugen->isDead())
-                if (Unit *pThaddius = instance->GetCreature(instance->GetData64(DATA_THADDIUS)))
-                    if (pThaddius->ToCreature()->AI())
-                        ((boss_thaddiusAI*) pThaddius->ToCreature()->AI())->Engage();
+                if (Creature *pThaddius = instance->GetCreature(instance->GetData64(DATA_THADDIUS)))
+                    ((boss_thaddiusAI*) (pThaddius->AI()))->Engage();
         }
     }
 
@@ -305,6 +306,8 @@ struct boss_stalaggAI : public BossAI
     {
         if (!UpdateVictim())
             return;
+
+        DoSpecialThings(diff, DO_EVADE_CHECK, 100.0f);
 
         events.Update(diff);
         while (uint32 eventId = events.ExecuteEvent())
@@ -368,6 +371,8 @@ struct boss_feugenAI : public BossAI
         if (Creature *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
             if (!pStalagg->isAlive())
                 pStalagg->Respawn();
+
+        CreatureAI::EnterEvadeMode();
     }
 
     void EnterCombat(Unit*)
@@ -382,30 +387,22 @@ struct boss_feugenAI : public BossAI
             DoScriptText(SAY_FEUG_SLAY, me);
     }
 
-    void Revive()
-    {
-        me->GetMotionMaster()->Initialize();
-        me->setDeathState(JUST_DIED);
-        me->Respawn();
-        me->SetReactState(REACT_AGGRESSIVE);
-    }
-
     void JustDied(Unit *pKiller)
     {
         DoScriptText(SAY_FEUG_DEATH, me);
 
-        if (Creature* pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
+        if (Creature *pStalagg = instance->GetCreature(instance->GetData64(DATA_STALAGG)))
         {
             if (!pStalagg->HealthBelowPct(2))
             {
-                Revive();
+                me->setDeathState(JUST_DIED);
+                me->Respawn();
                 return;
             }
 
             if (pStalagg->isDead())
-                if (Unit *pThaddius = instance->GetCreature(instance->GetData64(DATA_THADDIUS)))
-                    if (pThaddius->ToCreature()->AI())
-                        ((boss_thaddiusAI*) pThaddius->ToCreature()->AI())->Engage();
+                if (Creature *pThaddius = instance->GetCreature(instance->GetData64(DATA_THADDIUS)))
+                    ((boss_thaddiusAI*) (pThaddius->AI()))->Engage();
         }
     }
 
@@ -413,6 +410,8 @@ struct boss_feugenAI : public BossAI
     {
         if (!UpdateVictim())
             return;
+
+        DoSpecialThings(diff, DO_EVADE_CHECK, 100.0f);
 
         events.Update(diff);
         while (uint32 eventId = events.ExecuteEvent())
