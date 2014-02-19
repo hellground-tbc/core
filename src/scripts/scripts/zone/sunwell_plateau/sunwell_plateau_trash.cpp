@@ -2297,7 +2297,10 @@ struct mob_shadowsword_guardianAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         if (pInstance->GetData(DATA_MURU_EVENT) != DONE)
+        {
             EnterEvadeMode();
+            return;
+        }
         DoCast(me, SPELL_EARTHQUAKE);
         DoZoneInCombat(80.0f);
     }
