@@ -92,7 +92,8 @@ void BattleGroundWS::Update(uint32 diff)
 
         if(m_TimeElapsedSinceBeggining> sBattleGroundMgr.GetWSGEndAfterTime()/2 &&
             m_TimeElapsedSinceBeggining/180000 > (m_TimeElapsedSinceBeggining - diff)/180000) //warning every 3 mins
-            PrepareMessageToAll("This battleground will end in %u min.",m_TimeElapsedSinceBeggining /60000);
+            PrepareMessageToAll("This battleground will end in %u min.",
+            sBattleGroundMgr.GetWSGEndAfterTime() - m_TimeElapsedSinceBeggining /60000);
 
     }
 
