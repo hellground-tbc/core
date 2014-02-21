@@ -193,7 +193,7 @@ void GameEventMgr::LoadFromDB()
         mGameEvent.resize(max_event_id+1);
     }
 
-    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,UNIX_TIMESTAMP(start_time),UNIX_TIMESTAMP(end_time),occurence,length,description,world_event FROM game_event");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,UNIX_TIMESTAMP(start_time),UNIX_TIMESTAMP(end_time),occurence,length,description,world_event,flags FROM game_event");
     if (!result)
     {
         mGameEvent.clear();
@@ -229,6 +229,7 @@ void GameEventMgr::LoadFromDB()
         pGameEvent.description  = fields[5].GetCppString();
         pGameEvent.state        = (GameEventState)(fields[6].GetUInt8());
         pGameEvent.nextstart    = 0;
+        pGameEvent.flags         = fields[7].GetUInt8();
 
         if (pGameEvent.length==0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {
@@ -1451,6 +1452,15 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
         {
             if (!hasCreatureQuestActiveEventExcept(itr->second,event_id))
             {
+                if (mGameEvent[event_id].flags & GAMEEVENT_FLAG_REMOVE_QUESTS_AT_END)
+                {
+                    //remove quest from both online and offline players
+                    RealmDataDatabase.PExecute("DELETE FROM character_queststatus WHERE quest = %u",itr->second);
+                    HashMapHolder<Player>::MapType& m = sObjectAccessor.GetPlayers();
+                    for (HashMapHolder<Player>::MapType::iterator pitr = m.begin(); pitr != m.end(); ++pitr)
+                        if (pitr->second->GetQuestStatus(itr->second) != QUEST_STATUS_NONE)
+                            pitr->second->SetQuestStatus(itr->second,QUEST_STATUS_NONE);
+                }
                 // Remove the pair(id,quest) from the multimap
                 QuestRelations::iterator qitr = CreatureQuestMap.find(itr->first);
                 if (qitr == CreatureQuestMap.end())
@@ -1476,6 +1486,15 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
         {
             if (!hasGameObjectQuestActiveEventExcept(itr->second,event_id))
             {
+                if (mGameEvent[event_id].flags & GAMEEVENT_FLAG_REMOVE_QUESTS_AT_END)
+                {
+                    //remove quest from both online and offline players
+                    RealmDataDatabase.PExecute("DELETE FROM character_queststatus WHERE quest = %u",itr->second);
+                    HashMapHolder<Player>::MapType& m = sObjectAccessor.GetPlayers();
+                    for (HashMapHolder<Player>::MapType::iterator pitr = m.begin(); pitr != m.end(); ++pitr)
+                        if (pitr->second->GetQuestStatus(itr->second) != QUEST_STATUS_NONE)
+                            pitr->second->SetQuestStatus(itr->second,QUEST_STATUS_NONE);
+                }
                 // Remove the pair(id,quest) from the multimap
                 QuestRelations::iterator qitr = GameObjectQuestMap.find(itr->first);
                 if (qitr == GameObjectQuestMap.end())
