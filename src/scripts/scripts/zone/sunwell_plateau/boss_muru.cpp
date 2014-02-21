@@ -768,7 +768,7 @@ struct npc_blackholeAI : public ScriptedAI
 
     void Reset()
     {
-        DespawnTimer = urand(15000, 17000);
+        DespawnTimer = 17000;
         me->SetLevitate(true);
         me->SetSpeed(MOVE_FLIGHT, 0.5);
         me->setFaction(14);
@@ -838,7 +838,7 @@ struct npc_blackholeAI : public ScriptedAI
             {
                 if (Unit* victim = me->GetUnit(victimGUID))
                 {
-                    if(me->IsWithinDistInMap(victim, 6.0))
+                    if(me->IsWithinDistInMap(victim, 4.0))
                     {
                         if(Unit* victim = SelectUnit(SELECT_TARGET_NEAREST, 0, 200, true, me->getVictimGUID(), 10.0))
                             me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
