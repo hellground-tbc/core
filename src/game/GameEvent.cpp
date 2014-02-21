@@ -229,7 +229,7 @@ void GameEventMgr::LoadFromDB()
         pGameEvent.description  = fields[5].GetCppString();
         pGameEvent.state        = (GameEventState)(fields[6].GetUInt8());
         pGameEvent.nextstart    = 0;
-        pGameEvent.flags         = fields[7].GetUInt8();
+        pGameEvent.flags        = (GameEventFlag)(fields[7].GetUInt8());
 
         if (pGameEvent.length==0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {

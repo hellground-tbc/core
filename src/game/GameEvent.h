@@ -40,6 +40,7 @@ enum GameEventState
 
 enum GameEventFlag
 {
+    GAMEEVENT_FLAG_NONE = 0x00,
     GAMEEVENT_FLAG_REMOVE_QUESTS_AT_END = 0x01
 };
 
@@ -60,7 +61,7 @@ struct GameEventQuestToEventConditionNum
 
 struct GameEventData
 {
-    GameEventData() : start(1),end(0),nextstart(0),occurence(0),length(0),state(GAMEEVENT_NORMAL),flags(0) {}
+    GameEventData() : start(1),end(0),nextstart(0),occurence(0),length(0),state(GAMEEVENT_NORMAL),flags(GAMEEVENT_FLAG_NONE) {}
     time_t start;   // occurs after this time
     time_t end;     // occurs before this time
     time_t nextstart; // after this time the follow-up events count this phase completed
@@ -70,7 +71,7 @@ struct GameEventData
     std::map<uint32 /*condition id*/, GameEventFinishCondition> conditions;  // conditions to finish
     std::set<uint16 /*gameevent id*/> prerequisite_events;  // events that must be completed before starting this event
     std::string description;
-    uint8 flags;
+    GameEventFlag flags;
 
     bool isValid() const { return ((length > 0) || (state > GAMEEVENT_NORMAL)); }
 };
