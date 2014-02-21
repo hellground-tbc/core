@@ -430,7 +430,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             logverbose = true;
 
     if (verbose == 2) // log if session update is logged as slow
-        if (overtimediff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+        if (overtimediff > sWorld.getConfig(CONFIG_SESSION_UPDATE_MIN_LOG_DIFF))
             logverbose = true;
 
     if (logverbose)
@@ -809,7 +809,7 @@ uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)
     uint32 thisTime = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(m_currentSessionTime, thisTime);
 
-    if (diff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+    if (diff > sWorld.getConfig(CONFIG_SESSION_UPDATE_MIN_LOG_DIFF))
     {
         va_list ap;
         char str [256];
