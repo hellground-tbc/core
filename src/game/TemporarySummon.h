@@ -34,12 +34,12 @@ class TemporarySummon : public Creature
                 Creature::RemoveFromWorld();
         }
         void Update(uint32 update_diff, uint32 time); 
-        void Summon(TempSummonType type, uint32 lifetime);
+        void Summon(TemporarySummonType type, uint32 lifetime);
         void UnSummon();
         void SaveToDB();
         Unit* GetSummoner() const { return m_summoner ? GetMap()->GetUnit(m_summoner) : NULL; }
     private:
-        TempSummonType m_type;
+        TemporarySummonType m_type;
         uint32 m_timer;
         uint32 m_lifetime;
         uint64 m_summoner;

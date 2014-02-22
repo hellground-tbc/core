@@ -27,6 +27,7 @@
 #include "TicketMgr.h"
 #include "World.h"
 #include "Chat.h"
+#include "luaengine/HookMgr.h"
 
 void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
 {
@@ -69,6 +70,9 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
 
     // remove ticket by player, shouldn't happen
     sTicketMgr.RemoveGMTicketByPlayer(GetPlayer()->GetGUID(), GetPlayer()->GetGUID());
+
+    // used by eluna
+    sHookMgr->OnGmTicketCreate(_player, ticketText);
 
     // add ticket
     sTicketMgr.AddGMTicket(ticket, false);
@@ -122,11 +126,15 @@ void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recv_data)
 
     sWorld.SendGMText(LANG_COMMAND_TICKETUPDATED, GetPlayer()->GetName(), ticket->guid);
 
+    sHookMgr->OnGmTicketUpdate(_player, ticket->message);
 }
 
 void WorldSession::HandleGMTicketDeleteOpcode(WorldPacket & /*recv_data*/)
 {
     // NO recv_data, NO packet check size
+
+    // used by eluna
+    sHookMgr->OnGmTicketDelete(_player);
 
     GM_Ticket* ticket = sTicketMgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
 

@@ -473,9 +473,9 @@ enum AICondition
 
 #define AI_DEFAULT_COOLDOWN 5000
 
-struct AISpellInfoType
+struct AISpellEntryType
 {
-    AISpellInfoType() : target(AITARGET_SELF), condition(AICOND_COMBAT)
+    AISpellEntryType() : target(AITARGET_SELF), condition(AICOND_COMBAT)
         , cooldown(AI_DEFAULT_COOLDOWN), realCooldown(0), maxRange(0.0f){}
     AITarget target;
     AICondition condition;
@@ -484,7 +484,7 @@ struct AISpellInfoType
     float maxRange;
 };
 
-HELLGROUND_IMPORT_EXPORT AISpellInfoType * GetAISpellInfo(uint32 i);
+HELLGROUND_IMPORT_EXPORT AISpellEntryType * GetAISpellEntry(uint32 i);
 
 
 inline void CreatureAI::SetGazeOn(Unit *target)
@@ -628,19 +628,19 @@ inline void UnitAI::DoCastAOE(uint32 spellId, bool triggered)
     me->CastSpell((Unit*)NULL, spellId, triggered);
 }
 
-inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime, TempSummonType uiType)
+inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime, TemporarySummonType uiType)
 {
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
-inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
+inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TemporarySummonType uiType)
 {
     WorldLocation pos;
     obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
-inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
+inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TemporarySummonType uiType)
 {
     WorldLocation pos;
     obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);

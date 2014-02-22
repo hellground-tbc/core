@@ -29,6 +29,7 @@
 #include "MapManager.h"
 #include "GossipDef.h"
 #include "SocialMgr.h"
+#include "luaengine/HookMgr.h"
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
@@ -970,6 +971,9 @@ void WorldSession::HandleGuildBankDeposit(WorldPacket & recv_data)
         sLog.outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
             _player->GetName(),_player->GetSession()->GetAccountId(),money,GuildId);
     }
+
+    // used by eluna
+    sHookMgr->OnMemberDepositMoney(pGuild, GetPlayer(), money);
 
     // log
     pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_MONEY, uint8(0), GetPlayer()->GetGUIDLow(), money);

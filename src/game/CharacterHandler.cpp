@@ -42,6 +42,7 @@
 #include "Chat.h"
 #include "SystemConfig.h"
 #include "GameEvent.h"
+#include "luaengine/HookMgr.h"
 
 class GameEvent;
 
@@ -372,6 +373,8 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     if ((have_same_race && skipCinematics == 1) || skipCinematics == 2)
         pNewChar->setCinematic(true);                       // not show intro
 
+    pNewChar->SetAtLoginFlag(AT_LOGIN_FIRST);               // First login
+
     // Player created, save it now
     pNewChar->SaveToDB();
     charcount += 1;
@@ -392,6 +395,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     std::string IP_str = GetRemoteAddress();
     sLog.outDetail("Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
     sLog.outLog(LOG_CHAR, "Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
+
+    // used by eluna
+    sHookMgr->OnCreate(pNewChar);
 }
 
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
@@ -447,6 +453,9 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
     WorldPacket data(SMSG_CHAR_DELETE, 1);
     data << (uint8)CHAR_DELETE_SUCCESS;
     SendPacket(&data);
+
+    // used by eluna
+    sHookMgr->OnDelete(GUID_LOPART(guid));
 }
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
@@ -747,6 +756,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         SendNotification(LANG_RESET_SPELLS);
     }
 
+    // used by eluna
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST))
+        sHookMgr->OnFirstLogin(pCurrChar);
+
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST))
+        pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
+
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
     {
         pCurrChar->resetTalents(true);
@@ -772,6 +788,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     m_playerLoading = false;
 
     sWorld.ModifyLoggedInCharsCount(_player->GetTeamId(), 1);
+
+    // used by eluna
+    sHookMgr->OnLogin(pCurrChar);
 
     delete holder;
 }

@@ -27,7 +27,7 @@
 
 class Unit;
 class Player;
-struct AISpellInfoType;
+struct AISpellEntryType;
 
 //Selection method used by SelectTarget
 enum SelectAggroTarget
@@ -131,8 +131,8 @@ class HELLGROUND_EXPORT UnitAI
 
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint64 exclude = 0, float mindist = 0.0f);
 
-        static AISpellInfoType *AISpellInfo;
-        static void FillAISpellInfo();
+        static AISpellEntryType *AISpellEntry;
+        static void FillAISpellEntry();
 
     private:
         Unit *ReturnTargetHelper(SelectAggroTarget target, uint32 position, std::list<Unit*> &targetList);

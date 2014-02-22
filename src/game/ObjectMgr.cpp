@@ -630,14 +630,14 @@ void ObjectMgr::ConvertCreatureAddonAuras(CreatureDataAddon* addon, char const* 
             sLog.outLog(LOG_DB_ERR, "Creature (%s: %u) has wrong effect %u for spell %u in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.effect_idx,cAura.spell_id,table);
             continue;
         }
-        SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(cAura.spell_id);
-        if (!AdditionalSpellInfo)
+        SpellEntry const *AdditionalSpellEntry = sSpellStore.LookupEntry(cAura.spell_id);
+        if (!AdditionalSpellEntry)
         {
             sLog.outLog(LOG_DB_ERR, "Creature (%s: %u) has wrong spell %u defined in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.spell_id,table);
             continue;
         }
 
-        if (!AdditionalSpellInfo->Effect[cAura.effect_idx] || !AdditionalSpellInfo->EffectApplyAuraName[cAura.effect_idx])
+        if (!AdditionalSpellEntry->Effect[cAura.effect_idx] || !AdditionalSpellEntry->EffectApplyAuraName[cAura.effect_idx])
         {
             sLog.outLog(LOG_DB_ERR, "Creature (%s: %u) has not aura effect %u of spell %u defined in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.effect_idx,cAura.spell_id,table);
             continue;

@@ -322,6 +322,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "all_spell",      PERM_ADM,       true,   &ChatHandler::HandleReloadAllSpellCommand,      "", NULL },
 
         { "config",         PERM_ADM,       true,   &ChatHandler::HandleReloadConfigCommand,        "", NULL },
+        { "eluna",          PERM_ADM,       true,   &ChatHandler::HandleReloadElunaCommand,         "", NULL },
 
         { "areatrigger_tavern",          PERM_ADM,  true,   &ChatHandler::HandleReloadAreaTriggerTavernCommand,         "", NULL },
         { "areatrigger_teleport",        PERM_ADM,  true,   &ChatHandler::HandleReloadAreaTriggerTeleportCommand,       "", NULL },
@@ -370,7 +371,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "reputation_reward_rate",      PERM_ADM,  true,   &ChatHandler::HandleReloadReputationRewardRateCommand,      "", NULL },
         { "reputation_spillover_template", PERM_ADM, true, &ChatHandler::HandleReloadReputationSpilloverTemplateCommand, "", NULL },
         { "skill_discovery_template",    PERM_ADM,  true,   &ChatHandler::HandleReloadSkillDiscoveryTemplateCommand,    "", NULL },
-        { "skill_extra_item_template",   PERM_ADM,  true,   &ChatHandler::HandleReloadSkillExtraItemTemplateCommand,    "", NULL },
+        { "skill_extra_item_template",   PERM_ADM,  true,   &ChatHandler::HandleReloadSkillExtraItemPrototypeCommand,    "", NULL },
         { "skill_fishing_base_level",    PERM_ADM,  true,   &ChatHandler::HandleReloadSkillFishingBaseLevelCommand,     "", NULL },
         { "skinning_loot_template",      PERM_ADM,  true,   &ChatHandler::HandleReloadLootTemplatesSkinningCommand,     "", NULL },
         { "spell_affect",                PERM_ADM,  true,   &ChatHandler::HandleReloadSpellAffectCommand,               "", NULL },

@@ -1893,3 +1893,14 @@ Network.OutKBuff = -1
 Network.OutUBuff = 65536
 Network.TcpNodelay = 1
 Network.KickOnBadPacket = 0
+
+###################################################################################################################
+#
+# LUAENGINE CONFIG
+#
+#   LuaEngine.Enabled
+#       LuaEngine.Enabled = 1         ( on / off )
+#
+###################################################################################################################
+
+LuaEngine.Enabled = 0

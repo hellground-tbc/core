@@ -694,7 +694,7 @@ struct boss_essence_of_desireAI : public ScriptedAI
             {
                 if(spell->Effect[i] == SPELL_EFFECT_INTERRUPT_CAST)
                 {
-                    SpellEntry const *temp = me->m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo();
+                    SpellEntry const *temp = me->m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellEntry();
                     if(temp->Id == SPELL_SOUL_SHOCK || temp->Id == SPELL_DEADEN)
                     {
                         me->InterruptSpell(CURRENT_GENERIC_SPELL, false);

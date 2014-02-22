@@ -27,6 +27,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "CreatureAI.h"
+#include "luaengine/HookMgr.h"
 
 Totem::Totem() : Creature()
 {
@@ -107,6 +108,9 @@ void Totem::Summon(Unit* owner)
     // call JustSummoned function when totem summoned from spell
     if (owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
         ((Creature*)owner)->AI()->JustSummoned(this);
+
+    if (Unit* summoner = owner->ToUnit())
+        sHookMgr->OnSummoned(this, summoner);
 }
 
 void Totem::UnSummon()

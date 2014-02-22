@@ -201,10 +201,10 @@ void PetAI::AutocastPreparedSpells()
                 me->SendCreateUpdateToPlayer((Player*)m_owner);
         }
 
-        me->AddCreatureSpellCooldown(spell->GetSpellInfo()->Id);
+        me->AddCreatureSpellCooldown(spell->GetSpellEntry()->Id);
 
         if (me->isPet())
-            ((Pet*)me)->CheckLearning(spell->GetSpellInfo()->Id);
+            ((Pet*)me)->CheckLearning(spell->GetSpellEntry()->Id);
 
         spell->prepare(&targets);
     }
@@ -221,7 +221,7 @@ void PetAI::UpdateAI(const uint32 diff)
 {
     m_owner = me->GetCharmerOrOwner();
 
-    // quest support - Razorthorn Ravager, switch to ScriptedAI when charmed and not in combat
+    // quest support - Razorthorn Ravager, switch to CreatureAI when charmed and not in combat
     if (me->GetEntry() == 24922 && me->isCharmed() && !me->isInCombat())
         me->NeedChangeAI = true;
 

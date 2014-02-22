@@ -50,6 +50,7 @@
 #include "OutdoorPvPMgr.h"
 
 #include "movement/packet_builder.h"
+#include "luaengine/HookMgr.h"
 
 uint32 GuidHigh2TypeId(uint32 guid_hi)
 {
@@ -1535,7 +1536,7 @@ void WorldObject::AddObjectToRemoveList()
     GetMap()->AddObjectToRemoveList(this);
 }
 
-Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime)
+Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TemporarySummonType spwtype,uint32 despwtime)
 {
     TemporarySummon* pCreature = new TemporarySummon(GetGUID());
 
@@ -1554,6 +1555,9 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     if (GetTypeId()==TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
         ((Creature*)this)->AI()->JustSummoned(pCreature);
+
+    if (Unit* summoner = ToUnit())
+        sHookMgr->OnSummoned(pCreature, summoner);
 
     if (pCreature->IsAIEnabled)
     {
@@ -1593,7 +1597,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, x, y, z, ang))
     {
         // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_override_CLASS_SCRIPTS);
         for (Unit::AuraList::const_iterator itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
             if ((*itr)->GetModifier()->m_miscvalue==2228)
@@ -1685,7 +1689,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (petType == SUMMON_PET)
     {
         // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_override_CLASS_SCRIPTS);
         for (Unit::AuraList::const_iterator itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
             if ((*itr)->GetModifier()->m_miscvalue==2228)
@@ -1740,7 +1744,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
 
 Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint32 duration, CreatureAI* (*GetAI)(Creature*))
 {
-    TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
+    TemporarySummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Creature* summon = SummonCreature(WORLD_TRIGGER, x, y, z, ang, summonType, duration);
     if (!summon)
         return NULL;

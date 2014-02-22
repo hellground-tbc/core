@@ -299,9 +299,9 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     {
         SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
         if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_GENERIC_SPELL])
-            schoolMask = SpellSchoolMask(pSpell->GetSpellInfo()->SchoolMask);
+            schoolMask = SpellSchoolMask(pSpell->GetSpellEntry()->SchoolMask);
         else if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_CHANNELED_SPELL])
-            schoolMask = SpellSchoolMask(pSpell->GetSpellInfo()->SchoolMask);
+            schoolMask = SpellSchoolMask(pSpell->GetSpellEntry()->SchoolMask);
 
         if (target->IsImmunedToDamage(schoolMask, false))
             return true;

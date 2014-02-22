@@ -573,7 +573,7 @@ void Creature::Update(uint32 update_diff, uint32 diff)
                 IsAIEnabled = true;
             }
 
-            if (!(isTotem() || isPet() || IsTempSummon() || IS_CREATURE_GUID(GetOwnerGUID()) && GetOwner()->ToCreature()->isTotem()) && GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() && 
+            if (!(isTotem() || isPet() || IsTemporarySummon() || IS_CREATURE_GUID(GetOwnerGUID()) && GetOwner()->ToCreature()->isTotem()) && GetMap() && !GetMap()->IsDungeon() && !AI()->IsEscorted() && 
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE &&
                 GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
             {
@@ -2308,8 +2308,8 @@ bool Creature::LoadCreaturesAddon(bool reload)
     {
         for (CreatureDataAddonAura const* cAura = cainfo->auras; cAura->spell_id; ++cAura)
         {
-            SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(cAura->spell_id);
-            if (!AdditionalSpellInfo)
+            SpellEntry const *AdditionalSpellEntry = sSpellStore.LookupEntry(cAura->spell_id);
+            if (!AdditionalSpellEntry)
             {
                 sLog.outLog(LOG_DB_ERR, "Creature (GUIDLow: %u Entry: %u) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),cAura->spell_id);
                 continue;
@@ -2324,9 +2324,9 @@ bool Creature::LoadCreaturesAddon(bool reload)
                 continue;
             }
 
-            Aura* AdditionalAura = CreateAura(AdditionalSpellInfo, cAura->effect_idx, NULL, this, this, 0);
+            Aura* AdditionalAura = CreateAura(AdditionalSpellEntry, cAura->effect_idx, NULL, this, this, 0);
             AddAura(AdditionalAura);
-            sLog.outDebug("Spell: %u with Aura %u added to creature (GUIDLow: %u Entry: %u)", cAura->spell_id, AdditionalSpellInfo->EffectApplyAuraName[0],GetGUIDLow(),GetEntry());
+            sLog.outDebug("Spell: %u with Aura %u added to creature (GUIDLow: %u Entry: %u)", cAura->spell_id, AdditionalSpellEntry->EffectApplyAuraName[0],GetGUIDLow(),GetEntry());
         }
     }
     return true;

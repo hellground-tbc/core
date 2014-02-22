@@ -154,6 +154,7 @@ class SpellCastTargets
 
         uint64 getCorpseTargetGUID() const { return m_CorpseTargetGUID.GetRawValue(); }
         void setCorpseTarget(Corpse* corpse);
+        Corpse *getCorpseTarget() const { return m_corpseTarget; }
         uint64 getItemTargetGUID() const { return m_itemTargetGUID.GetRawValue(); }
         Item* getItemTarget() const { return m_itemTarget; }
         uint32 getItemTargetEntry() const { return m_itemTargetEntry; }
@@ -184,6 +185,7 @@ class SpellCastTargets
         Unit *m_unitTarget;
         GameObject *m_GOTarget;
         Item *m_itemTarget;
+        Corpse* m_corpseTarget;
 
         // object GUID/etc, can be used always
         ObjectGuid m_unitTargetGUID;
@@ -384,7 +386,7 @@ class Spell
         SpellCastResult CheckPower();
         SpellCastResult CheckCasterAuras() const;
 
-        int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(GetSpellInfo(),i,m_currentBasePoints[i],target); }
+        int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(GetSpellEntry(),i,m_currentBasePoints[i],target); }
 
         bool HaveTargetsForEffect(uint8 effect) const;
         void Delayed();
@@ -436,19 +438,19 @@ class Spell
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
         bool IsNextMeleeSwingSpell() const
         {
-            return GetSpellInfo()->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
+            return GetSpellEntry()->Attributes & (SPELL_ATTR_ON_NEXT_SWING_1|SPELL_ATTR_ON_NEXT_SWING_2);
         }
         bool IsRangedSpell() const
         {
-            return  GetSpellInfo()->Attributes & SPELL_ATTR_RANGED;
+            return  GetSpellEntry()->Attributes & SPELL_ATTR_RANGED;
         }
         bool IsDelayedSpell() const
         {
-            return GetSpellInfo()->speed > 0.0f || GetSpellInfo()->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY;
+            return GetSpellEntry()->speed > 0.0f || GetSpellEntry()->AttributesCu & SPELL_ATTR_CU_FAKE_DELAY;
         }
         bool IsChannelActive() const { return m_caster->GetUInt32Value(UNIT_CHANNEL_SPELL) != 0; }
-        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (GetSpellInfo()->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
-        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(GetSpellInfo()->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
+        bool IsMeleeAttackResetSpell() const { return !m_IsTriggeredSpell && (GetSpellEntry()->InterruptFlags & SPELL_INTERRUPT_FLAG_AUTOATTACK);  }
+        bool IsRangedAttackResetSpell() const { return !m_IsTriggeredSpell && /*IsRangedSpell() &&*/ !(GetSpellEntry()->AttributesEx2 & SPELL_ATTR_EX2_NOT_RESET_AUTOSHOT); }
 
         bool IsDeletable() const { return !m_referencedFromCurrentSpell && !m_executedCurrently; }
         void SetReferencedFromCurrent(bool yes) { m_referencedFromCurrentSpell = yes; }
@@ -490,7 +492,7 @@ class Spell
 
         void SetSpellValue(SpellValueMod mod, int32 value);
 
-        SpellEntry const* GetSpellInfo() const { return m_spellInfo; }
+        SpellEntry const* GetSpellEntry() const { return m_spellInfo; }
 
     protected:
         bool HasGlobalCooldown();

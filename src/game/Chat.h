@@ -317,6 +317,7 @@ class ChatHandler
         bool HandleQuestRemove(const char * args);
         bool HandleQuestComplete(const char * args);
 
+        bool HandleReloadElunaCommand(const char* args);
         bool HandleReloadCommand(const char* args);
         bool HandleReloadAllCommand(const char* args);
         bool HandleReloadAllAreaCommand(const char* args);
@@ -371,7 +372,7 @@ class ChatHandler
         bool HandleReloadReputationRewardRateCommand(const char* args);
         bool HandleReloadReputationSpilloverTemplateCommand(const char* args);
         bool HandleReloadSkillDiscoveryTemplateCommand(const char* args);
-        bool HandleReloadSkillExtraItemTemplateCommand(const char* args);
+        bool HandleReloadSkillExtraItemPrototypeCommand(const char* args);
         bool HandleReloadSkillFishingBaseLevelCommand(const char* args);
         bool HandleReloadSpellAffectCommand(const char* args);
         bool HandleReloadSpellRequiredCommand(const char* args);

@@ -54,6 +54,7 @@
 #include "InstanceData.h"
 #include "CreatureEventAIMgr.h"
 #include "ChannelMgr.h"
+#include "luaengine/HookMgr.h"
 
 bool ChatHandler::HandleReloadAutobroadcastCommand(const char*)
 {
@@ -69,6 +70,18 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
     PSendSysMessage("Db table with name starting from '%s' not found and can't be reloaded.",arg);
     SetSentErrorMessage(true);
     return false;
+}
+
+extern bool StartEluna();
+bool ChatHandler::HandleReloadElunaCommand(const char* /*args*/)
+{
+    sLog.outString("Re-Loading Eluna LuaEngine...");
+
+    if (StartEluna())
+        SendGlobalSysMessage("Eluna LuaEngine reloaded.");
+    else
+        SendGlobalSysMessage("Eluna Lua Engine is disabled can't reload.");
+    return true;
 }
 
 bool ChatHandler::HandleReloadAllCommand(const char*)
@@ -155,7 +168,7 @@ bool ChatHandler::HandleReloadAllScriptsCommand(const char*)
 bool ChatHandler::HandleReloadAllSpellCommand(const char*)
 {
     HandleReloadSkillDiscoveryTemplateCommand("a");
-    HandleReloadSkillExtraItemTemplateCommand("a");
+    HandleReloadSkillExtraItemPrototypeCommand("a");
     HandleReloadSpellAffectCommand("a");
     HandleReloadSpellRequiredCommand("a");
     HandleReloadSpellElixirCommand("a");
@@ -453,7 +466,7 @@ bool ChatHandler::HandleReloadSkillDiscoveryTemplateCommand(const char* /*args*/
     return true;
 }
 
-bool ChatHandler::HandleReloadSkillExtraItemTemplateCommand(const char* /*args*/)
+bool ChatHandler::HandleReloadSkillExtraItemPrototypeCommand(const char* /*args*/)
 {
     sLog.outString("Re-Loading Skill Extra Item Table...");
     LoadSkillExtraItemTable();
@@ -862,7 +875,7 @@ bool ChatHandler::HandleAccountSetPermissionsCommand(const char* args)
 
         // Check for account
         targetAccountName = arg1;
-        if (!AccountMgr::normilizeString(targetAccountName))
+        if (!AccountMgr::normalizeString(targetAccountName))
         {
             PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, targetAccountName.c_str());
             SetSentErrorMessage(true);
@@ -913,7 +926,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
 
     std::string account_name = szAccount;
-    if (!AccountMgr::normilizeString(account_name))
+    if (!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
@@ -5172,7 +5185,7 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
     switch (mode)
     {
         case BAN_ACCOUNT:
-            if (!AccountMgr::normilizeString(nameIPOrMail))
+            if (!AccountMgr::normalizeString(nameIPOrMail))
             {
                 PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameIPOrMail.c_str());
                 SetSentErrorMessage(true);
@@ -5266,7 +5279,7 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
     switch (mode)
     {
         case BAN_ACCOUNT:
-            if (!AccountMgr::normilizeString(nameIPOrMail))
+            if (!AccountMgr::normalizeString(nameIPOrMail))
             {
                 PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameIPOrMail.c_str());
                 SetSentErrorMessage(true);
@@ -5305,7 +5318,7 @@ bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
         return false;
 
     std::string account_name = cname;
-    if (!AccountMgr::normilizeString(account_name))
+    if (!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
@@ -6458,7 +6471,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
     {
         ///- Convert Account name to Upper Format
         account_name = szAcc;
-        if (!AccountMgr::normilizeString(account_name))
+        if (!AccountMgr::normalizeString(account_name))
         {
             PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
             SetSentErrorMessage(true);

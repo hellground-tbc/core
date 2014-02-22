@@ -80,9 +80,9 @@ class HELLGROUND_IMPORT_EXPORT CreatureAI : public UnitAI
 
         void SetGazeOn(Unit *target);
 
-        Creature *DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime = 30000, TempSummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
-        Creature *DoSummon(uint32 uiEntry, WorldObject *obj, float fRadius = 5.0f, uint32 uiDespawntime = 30000, TempSummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
-        Creature *DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float fZ, float fRadius = 5.0f, uint32 uiDespawntime = 30000, TempSummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+        Creature *DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime = 30000, TemporarySummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+        Creature *DoSummon(uint32 uiEntry, WorldObject *obj, float fRadius = 5.0f, uint32 uiDespawntime = 30000, TemporarySummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+        Creature *DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float fZ, float fRadius = 5.0f, uint32 uiDespawntime = 30000, TemporarySummonType uiType = TEMPSUMMON_CORPSE_TIMED_DESPAWN);
 
     public:
         explicit CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_creature(c), m_MoveInLineOfSight_locked(false) {}
@@ -142,7 +142,7 @@ class HELLGROUND_IMPORT_EXPORT CreatureAI : public UnitAI
         // Called at waypoint reached or point movement finished
         virtual void MovementInform(uint32 /*MovementType*/, uint32 /*Data*/) {}
 
-        void OnCharmed(bool apply);
+        virtual void OnCharmed(bool apply);
 
         //virtual void SpellClick(Player *player) {}
  

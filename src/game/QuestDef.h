@@ -109,7 +109,9 @@ enum __QuestGiverStatus
     DIALOG_STATUS_AVAILABLE_REP            = 5,
     DIALOG_STATUS_AVAILABLE                = 6,
     DIALOG_STATUS_REWARD2                  = 7,             // not yellow dot on minimap
-    DIALOG_STATUS_REWARD                   = 8              // yellow dot on minimap
+    DIALOG_STATUS_REWARD                   = 8,             // yellow dot on minimap
+
+    DIALOG_STATUS_SCRIPTED_NO_STATUS       = 100
 };
 
 enum __QuestFlags

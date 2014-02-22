@@ -5,6 +5,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/
+  ${CMAKE_SOURCE_DIR}/dep/lualib
   ${CMAKE_CURRENT_SOURCE_DIR}/vmap
   ${CMAKE_CURRENT_SOURCE_DIR}/movemap
   ${CMAKE_SOURCE_DIR}/dep/include
@@ -53,6 +54,12 @@ source_group("Tool"
   REGULAR_EXPRESSION Language
 )
 
+source_group("Lua Engine"
+  REGULAR_EXPRESSION Methods|Lua|Hook
+    FILES
+    luaengine/Includes.h
+)
+
 source_group("References"
   REGULAR_EXPRESSION Reference|RefManager|ThreatManager
 )
@@ -65,6 +72,7 @@ target_link_libraries(game
   shared
   g3dlib
   detour
+  lualib
 )
 
 if(UNIX)

@@ -66,11 +66,12 @@
 #include "CreatureEventAIMgr.h"
 #include "WardenDataStorage.h"
 #include "WorldEventProcessor.h"
-
+#include "luaengine/HookMgr.h"
 //#include "Timer.h"
 
 #include <tbb/parallel_for.h>
 
+extern bool StartEluna();
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 volatile uint32 World::m_worldLoopCounter = 0;
@@ -559,6 +560,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DONT_DELETE_CHARS_LVL]   = sConfig.GetIntDefault("DontDeleteCharsLvl", 40);
     m_configs[CONFIG_KEEP_DELETED_CHARS_TIME] = sConfig.GetIntDefault("KeepDeletedCharsTime", 31);
 
+    m_configs[CONFIG_ELUNA_ENABLED]           = sConfig.GetBoolDefault("LuaEngine.Enabled", false);
     // Server customization advanced
     m_configs[CONFIG_WEATHER]                      = sConfig.GetBoolDefault("ActivateWeather",true);
     m_configs[CONFIG_ENABLE_SORT_AUCTIONS]         = sConfig.GetBoolDefault("Auction.EnableSort", true);
@@ -1352,7 +1354,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr.LoadNpcOptions();
 
     sLog.outString("Loading vendors...");
-    sObjectMgr.LoadVendors();                                   // must be after load CreatureTemplate and ItemTemplate
+    sObjectMgr.LoadVendors();                                   // must be after load CreatureTemplate and ItemPrototype
 
     sLog.outString("Loading trainers...");
     sObjectMgr.LoadTrainerSpell();                              // must be after load CreatureTemplate
@@ -1399,6 +1401,10 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Initializing Scripts...");
     sScriptMgr.LoadScriptLibrary(HELLGROUND_SCRIPT_NAME);
+
+    ///- Initialize Lua Engine
+    sLog.outString("Initialize Eluna Lua Engine...");
+    StartEluna();
 
     ///- Initialize game time and timers
     sLog.outDebug("DEBUG:: Initialize game time and timers");
@@ -1833,6 +1839,9 @@ void World::Update(uint32 diff)
     //cleanup unused GridMap objects as well as VMaps
     sTerrainMgr.Update(diff);
     diffRecorder.RecordTimeFor("UpdateTerrainMGR");
+
+    ///- used by eluna
+    sHookMgr->OnWorldUpdate(diff);
 }
 
 void World::UpdateSessions(const uint32 & diff)

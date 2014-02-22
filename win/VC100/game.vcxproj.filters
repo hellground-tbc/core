@@ -67,6 +67,9 @@
     <Filter Include="MoveMaps">
       <UniqueIdentifier>{a57f8b6e-9cc3-40b0-8a37-cb2b721813dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LuaEngine">
+      <UniqueIdentifier>{ad85c0ec-51eb-4bf8-895e-3683faecc9ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\game\Channel.cpp">
@@ -566,6 +569,15 @@
     </ClCompile>
     <ClCompile Include="..\..\src\game\WardenChat.cpp">
       <Filter>Warden</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\luaengine\HookMgr.cpp">
+      <Filter>LuaEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\luaengine\LuaEngine.cpp">
+      <Filter>LuaEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\luaengine\LuaFunctions.cpp">
+      <Filter>LuaEngine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1078,6 +1090,69 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\MovementGeneratorImpl.h">
       <Filter>Movement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\AuraMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\CorpseMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\CreatureMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\GameObjectMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\GlobalMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\GroupMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\GuildMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\HookMgr.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\Includes.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\ItemMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\LuaEngine.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\MapMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\ObjectMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\PlayerMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\QueryMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\QuestMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\SpellMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\UnitMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\WeatherMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\WorldObjectMethods.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\luaengine\WorldPacketMethods.h">
+      <Filter>LuaEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

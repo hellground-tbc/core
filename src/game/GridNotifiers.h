@@ -782,7 +782,7 @@ namespace Hellground
         bool i_alive;
     };
 
-    // Searchers used by ScriptedAI
+    // Searchers used by CreatureAI
     class MostHPMissingInRange
     {
     public:

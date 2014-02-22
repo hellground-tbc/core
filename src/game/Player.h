@@ -579,7 +579,8 @@ enum AtLoginFlags
     AT_LOGIN_RENAME         = 0x1,
     AT_LOGIN_RESET_SPELLS   = 0x2,
     AT_LOGIN_RESET_TALENTS  = 0x4,
-    AT_LOGIN_DISPLAY_CHANGE = 0x8
+    AT_LOGIN_DISPLAY_CHANGE = 0x8,
+    AT_LOGIN_FIRST          = 0x20,
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -1388,17 +1389,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
 
         uint32 GetMoney() { return GetUInt32Value (PLAYER_FIELD_COINAGE); }
-        void ModifyMoney(int32 d)
-        {
-            if (d < 0)
-                SetMoney (GetMoney() > uint32(-d) ? GetMoney() + d : 0);
-            else
-                SetMoney (GetMoney() < uint32(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
-
-            // "At Gold Limit"
-            if (GetMoney() >= MAX_MONEY_AMOUNT)
-                SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD,NULL,NULL);
-        }
+        void ModifyMoney(int32 d);
         void SetMoney(uint32 value)
         {
             SetUInt32Value (PLAYER_FIELD_COINAGE, value);
@@ -1508,7 +1499,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void learnQuestRewardedSpells(Quest const* quest);
 
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
-        void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1,points); }
+        void SetFreeTalentPoints(uint32 points);
         bool resetTalents(bool no_cost = false);
         uint32 resetTalentsCost() const;
         void UpdateFreeTalentPoints(bool resetIfNeed = true);
@@ -2183,6 +2174,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
 
         bool HasAtLoginFlag(AtLoginFlags f) const { return m_atLoginFlags & f; }
+        void RemoveAtLoginFlag(AtLoginFlags f) { m_atLoginFlags &= ~f; }
         void SetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags |= f; }
 
         LookingForGroup m_lookingForGroup;

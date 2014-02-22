@@ -344,8 +344,8 @@ float UnitAI::DoGetSpellMaxRange(uint32 spellId, bool positive)
 void UnitAI::DoCast(uint32 spellId)
 {
     Unit *target = NULL;
-    //sLog.outLog(LOG_DEFAULT, "ERROR: aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
-    switch (AISpellInfo[spellId].target)
+    //sLog.outLog(LOG_DEFAULT, "ERROR: aggre %u %u", spellId, (uint32)AISpellEntry[spellId].target);
+    switch (AISpellEntry[spellId].target)
     {
         default:
         case AITARGET_SELF:     target = me; break;
@@ -381,11 +381,11 @@ void UnitAI::DoCast(uint32 spellId)
 
 #define UPDATE_TARGET(a) {if(AIInfo->target<a) AIInfo->target=a;}
 
-void UnitAI::FillAISpellInfo()
+void UnitAI::FillAISpellEntry()
 {
-    AISpellInfo = new AISpellInfoType[GetSpellStore()->GetNumRows()];
+    AISpellEntry = new AISpellEntryType[GetSpellStore()->GetNumRows()];
 
-    AISpellInfoType *AIInfo = AISpellInfo;
+    AISpellEntryType *AIInfo = AISpellEntry;
     const SpellEntry * spellInfo;
 
     for (uint32 i = 0; i < GetSpellStore()->GetNumRows(); ++i, ++AIInfo)

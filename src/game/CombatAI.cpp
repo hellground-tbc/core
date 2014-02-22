@@ -61,7 +61,7 @@ void CombatAI::Reset()
 void CombatAI::JustDied(Unit *killer)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
-        if (AISpellInfo[*i].condition == AICOND_DIE)
+        if (AISpellEntry[*i].condition == AICOND_DIE)
             me->CastSpell(killer, *i, true);
 }
 
@@ -69,10 +69,10 @@ void CombatAI::EnterCombat(Unit *who)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
     {
-        if (AISpellInfo[*i].condition == AICOND_AGGRO)
+        if (AISpellEntry[*i].condition == AICOND_AGGRO)
             me->CastSpell(who, *i, false);
-        else if (AISpellInfo[*i].condition == AICOND_COMBAT)
-            events.ScheduleEvent(*i, AISpellInfo[*i].cooldown + rand()%AISpellInfo[*i].cooldown);
+        else if (AISpellEntry[*i].condition == AICOND_COMBAT)
+            events.ScheduleEvent(*i, AISpellEntry[*i].cooldown + rand()%AISpellEntry[*i].cooldown);
     }
 }
 
@@ -89,7 +89,7 @@ void CombatAI::UpdateAI(const uint32 diff)
     if (uint32 spellId = events.ExecuteEvent())
     {
         DoCast(spellId);
-        events.ScheduleEvent(spellId, AISpellInfo[spellId].cooldown + rand()%AISpellInfo[spellId].cooldown);
+        events.ScheduleEvent(spellId, AISpellEntry[spellId].cooldown + rand()%AISpellEntry[spellId].cooldown);
     }
     else
         DoMeleeAttackIfReady();
@@ -106,8 +106,8 @@ void CasterAI::InitializeAI()
 
     float m_attackDist = 30.0f;
     for (SpellVct::iterator itr = spells.begin(); itr != spells.end(); ++itr)
-        if (AISpellInfo[*itr].condition == AICOND_COMBAT && m_attackDist > GetAISpellInfo(*itr)->maxRange)
-            m_attackDist = GetAISpellInfo(*itr)->maxRange;
+        if (AISpellEntry[*itr].condition == AICOND_COMBAT && m_attackDist > GetAISpellEntry(*itr)->maxRange)
+            m_attackDist = GetAISpellEntry(*itr)->maxRange;
     if (m_attackDist == 30.0f)
         m_attackDist = MELEE_RANGE;
 }
@@ -121,11 +121,11 @@ void CasterAI::EnterCombat(Unit *who)
     uint32 count = 0;
     for (SpellVct::iterator itr = spells.begin(); itr != spells.end(); ++itr, ++count)
     {
-        if (AISpellInfo[*itr].condition == AICOND_AGGRO)
+        if (AISpellEntry[*itr].condition == AICOND_AGGRO)
             me->CastSpell(who, *itr, false);
-        else if (AISpellInfo[*itr].condition == AICOND_COMBAT)
+        else if (AISpellEntry[*itr].condition == AICOND_COMBAT)
         {
-            uint32 cooldown = GetAISpellInfo(*itr)->realCooldown;
+            uint32 cooldown = GetAISpellEntry(*itr)->realCooldown;
             if (count == spell)
             {
                 DoCast(spells[spell]);
@@ -150,6 +150,6 @@ void CasterAI::UpdateAI(const uint32 diff)
     {
         DoCast(spellId);
         uint32 casttime = me->GetCurrentSpellCastTime(spellId);
-        events.ScheduleEvent(spellId, (casttime ? casttime : 500) + GetAISpellInfo(spellId)->realCooldown);
+        events.ScheduleEvent(spellId, (casttime ? casttime : 500) + GetAISpellEntry(spellId)->realCooldown);
     }
 }

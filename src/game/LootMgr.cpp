@@ -647,7 +647,7 @@ void Loot::saveLootToDB(Player *owner)
                 stmt.addUInt32(pCreature->GetInstanceId());
                 stmt.addUInt32(item->itemid);
                 stmt.addUInt32(count);
-                stmt.addBool(pCreature->IsTempSummon());
+                stmt.addBool(pCreature->IsTemporarySummon());
                 stmt.addFloat(pCreature->GetPositionX());
                 stmt.addFloat(pCreature->GetPositionY());
                 stmt.addFloat(pCreature->GetPositionZ());

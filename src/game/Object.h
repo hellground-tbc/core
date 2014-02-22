@@ -44,7 +44,7 @@
 
 uint32 GuidHigh2TypeId(uint32 guid_hi);
 
-enum TempSummonType
+enum TemporarySummonType
 {
     TEMPSUMMON_TIMED_OR_DEAD_DESPAWN       = 1,             // despawns after a specified time OR when the creature disappears
     TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN     = 2,             // despawns after a specified time OR when the creature dies
@@ -578,7 +578,7 @@ class HELLGROUND_IMPORT_EXPORT WorldObject : public Object//, public WorldLocati
         void AddToClientUpdateList();
         void RemoveFromClientUpdateList();
 
-        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime);
+        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang,TemporarySummonType spwtype,uint32 despwtime);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 

@@ -20,6 +20,7 @@ if(NOT TBB_USE_EXTERNAL AND NOT USE_STD_MALLOC)
   add_subdirectory(tbb)
 endif()
 
+add_subdirectory(lualib)
 add_subdirectory(g3dlite)
 add_subdirectory(recastnavigation)
 add_subdirectory(src)

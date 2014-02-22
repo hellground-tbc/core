@@ -28,6 +28,7 @@
 #include "ObjectAccessor.h"
 #include "UpdateMask.h"
 #include "SpellAuras.h"
+#include "luaengine/HookMgr.h"
 
 void WorldSession::HandleLearnTalentOpcode(WorldPacket & recv_data)
 {

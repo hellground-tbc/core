@@ -33,6 +33,7 @@
 #include "Group.h"
 #include "BattleGround.h"
 #include "BattleGroundAV.h"
+#include "luaengine/HookMgr.h"
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recv_data)
 {
@@ -59,7 +60,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recv_data)
             if (!cr_questgiver->IsHostileTo(_player))       // not show quest status to enemies
             {
                 questStatus = sScriptMgr.GetDialogStatus(_player, cr_questgiver);
-                if (questStatus > 6)
+                if (questStatus == DIALOG_STATUS_SCRIPTED_NO_STATUS)
                     questStatus = getDialogStatus(_player, cr_questgiver, defstatus);
             }
             break;
@@ -69,7 +70,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recv_data)
             sLog.outDebug("WORLD: Received CMSG_QUESTGIVER_STATUS_QUERY for GameObject guid = %u",uint32(GUID_LOPART(guid)));
             GameObject* go_questgiver=(GameObject*)questgiver;
             questStatus = sScriptMgr.GetDialogStatus(_player, go_questgiver);
-            if (questStatus > 6)
+            if (questStatus == DIALOG_STATUS_SCRIPTED_NO_STATUS)
                 questStatus = getDialogStatus(_player, go_questgiver, defstatus);
             break;
         }
@@ -396,6 +397,9 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recv_data)
             if (!_player->TakeQuestSourceItem(quest, true))
                 return;                                     // can't un-equip some items, reject quest cancel
 
+            // used by eluna
+            sHookMgr->OnQuestAbandon(_player, quest);
+
             _player->SetQuestStatus(quest, QUEST_STATUS_NONE);
         }
 
@@ -679,7 +683,7 @@ void WorldSession::HandleQuestgiverStatusQueryMultipleOpcode(WorldPacket& /*recv
             if (!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
                 continue;
             questStatus = sScriptMgr.GetDialogStatus(_player, questgiver);
-            if (questStatus > 6)
+            if (questStatus == DIALOG_STATUS_SCRIPTED_NO_STATUS)
                 questStatus = getDialogStatus(_player, questgiver, defstatus);
 
             data << uint64(questgiver->GetGUID());
@@ -694,7 +698,7 @@ void WorldSession::HandleQuestgiverStatusQueryMultipleOpcode(WorldPacket& /*recv
             if (questgiver->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)
                 continue;
             questStatus = sScriptMgr.GetDialogStatus(_player, questgiver);
-            if (questStatus > 6)
+           if (questStatus == DIALOG_STATUS_SCRIPTED_NO_STATUS)
                 questStatus = getDialogStatus(_player, questgiver, defstatus);
 
             data << uint64(questgiver->GetGUID());

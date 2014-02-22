@@ -49,6 +49,7 @@
 #include "CellImpl.h"
 #include "AccountMgr.h"
 #include "Group.h"
+#include "luaengine/HookMgr.h"
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket & /*recv_data*/)
 {
@@ -67,6 +68,9 @@ void WorldSession::HandleRepopRequestOpcode(WorldPacket & /*recv_data*/)
         sLog.outDebug("HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         GetPlayer()->KillPlayer();
     }
+
+    // used by eluna
+    sHookMgr->OnRepop(GetPlayer());
 
     //this is spirit release confirm?
     GetPlayer()->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
@@ -137,6 +141,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
     }
     else
         sScriptMgr.OnGossipSelect(_player, go, sender, action, code.empty() ? NULL : code.c_str());
+
+    sHookMgr->HandleGossipSelectOption(GetPlayer(), action, GetPlayer()->PlayerTalkClass->GossipOptionSender(option), GetPlayer()->PlayerTalkClass->GossipOptionAction(option), code);
 }
 
 void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)

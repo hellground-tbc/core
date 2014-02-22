@@ -39,6 +39,7 @@
 #include "Util.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "luaengine/HookMgr.h"
 
 enum ChatDenyMask
 {
@@ -244,6 +245,10 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
             return;
         }
     }
+
+    // used by eluna
+    if (!sHookMgr->OnChat(GetPlayer(), type, lang, msg))
+        return;
 
     switch (type)
     {
@@ -552,6 +557,10 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
 
     uint32 emote;
     recv_data >> emote;
+
+    // used by eluna
+    sHookMgr->OnEmote(GetPlayer(), emote);
+
     GetPlayer()->HandleEmoteCommand(emote);
 }
 
@@ -647,6 +656,9 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 
         sScriptMgr.OnReceiveEmote(GetPlayer(), (Creature*)unit, text_emote);
     }
+
+    // used by eluna
+    sHookMgr->OnTextEmote(GetPlayer(), text_emote, emoteNum, guid);
 }
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recv_data)

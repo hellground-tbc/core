@@ -49,7 +49,7 @@ namespace AccountMgr
     bool HasPermissions(uint32 accId, uint64 perms);
     bool GetName(uint32 acc_id, std::string &name);
 
-    bool normilizeString(std::string& utf8str);
+    bool normalizeString(std::string& utf8str);
 
     std::vector<uint32> GetRAFAccounts(uint32 accid, bool referred = true);
     AccountOpResult AddRAFLink(uint32 accid, uint32 friendid);

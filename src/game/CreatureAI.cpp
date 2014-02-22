@@ -33,8 +33,8 @@ void CreatureAI::OnCharmed(bool apply)
     }
 }
 
-AISpellInfoType * UnitAI::AISpellInfo;
-HELLGROUND_EXPORT AISpellInfoType * GetAISpellInfo(uint32 i) { return &CreatureAI::AISpellInfo[i]; }
+AISpellEntryType * UnitAI::AISpellEntry;
+HELLGROUND_EXPORT AISpellEntryType * GetAISpellEntry(uint32 i) { return &CreatureAI::AISpellEntry[i]; }
 
 void CreatureAI::DoZoneInCombat(float max_dist)
 {

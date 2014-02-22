@@ -127,6 +127,8 @@ enum WorldConfigs
     CONFIG_INTERVAL_LOG_UPDATE,
     CONFIG_MIN_LOG_UPDATE,
 
+    CONFIG_ELUNA_ENABLED,
+
     // Server settings
     CONFIG_GAME_TYPE,
     CONFIG_REALM_ZONE,
@@ -673,6 +675,7 @@ class HELLGROUND_EXPORT World
         uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
         uint32 GetActiveSessionCount() const { return m_sessions.size() - m_QueuedPlayer.size(); }
         uint32 GetQueuedSessionCount() const { return m_QueuedPlayer.size(); }
+        const SessionMap& GetAllSessions() const { return m_sessions; }
 
         uint32 GetLoggedInCharsCount(TeamId team);
         uint32 ModifyLoggedInCharsCount(TeamId team, int val);

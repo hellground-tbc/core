@@ -731,7 +731,7 @@ class HELLGROUND_IMPORT_EXPORT Creature : public Unit
 
         bool CanReactToPlayerOnTaxi();
 
-        bool IsTempSummon() { return m_tempSummon; }
+        bool IsTemporarySummon() { return m_tempSummon; }
 
         void UpdateDeathTimer(uint32 timer) { if(m_deathTimer < timer) m_deathTimer = timer; }
 

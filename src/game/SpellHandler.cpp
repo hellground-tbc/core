@@ -344,13 +344,13 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (Unit* target = targets.getUnitTarget())
     {
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
-        if (SpellEntry const *actualSpellInfo = sSpellMgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
-            spellInfo = actualSpellInfo;
+        if (SpellEntry const *actualSpellEntry = sSpellMgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
+            spellInfo = actualSpellEntry;
     }
 
     if (spellInfo->AttributesEx2 & SPELL_ATTR_EX2_AUTOREPEAT_FLAG)
     {
-        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellInfo()->Id == spellInfo->Id)
+        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellEntry()->Id == spellInfo->Id)
             return;
     }
 
@@ -412,7 +412,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     if (SpellMgr::IsChanneledSpell(spellInfo))
     {
         if (_player->m_currentSpells[CURRENT_CHANNELED_SPELL] &&
-            _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->GetSpellInfo()->Id==spellId)
+            _player->m_currentSpells[CURRENT_CHANNELED_SPELL]->GetSpellEntry()->Id==spellId)
             _player->InterruptSpell(CURRENT_CHANNELED_SPELL);
         return;
     }

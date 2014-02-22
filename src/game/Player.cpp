@@ -70,6 +70,7 @@
 
 #include <cmath>
 #include <cctype>
+#include "luaengine/HookMgr.h"
 
 #define ZONE_UPDATE_INTERVAL 1000
 
@@ -1382,6 +1383,9 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     {
         if (update_diff >= m_nextSave)
         {
+            // used by eluna
+            sHookMgr->OnSave(this);
+
             // m_nextSave reseted in SaveToDB call
             SaveToDB();
             sLog.outDetail("Player '%s' (GUID: %u) saved", GetName(), GetGUIDLow());
@@ -1559,7 +1563,8 @@ bool Player::BuildEnumData(QueryResultAutoPtr result, WorldPacket * p_data)
 
     *p_data << uint32(char_flags);                          // character flags
 
-    *p_data << uint8(1);                                    // unknown
+    // First login
+    *p_data << uint8(atLoginFlags & AT_LOGIN_FIRST ? 1 : 0);
 
     // Pets info
     {
@@ -2424,6 +2429,9 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 
     uint32 level = getLevel();
 
+    // used by eluna
+    sHookMgr->OnGiveXP(this, xp, victim);
+
     // XP to money conversion processed in Player::RewardQuest
     if (level >= sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
         return;
@@ -2531,6 +2539,8 @@ void Player::GiveLevel(uint32 level)
     //update level, max level of skills
     if (getLevel()!= level)
         m_Played_time[1] = 0;                               // Level Played Time reset
+
+    uint32 oldLevel = getLevel();
     SetLevel(level);
     UpdateSkillsForLevel ();
 
@@ -2562,6 +2572,17 @@ void Player::GiveLevel(uint32 level)
     Pet* pet = GetPet();
     if (pet && pet->getPetType()==SUMMON_PET)
         pet->GivePetLevel(level);
+
+    // used by eluna
+    sHookMgr->OnLevelChanged(this, oldLevel);
+}
+
+void Player::SetFreeTalentPoints(uint32 points)
+{
+    // used by eluna
+    sHookMgr->OnFreeTalentPointsChanged(this, points);
+
+    SetUInt32Value(PLAYER_CHARACTER_POINTS1,points);
 }
 
 void Player::UpdateFreeTalentPoints(bool resetIfNeed)
@@ -3525,6 +3546,9 @@ uint32 Player::resetTalentsCost() const
 
 bool Player::resetTalents(bool no_cost)
 {
+    // used by eluna
+    sHookMgr->OnTalentsReset(this, no_cost);
+
     // not need after this call
     if (HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
     {
@@ -4235,6 +4259,9 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     UpdateZone(GetZoneId());
 
     UpdateVisibilityAndView();
+
+    // used by eluna
+    sHookMgr->OnResurrect(this);
 
     if (!applySickness)
         return;
@@ -6517,6 +6544,9 @@ void Player::UpdateZone(uint32 newZone)
     m_zoneUpdateId    = newZone;
     m_zoneUpdateTimer = ZONE_UPDATE_INTERVAL;
 
+    // used by eluna
+    sHookMgr->OnUpdateZone(this, newZone, newZone);
+
     // zone changed, so area changed as well, update it
     UpdateArea(GetAreaId());
 
@@ -6677,6 +6707,9 @@ void Player::DuelComplete(DuelCompleteType type)
     // duel not requested
     if (!duel)
         return;
+
+    // used by eluna
+    sHookMgr->OnDuelEnd(duel->opponent, this, type);
 
     WorldPacket data(SMSG_DUEL_COMPLETE, (1));
     data << (uint8)((type != DUEL_INTERUPTED) ? 1 : 0);
@@ -10074,9 +10107,9 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 {
                     // exclude spells with transform item effect
                     if (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
-                        (m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
-                        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
-                        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM))
+                        (m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellEntry()->Effect[0] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellEntry()->Effect[1] != SPELL_EFFECT_SUMMON_CHANGE_ITEM &&
+                        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellEntry()->Effect[2] != SPELL_EFFECT_SUMMON_CHANGE_ITEM))
 
                         return EQUIP_ERR_CANT_DO_RIGHT_NOW;
                 }
@@ -10792,6 +10825,9 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
             UpdateExpertise(BASE_ATTACK);
         else if (slot == EQUIPMENT_SLOT_OFFHAND)
             UpdateExpertise(OFF_ATTACK);
+
+        // used by eluna
+        sHookMgr->OnEquip(this, pItem2, bag, slot);
     }
     else
     {
@@ -10815,6 +10851,9 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
         pItem2->SetState(ITEM_CHANGED, this);
 
         ApplyEquipCooldown(pItem2);
+
+        // used by eluna
+        sHookMgr->OnEquip(this, pItem2, bag, slot);
 
         return pItem2;
     }
@@ -13091,6 +13130,21 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
         CastSpell(this, pQuest->GetRewSpell(), true);
 }
 
+void Player::ModifyMoney(int32 d)
+{
+    // used by eluna
+    sHookMgr->OnMoneyChanged(this, d);
+
+    if (d < 0)
+        SetMoney (GetMoney() > uint32(-d) ? GetMoney() + d : 0);
+    else
+        SetMoney (GetMoney() < uint32(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
+
+    // "At Gold Limit"
+    if (GetMoney() >= MAX_MONEY_AMOUNT)
+        SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD,NULL,NULL);
+}
+
 void Player::RewardDNDQuest(uint32 questId)
 {
     const Quest * tmpQ = sObjectMgr.GetQuestTemplate(questId);
@@ -14139,6 +14193,14 @@ void Player::SendQuestReward(Quest const *pQuest, uint32 XP, Object * questGiver
             data << uint32(0) << uint32(0);
     }
     SendPacketToSelf(&data);
+
+    // used by eluna
+    if (questGiver->GetTypeId() == TYPEID_UNIT)
+        sHookMgr->OnQuestComplete(this, (Creature*)questGiver, pQuest);
+
+    // used by eluna
+    if (questGiver->GetTypeId() == TYPEID_GAMEOBJECT)
+        sHookMgr->OnQuestComplete(this, (GameObject*)questGiver, pQuest);
 }
 
 void Player::SendQuestFailed(uint32 quest_id)
@@ -15849,7 +15911,12 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
 
         bind.save = save;
         bind.perm = permanent;
-        if (!load) sLog.outDebug("Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %d", GetName(), GetGUIDLow(), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
+        if (!load)
+            sLog.outDebug("Player::BindToInstance: %s(%d) is now bound to map %d, instance %d, difficulty %d", GetName(), GetGUIDLow(), save->GetMapId(), save->GetInstanceId(), save->GetDifficulty());
+        
+        // used by eluna
+        sHookMgr->OnBindToInstance(this, DungeonDifficulties(save->GetDifficulty()), save->GetMapId(), permanent);
+        
         return &bind;
     }
     else
@@ -17150,6 +17217,9 @@ void Player::UpdateDuelFlag(time_t currTime)
     if (!duel || duel->startTimer == 0 ||currTime < duel->startTimer + 3)
         return;
 
+    // used by eluna
+    sHookMgr->OnDuelStart(this, duel->opponent);
+
     SetUInt32Value(PLAYER_DUEL_TEAM, 1);
     duel->opponent->SetUInt32Value(PLAYER_DUEL_TEAM, 2);
 
@@ -17857,7 +17927,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     // not let cheating with start flight in time of logout process || if casting not finished || while in combat || if not use Spell's with EffectSendTaxi
     if (GetSession()->isLogingOut() ||
         (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
-        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellInfo()->Effect[0] != SPELL_EFFECT_SEND_TAXI)&&
+        m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellEntry()->Effect[0] != SPELL_EFFECT_SEND_TAXI)&&
         IsNonMeleeSpellCasted(false) ||
         isInCombat())
     {
@@ -19751,7 +19821,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item * pItem)
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
         if (m_currentSpells[i] && m_currentSpells[i]->getState()!=SPELL_STATE_DELAYED &&
-            !HasItemFitToSpellReqirements(m_currentSpells[i]->GetSpellInfo(),pItem))
+            !HasItemFitToSpellReqirements(m_currentSpells[i]->GetSpellEntry(),pItem))
             InterruptSpell(i);
     }
 }
