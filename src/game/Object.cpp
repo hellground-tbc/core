@@ -1795,7 +1795,7 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
     Hellground::VisibleChangesNotifier notifier(*this);
     float radius = World::GetVisibleObjectGreyDistance();
 
-    if ( Corpse* corpse = ToCorpse() )
+    if ( ToCorpse() != nullptr || !IsInWorld() )
         radius = MAX_VISIBILITY_DISTANCE;
     else if ( Map* map = GetMap() )
         radius += map->GetVisibilityDistance();
