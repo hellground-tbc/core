@@ -241,7 +241,7 @@ void HookMgr::OnEngineRestart()
 // item
 bool HookMgr::OnDummyEffect(Unit* pCaster, uint32 spellId, uint8 effIndex, Item* pTarget)
 {
-    ELUNA_GUARD(void());
+    ELUNA_GUARD(false);
     int bind = sEluna->ItemEventBindings.GetBind(pTarget->GetEntry(), ITEM_EVENT_ON_DUMMY_EFFECT);
     if (!bind)
         return false;

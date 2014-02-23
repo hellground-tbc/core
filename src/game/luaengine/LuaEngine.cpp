@@ -22,7 +22,7 @@ bool StartEluna()
         return false;
     }
 
-    ELUNA_GUARD();
+    ELUNA_GUARD(false);
     bool restart = false;
     if (sEluna->L)
     {
@@ -781,7 +781,7 @@ EventMgr::LuaEvent::~LuaEvent()
 
 bool EventMgr::LuaEvent::Execute(uint64 time, uint32 diff)
 {
-    ELUNA_GUARD();
+    ELUNA_GUARD(false);
     bool remove = (calls == 1);
     if (!remove)
         events->AddEvent(this, events->CalculateTime(delay)); // Reschedule before calling incase RemoveEvents used
