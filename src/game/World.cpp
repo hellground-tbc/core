@@ -861,6 +861,53 @@ void World::LoadConfigSettings(bool reload)
     // Network
     m_configs[CONFIG_KICK_PLAYER_ON_BAD_PACKET] = sConfig.GetBoolDefault("Network.KickOnBadPacket", true);
 
+        // === Reload only section === 
+    if (reload)
+    {
+        if (sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT) != m_configs[CONFIG_PORT_WORLD])
+            sLog.outLog(LOG_DEFAULT, "ERROR: WorldServerPort option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
+
+        // Performance settings
+        if (sConfig.GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME) != m_configs[CONFIG_SOCKET_SELECTTIME])
+            sLog.outLog(LOG_DEFAULT, "ERROR: SocketSelectTime option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_SOCKET_SELECTTIME]);
+        sMapMgr.SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
+        m_timers[WUPDATE_UPTIME].SetInterval(m_configs[CONFIG_UPTIME_UPDATE]*MINUTE*1000);
+        m_timers[WUPDATE_UPTIME].Reset();
+
+        // Server settings
+        if (sConfig.GetIntDefault("GameType", 0) != m_configs[CONFIG_GAME_TYPE])
+            sLog.outLog(LOG_DEFAULT, "ERROR: GameType option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
+        if (sConfig.GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT) != m_configs[CONFIG_REALM_ZONE])
+            sLog.outLog(LOG_DEFAULT, "ERROR: RealmZone option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
+        if ( sConfig.GetIntDefault("Expansion",1) != m_configs[CONFIG_EXPANSION])
+            sLog.outLog(LOG_DEFAULT, "ERROR: Expansion option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
+        
+        // Server customization basic
+        if (sConfig.GetIntDefault("MaxPlayerLevel", 70) != m_configs[CONFIG_MAX_PLAYER_LEVEL])
+            sLog.outLog(LOG_DEFAULT, "ERROR: MaxPlayerLevel option can't be changed at config reload, using current value (%u).",m_configs[CONFIG_MAX_PLAYER_LEVEL]);
+
+    }
+    // === Not-reload only section ===
+    else
+    {
+        m_configs[CONFIG_PORT_WORLD] = sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
+        // Performance settings
+        m_configs[CONFIG_SOCKET_SELECTTIME] = sConfig.GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
+
+        // Server settings
+        m_configs[CONFIG_GAME_TYPE]  = sConfig.GetIntDefault("GameType", 0);
+        m_configs[CONFIG_REALM_ZONE] = sConfig.GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
+        m_configs[CONFIG_EXPANSION]  = sConfig.GetIntDefault("Expansion",1);
+
+        // Server customization basic
+        m_configs[CONFIG_MAX_PLAYER_LEVEL] = sConfig.GetIntDefault("MaxPlayerLevel", 70);
+        if (m_configs[CONFIG_MAX_PLAYER_LEVEL] > MAX_LEVEL)
+        {
+            sLog.outLog(LOG_DEFAULT, "ERROR: MaxPlayerLevel (%i) must be in range 1..%u. Set to %u.",m_configs[CONFIG_MAX_PLAYER_LEVEL],MAX_LEVEL,MAX_LEVEL);
+            m_configs[CONFIG_MAX_PLAYER_LEVEL] = MAX_LEVEL;
+        }
+    }
+
     // === Warns section ===
     // Performance settings
     m_configs[CONFIG_COMPRESSION] = sConfig.GetIntDefault("Compression", 1);
@@ -1016,52 +1063,6 @@ void World::LoadConfigSettings(bool reload)
         m_VisibleObjectGreyDistance = MAX_VISIBILITY_DISTANCE;
     }
 
-    // === Reload only section === 
-    if (reload)
-    {
-        if (sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT) != m_configs[CONFIG_PORT_WORLD])
-            sLog.outLog(LOG_DEFAULT, "ERROR: WorldServerPort option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
-
-        // Performance settings
-        if (sConfig.GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME) != m_configs[CONFIG_SOCKET_SELECTTIME])
-            sLog.outLog(LOG_DEFAULT, "ERROR: SocketSelectTime option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_SOCKET_SELECTTIME]);
-        sMapMgr.SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
-        m_timers[WUPDATE_UPTIME].SetInterval(m_configs[CONFIG_UPTIME_UPDATE]*MINUTE*1000);
-        m_timers[WUPDATE_UPTIME].Reset();
-
-        // Server settings
-        if (sConfig.GetIntDefault("GameType", 0) != m_configs[CONFIG_GAME_TYPE])
-            sLog.outLog(LOG_DEFAULT, "ERROR: GameType option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
-        if (sConfig.GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT) != m_configs[CONFIG_REALM_ZONE])
-            sLog.outLog(LOG_DEFAULT, "ERROR: RealmZone option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
-        if ( sConfig.GetIntDefault("Expansion",1) != m_configs[CONFIG_EXPANSION])
-            sLog.outLog(LOG_DEFAULT, "ERROR: Expansion option can't be changed at .conf file reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
-        
-        // Server customization basic
-        if (sConfig.GetIntDefault("MaxPlayerLevel", 70) != m_configs[CONFIG_MAX_PLAYER_LEVEL])
-            sLog.outLog(LOG_DEFAULT, "ERROR: MaxPlayerLevel option can't be changed at config reload, using current value (%u).",m_configs[CONFIG_MAX_PLAYER_LEVEL]);
-
-    }
-    // === Not-reload only section ===
-    else
-    {
-        m_configs[CONFIG_PORT_WORLD] = sConfig.GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
-        // Performance settings
-        m_configs[CONFIG_SOCKET_SELECTTIME] = sConfig.GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
-
-        // Server settings
-        m_configs[CONFIG_GAME_TYPE]  = sConfig.GetIntDefault("GameType", 0);
-        m_configs[CONFIG_REALM_ZONE] = sConfig.GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
-        m_configs[CONFIG_EXPANSION]  = sConfig.GetIntDefault("Expansion",1);
-
-        // Server customization basic
-        m_configs[CONFIG_MAX_PLAYER_LEVEL] = sConfig.GetIntDefault("MaxPlayerLevel", 70);
-        if (m_configs[CONFIG_MAX_PLAYER_LEVEL] > MAX_LEVEL)
-        {
-            sLog.outLog(LOG_DEFAULT, "ERROR: MaxPlayerLevel (%i) must be in range 1..%u. Set to %u.",m_configs[CONFIG_MAX_PLAYER_LEVEL],MAX_LEVEL,MAX_LEVEL);
-            m_configs[CONFIG_MAX_PLAYER_LEVEL] = MAX_LEVEL;
-        }
-    }
 }
 
 /// Initialize the World

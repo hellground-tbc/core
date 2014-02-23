@@ -79,9 +79,9 @@ bool ChatHandler::HandleReloadElunaCommand(const char* /*args*/)
     sLog.outString("Re-Loading Eluna LuaEngine...");
 
     if (StartEluna())
-        SendGlobalSysMessage("Eluna LuaEngine reloaded.");
+        SendGlobalGMSysMessage("Eluna LuaEngine reloaded.");
     else
-        SendGlobalSysMessage("Eluna Lua Engine is disabled can't reload.");
+        SendGlobalGMSysMessage("Eluna Lua Engine is disabled can't reload.");
     return true;
 }
 
@@ -447,7 +447,7 @@ bool ChatHandler::HandleReloadReputationRewardRateCommand(const char*)
 {
     sLog.outString("Re-Loading `reputation_reward_rate` Table!");
     sObjectMgr.LoadReputationRewardRate();
-    SendGlobalSysMessage("DB table `reputation_reward_rate` reloaded.");
+    SendGlobalGMSysMessage("DB table `reputation_reward_rate` reloaded.");
     return true;
 }
 
@@ -455,7 +455,7 @@ bool ChatHandler::HandleReloadReputationSpilloverTemplateCommand(const char*)
 {
     sLog.outString("Re-Loading `reputation_spillover_template` Table!");
     sObjectMgr.LoadReputationSpilloverTemplate();
-    SendGlobalSysMessage("DB table `reputation_spillover_template` reloaded.");
+    SendGlobalGMSysMessage("DB table `reputation_spillover_template` reloaded.");
     return true;
 }
 
