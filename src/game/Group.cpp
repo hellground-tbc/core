@@ -359,10 +359,10 @@ bool Group::AddMember(const uint64 &guid, const char* name, bool lfg)
             player->ClearLFG();
             player->ClearLFM();
         }
-    }
 
-    // used by eluna
-    sHookMgr->OnAddMember(this, player->GetGUID());
+        // used by eluna
+        sHookMgr->OnAddMember(this, player->GetGUID());
+    }
 
     return true;
 }

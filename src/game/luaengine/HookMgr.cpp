@@ -1125,7 +1125,7 @@ void HookMgr::OnExpire(AuctionHouseObject* ah)
 // Packet
 bool HookMgr::OnPacketSend(WorldSession* session, WorldPacket& packet)
 {
-    ELUNA_GUARD();
+    //ELUNA_GUARD();
     bool result = true;
     Player* player = NULL;
     if (session)

@@ -141,8 +141,8 @@ int WorldSocket::SendPacket(const WorldPacket& pct)
     if (closing_)
         return -1;
 
-    if (!sHookMgr->OnPacketSend(m_Session, *const_cast<WorldPacket*>(&pct)))
-        return 0;
+    //if (!sHookMgr->OnPacketSend(m_Session, *const_cast<WorldPacket*>(&pct)))
+    //    return 0;
 
     if (iSendPacket(pct) == -1)
     {

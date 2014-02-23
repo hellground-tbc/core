@@ -282,8 +282,8 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
     if (!packet)
         return;
 
-    if (!sHookMgr->OnPacketReceive(this, *packet))
-        return;
+    //if (!sHookMgr->OnPacketReceive(this, *packet))
+    //    return;
 
     if (packet->GetOpcode() >= NUM_MSG_TYPES)
     {
@@ -293,9 +293,6 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
     }
     else
     {
-        if (!sHookMgr->OnPacketReceive(this, *packet))
-            return;
-
         OpcodeHandler& opHandle = opcodeTable[packet->GetOpcode()];
         switch (opHandle.status)
         {
