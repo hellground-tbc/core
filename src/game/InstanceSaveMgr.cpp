@@ -58,17 +58,24 @@ void InstanceSaveManager::UnbindBeforeDelete()
     for (InstanceSaveHashMap::iterator itr = m_instanceSaveById.begin(); itr != m_instanceSaveById.end(); ++itr)
     {
         InstanceSave *save = itr->second;
+        if (save == nullptr)
+			continue;
+			
         for (InstanceSave::PlayerListType::iterator itr2 = save->m_playerList.begin(); itr2 != save->m_playerList.end(); ++itr2)
-            (*itr2)->UnbindInstance(save->GetMapId(), save->GetDifficulty(), true);
+        {
+            if (Player* player = sObjectMgr.GetPlayer(*itr2))
+                player->UnbindInstance(save->GetMapId(), save->GetDifficulty(), true);
+        }
 
         save->m_playerList.clear();
 
         for (InstanceSave::GroupListType::iterator itr2 = save->m_groupList.begin(); itr2 != save->m_groupList.end(); ++itr2)
-            if ((*itr2) != nullptr) // just to prevent crashes on shutdown - we must find why groups can be nulled before calling this function
-                (*itr2)->UnbindInstance(save->GetMapId(), save->GetDifficulty(), true);
+            (*itr2)->UnbindInstance(save->GetMapId(), save->GetDifficulty(), true);
 
         save->m_groupList.clear();
+		
         delete save;
+		itr->second = nullptr;
     }
 
     m_instanceSaveById.clear();
@@ -198,6 +205,11 @@ time_t InstanceSave::GetResetTimeForDB()
         return 0;
     else
         return GetResetTime();
+}
+
+bool InstanceSave::HasPlayer(uint64 guid)
+{
+    return std::any_of(m_playerList.begin(), m_playerList.end(), [guid](uint64 p) { return p == guid; });
 }
 
 // to cache or not to cache, that is the question
@@ -528,9 +540,10 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
     InstanceSave::PlayerListType &pList = itr->second->m_playerList;
     while (!pList.empty())
     {
-        Player *player = *(pList.begin());
+        Player *player = sObjectMgr.GetPlayer(*pList.begin());
         player->UnbindInstance(itr->second->GetMapId(), itr->second->GetDifficulty(), true);
     }
+
     InstanceSave::GroupListType &gList = itr->second->m_groupList;
     while (!gList.empty())
     {
@@ -541,6 +554,8 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
     RealmDataDatabase.PExecute("DELETE FROM group_saved_loot WHERE instanceid = '%u'", itr->second->GetInstanceId());
 
     delete itr->second;
+    itr->second = nullptr;
+
     m_instanceSaveById.erase(itr++);
 
     lock_instLists = false;

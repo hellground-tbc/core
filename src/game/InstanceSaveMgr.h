@@ -78,10 +78,12 @@ class InstanceSave
         InstanceTemplate const* GetTemplate();
         MapEntry const* GetMapEntry();
 
+        bool HasPlayer(uint64 guid);
+
         /* online players bound to the instance (perm/solo)
            does not include the members of the group unless they have permanent saves */
-        void AddPlayer(Player *player) { m_playerList.push_back(player); }
-        bool RemovePlayer(Player *player) { m_playerList.remove(player); return UnloadIfEmpty(); }
+        void AddPlayer(uint64 guid) { m_playerList.push_back(guid); }
+        bool RemovePlayer(uint64 guid) { m_playerList.remove(guid); return UnloadIfEmpty(); }
         /* all groups bound to the instance */
         void AddGroup(Group *group) { m_groupList.push_back(group); }
         bool RemoveGroup(Group *group) { m_groupList.remove(group); return UnloadIfEmpty(); }
@@ -96,7 +98,7 @@ class InstanceSave
            but that would depend on a lot of things that can easily change in future */
         uint8 GetDifficulty() { return m_difficulty; }
 
-        typedef std::list<Player*> PlayerListType;
+        typedef std::list<uint64> PlayerListType;
         typedef std::list<Group*> GroupListType;
     private:
         bool UnloadIfEmpty();
