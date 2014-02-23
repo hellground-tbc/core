@@ -915,8 +915,8 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void CombatStop(bool cast = false);
         void CombatStopWithPets(bool cast = false);
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE, Unit* target = NULL) const;
-        void SendMeleeAttackStop(Unit* victim);
-        void SendMeleeAttackStart(Unit* pVictim);
+        void SendMeleeAttackStop(uint64 victimGUID);
+        void SendMeleeAttackStart(uint64 victimGUID);
 
         void addUnitState(uint32 f) { m_state |= f; }
         bool hasUnitState(const uint32 f) const { return (m_state & f); }
