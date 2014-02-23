@@ -53,8 +53,12 @@ extern "C"
 
 typedef std::set<std::string> LoadedScripts;
 
+#ifdef NOT_USE_ELUNA_HOOKS
+#define ELUNA_GUARD() return;
+#else
 #define ELUNA_GUARD() \
     ACE_Guard< ACE_Thread_Mutex > ELUNA_GUARD_OBJECT (sEluna->lock);
+#endif
 
 template<typename T>
 struct ElunaRegister

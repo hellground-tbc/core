@@ -10,6 +10,8 @@
 extern bool StartEluna();
 bool HookMgr::OnCommand(Player* player, const char* text)
 {
+    ELUNA_GUARD();
+
     char* creload = strtok((char*)text, " ");
     char* celuna = strtok(NULL, "");
     if (creload && celuna)
@@ -28,10 +30,10 @@ bool HookMgr::OnCommand(Player* player, const char* text)
             }
         }
     }
-    ELUNA_GUARD();
     bool result = true;
     if (!sEluna->PlayerEventBindings.BeginCall(PLAYER_EVENT_ON_COMMAND))
         return result;
+
     sEluna->Push(sEluna->L, player);
     sEluna->Push(sEluna->L, text);
     sEluna->PlayerEventBindings.ExecuteCall();

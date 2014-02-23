@@ -71,6 +71,7 @@ message(
     PREFIX: Path where the server should be installed to
     PCH   : Use precompiled headers
     DEBUG : Debug mode
+	NOT_USE_ELUNA_HOOKS : do NOT use Elunas HookMgr
     CLI   : Build with CLI (default)
     TBB_USE_EXTERNAL: Use external TBB library instead of built in (default)
     ACE_USE_EXTERNAL: Use external ACE library instead of built in (default)
@@ -123,6 +124,7 @@ option(TBB_USE_EXTERNAL "Use external TBB" 1)
 option(USE_STD_MALLOC "Use standard malloc instead of TBB" 0)
 option(ACE_USE_EXTERNAL "Use external ACE" 1)
 option(LARGE_CELL "Use large cell size" 0)
+option(NOT_USE_ELUNA_HOOKS, "Do not use lunas HookMgr" 1)
 option(ADD_COMPILE_F "Add additional compile flags" 1)
 option(ADD_MATH_F "Add additional compile math flags" 0)
 option(ADD_GPROF_F "Add additional compile gprof flag" 0)
@@ -453,7 +455,11 @@ if(WIN32)
   set(DEFINITIONS_RELEASE ${DEFINITIONS_RELEASE} _CRT_SECURE_NO_WARNINGS)
 endif()
 if(USE_STD_MALLOC)
-  set(DEFINITIONS ${DEFINITIONS} USE_STANDARD_MALLOC)
+	set(DEFINITIONS ${DEFINITIONS} USE_STANDARD_MALLOC)
+endif()
+
+if(NOT_USE_ELUNA_HOOKS)
+	set(DEFINITIONS ${DEFINITIONS} NOT_USE_ELUNA_HOOKS)
 endif()
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "${DEFINITIONS}")
