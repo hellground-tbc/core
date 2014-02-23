@@ -84,7 +84,7 @@ bool StartEluna()
         }
         else
         {
-            int err = lua_pcall(sEluna->L, 0, 0, 0);
+            int err = lua_ppcall(sEluna->L, 0, 0, 0);
             if (err != 0 && err == LUA_ERRRUN)
             {
                 sLog.outLog(LOG_DEFAULT,"[Eluna]: Error loading file `%s`.", itr->c_str());
@@ -246,7 +246,7 @@ bool Eluna::ExecuteCall(int params, int res)
 
     if (lua_type(L, top - params) == LUA_TFUNCTION) // is function
     {
-        if (lua_pcall(L, params, res, 0))
+        if (lua_ppcall(L, params, res, 0))
         {
             report(L);
             ret = false;

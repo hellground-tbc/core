@@ -176,7 +176,7 @@ static int docall (lua_State *L, int narg, int nres) {
   lua_insert(L, base);  /* put it under chunk and args */
   globalL = L;  /* to be available to 'laction' */
   signal(SIGINT, laction);
-  status = lua_pcall(L, narg, nres, base);
+  status = lua_ppcall(L, narg, nres, base);
   signal(SIGINT, SIG_DFL);
   lua_remove(L, base);  /* remove traceback function */
   return status;
@@ -310,7 +310,7 @@ static void dotty (lua_State *L) {
       luaL_checkstack(L, LUA_MINSTACK, "too many results to print");
       lua_getglobal(L, "print");
       lua_insert(L, 1);
-      if (lua_pcall(L, lua_gettop(L)-1, 0, 0) != LUA_OK)
+      if (lua_ppcall(L, lua_gettop(L)-1, 0, 0) != LUA_OK)
         l_message(progname, lua_pushfstring(L,
                                "error calling " LUA_QL("print") " (%s)",
                                lua_tostring(L, -1)));
@@ -487,7 +487,7 @@ int main (int argc, char **argv) {
   lua_pushcfunction(L, &pmain);
   lua_pushinteger(L, argc);  /* 1st argument */
   lua_pushlightuserdata(L, argv); /* 2nd argument */
-  status = lua_pcall(L, 2, 1, 0);
+  status = lua_ppcall(L, 2, 1, 0);
   result = lua_toboolean(L, -1);  /* get result */
   finalreport(L, status);
   lua_close(L);

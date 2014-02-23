@@ -30,7 +30,7 @@
 /* mark for precompiled code ('<esc>Lua') */
 #define LUA_SIGNATURE	"\033Lua"
 
-/* option for multiple returns in 'lua_pcall' and 'lua_call' */
+/* option for multiple returns in 'lua_ppcall' and 'lua_call' */
 #define LUA_MULTRET	(-1)
 
 
@@ -251,7 +251,8 @@ LUA_API int   (lua_getctx) (lua_State *L, int *ctx);
 
 LUA_API int   (lua_pcallk) (lua_State *L, int nargs, int nresults, int errfunc,
                             int ctx, lua_CFunction k);
-#define lua_pcall(L,n,r,f)	lua_pcallk(L, (n), (r), (f), 0, NULL)
+
+#define lua_ppcall(L,n,r,f)	lua_pcallk(L, (n), (r), (f), 0, NULL)
 
 LUA_API int   (lua_load) (lua_State *L, lua_Reader reader, void *dt,
                                         const char *chunkname,

@@ -26,6 +26,7 @@
 #define MAX_ROSTER_MEMBERS 499
 
 #include "Item.h"
+#include "ObjectAccessor.h"
 
 class Item;
 
