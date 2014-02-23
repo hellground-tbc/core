@@ -39,6 +39,7 @@
 #include "BattleGroundMgr.h"
 #include "BattleGround.h"
 #include "Guild.h"
+#include "GuildMgr.h"
 
 void WorldSession::HandleTabardVendorActivateOpcode(WorldPacket & recv_data)
 {
@@ -822,7 +823,7 @@ void WorldSession::HandleRepairItemOpcode(WorldPacket & recv_data)
         uint32 GuildId = _player->GetGuildId();
         if (!GuildId)
             return;
-        Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+        Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
         if (!pGuild)
             return;
         pGuild->LogBankEvent(GUILD_BANK_LOG_REPAIR_MONEY, 0, _player->GetGUIDLow(), TotalCost);

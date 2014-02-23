@@ -114,17 +114,8 @@ ObjectMgr::ObjectMgr()
     m_hiPetNumber       = 1;
     m_ItemTextId        = 1;
     m_mailid            = 1;
-    m_guildId           = 1;
     m_arenaTeamId       = 1;
     m_auctionid         = 1;
-
-    mGuildBankTabPrice.resize(GUILD_BANK_MAX_TABS);
-    mGuildBankTabPrice[0] = 100;
-    mGuildBankTabPrice[1] = 250;
-    mGuildBankTabPrice[2] = 500;
-    mGuildBankTabPrice[3] = 1000;
-    mGuildBankTabPrice[4] = 2500;
-    mGuildBankTabPrice[5] = 5000;
 
     // Only zero condition left, others will be added while loading DB tables
     mConditions.resize(1);
@@ -155,10 +146,6 @@ ObjectMgr::~ObjectMgr()
     for (GroupSet::iterator itr = mGroupSet.begin(); itr != mGroupSet.end(); ++itr)
         delete (*itr);
 
-    for (GuildMap::iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        delete itr->second;
-    mGuildMap.clear();
-
     for (CacheVendorItemMap::iterator itr = m_mCacheVendorItemMap.begin(); itr != m_mCacheVendorItemMap.end(); ++itr)
         itr->second.Clear();
 
@@ -175,56 +162,6 @@ Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
     return NULL;
 }
 
-Guild * ObjectMgr::GetGuildById(const uint32 GuildId) const
-{
-    GuildMap::const_iterator itr = mGuildMap.find(GuildId);
-    if (itr != mGuildMap.end())
-        return itr->second;
-
-    return NULL;
-}
-
-Guild * ObjectMgr::GetGuildByName(const std::string& guildname) const
-{
-    std::string search = guildname;
-    std::transform(search.begin(), search.end(), search.begin(), toupper);
-    for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-    {
-        std::string gname = itr->second->GetName();
-        std::transform(gname.begin(), gname.end(), gname.begin(), toupper);
-        if (search == gname)
-            return itr->second;
-    }
-    return NULL;
-}
-
-std::string ObjectMgr::GetGuildNameById(const uint32 GuildId) const
-{
-    GuildMap::const_iterator itr = mGuildMap.find(GuildId);
-    if (itr != mGuildMap.end())
-        return itr->second->GetName();
-
-    return "";
-}
-
-Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
-{
-    for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        if (itr->second->GetLeader() == guid)
-            return itr->second;
-
-    return NULL;
-}
-
-void ObjectMgr::AddGuild(Guild* guild)
-{
-    mGuildMap[guild->GetId()] = guild;
-}
-
-void ObjectMgr::RemoveGuild(uint32 Id)
-{
-    mGuildMap.erase(Id);
-}
 ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid) const
 {
     ArenaTeamMap::const_iterator itr = mArenaTeamMap.find(arenateamid);
@@ -1314,41 +1251,6 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     sLog.outString();
 }
 
-void ObjectMgr::LoadGuildAnnCooldowns()
-{
-    uint32 count = 0;
-
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guild_id, cooldown_end FROM guild_announce_cooldown");
-
-    if (!result)
-    {
-        BarGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
-        sLog.outString(">> Loaded 0 guildann_cooldowns.");
-        return;
-    }
-
-    BarGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field *fields = result->Fetch();
-        bar.step();
-
-        uint32 guild_id       = fields[0].GetUInt32();
-        uint64 respawn_time = fields[1].GetUInt64();
-
-        mGuildCooldownTimes[guild_id] = time_t(respawn_time);
-
-        ++count;
-    } while (result->NextRow());
-
-    sLog.outString(">> Loaded %u guild ann cooldowns.", mGuildCooldownTimes.size());
-    sLog.outString();
-}
 
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
@@ -2561,49 +2463,6 @@ void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 _class, uint8 level, Play
                 info->stats[STAT_SPIRIT]    += (lvl > 38 ? 3: (lvl > 5 ? 1: 0));
         }
     }
-}
-
-void ObjectMgr::LoadGuilds()
-{
-    Guild *newguild;
-    uint32 count = 0;
-
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guildid FROM guild");
-
-    if (!result)
-    {
-
-        BarGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
-        sLog.outString(">> Loaded %u guild definitions", count);
-        return;
-    }
-
-    BarGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        bar.step();
-        ++count;
-
-        newguild = new Guild;
-        if (!newguild->LoadGuildFromDB(fields[0].GetUInt32()))
-        {
-            newguild->Disband();
-            delete newguild;
-            continue;
-        }
-        AddGuild(newguild);
-
-    }while (result->NextRow());
-
-    sLog.outString();
-    sLog.outString(">> Loaded %u guild definitions", count);
 }
 
 void ObjectMgr::LoadArenaTeams()
@@ -4335,7 +4194,6 @@ void ObjectMgr::RemoveGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool 
     return;
 }
 
-
 void ObjectMgr::LoadAreaTriggerTeleports()
 {
     mAreaTriggers.clear();                                  // need for reload case
@@ -4605,10 +4463,6 @@ void ObjectMgr::SetHighestGuids()
     result = RealmDataDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
     if (result)
         m_arenaTeamId = (*result)[0].GetUInt32()+1;
-
-    result = RealmDataDatabase.Query("SELECT MAX(guildid) FROM guild");
-    if (result)
-        m_guildId = (*result)[0].GetUInt32()+1;
 }
 
 uint32 ObjectMgr::GenerateArenaTeamId()
@@ -4619,16 +4473,6 @@ uint32 ObjectMgr::GenerateArenaTeamId()
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_arenaTeamId++;
-}
-
-uint32 ObjectMgr::GenerateGuildId()
-{
-    if (m_guildId>=0xFFFFFFFE)
-    {
-        sLog.outLog(LOG_DEFAULT, "ERROR: Guild ids overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return m_guildId++;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
@@ -5516,13 +5360,6 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
     if (t)
         RealmDataDatabase.PExecute("INSERT INTO creature_respawn VALUES ('%u', '" UI64FMTD "', '%u')", loguid, uint64(t), instance);
     RealmDataDatabase.CommitTransaction();
-}
-
-void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
-{
-    time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
-    mGuildCooldownTimes[guild_id] = tmpTime;
-    RealmDataDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '" UI64FMTD "')", guild_id, uint64(tmpTime));
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)

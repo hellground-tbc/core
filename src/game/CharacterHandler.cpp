@@ -43,6 +43,7 @@
 #include "SystemConfig.h"
 #include "GameEvent.h"
 #include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 class GameEvent;
 
@@ -415,7 +416,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
     std::string name;
 
     // is guild leader
-    if (sObjectMgr.GetGuildByLeader(guid))
+    if (sGuildMgr.GetGuildByLeader(guid))
     {
         WorldPacket data(SMSG_CHAR_DELETE, 1);
         data << (uint8)CHAR_DELETE_FAILED_GUILD_LEADER;
@@ -587,7 +588,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     if (pCurrChar->GetGuildId() != 0)
     {
-        Guild* guild = sObjectMgr.GetGuildById(pCurrChar->GetGuildId());
+        Guild* guild = sGuildMgr.GetGuildById(pCurrChar->GetGuildId());
         if (guild)
         {
             data.Initialize(SMSG_GUILD_EVENT, (2+guild->GetMOTD().size()+1));

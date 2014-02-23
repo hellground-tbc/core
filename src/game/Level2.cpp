@@ -46,6 +46,7 @@
 #include "TicketMgr.h"
 #include "CreatureAI.h"
 #include "ChannelMgr.h"
+#include "GuildMgr.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "MoveMap.h"                                        // for mmap manager
@@ -4545,7 +4546,7 @@ bool ChatHandler::HandleGuildDisableAnnounceCommand(const char *args)
 
     std::string guildName = args;
 
-    Guild* guild = sObjectMgr.GetGuildByName(guildName);
+    Guild* guild = sGuildMgr.GetGuildByName(guildName);
     if (!guild)
         return false;
 
@@ -4563,7 +4564,7 @@ bool ChatHandler::HandleGuildEnableAnnounceCommand(const char *args)
 
     std::string guildName = args;
 
-    Guild* guild = sObjectMgr.GetGuildByName(guildName);
+    Guild* guild = sGuildMgr.GetGuildByName(guildName);
     if (!guild)
         return false;
 

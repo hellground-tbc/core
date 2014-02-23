@@ -694,7 +694,7 @@ namespace LuaPlayer
     {
         if (!player->GetGuildId())
             return 0;
-        sEluna->Push(L, sObjectMgr.GetGuildNameById(player->GetGuildId()));
+        sEluna->Push(L, sGuildMgr.GetGuildNameById(player->GetGuildId()));
         return 1;
     }
 
@@ -1401,7 +1401,7 @@ namespace LuaPlayer
 
     int GetGuild(lua_State* L, Player* player)
     {
-        sEluna->Push(L, sObjectMgr.GetGuildById(player->GetGuildId()));
+        sEluna->Push(L, sGuildMgr.GetGuildById(player->GetGuildId()));
         return 1;
     }
 

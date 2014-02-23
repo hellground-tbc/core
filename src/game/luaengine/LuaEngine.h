@@ -49,6 +49,7 @@ extern "C"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "ReactorAI.h"
+#include "GuildMgr.h"
 
 typedef std::set<std::string> LoadedScripts;
 

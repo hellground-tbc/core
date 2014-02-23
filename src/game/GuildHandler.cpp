@@ -30,6 +30,7 @@
 #include "GossipDef.h"
 #include "SocialMgr.h"
 #include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
@@ -42,7 +43,7 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 
     recvPacket >> guildId;
 
-    guild = sObjectMgr.GetGuildById(guildId);
+    guild = sGuildMgr.GetGuildById(guildId);
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -73,7 +74,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    Guild *guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild *guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -138,7 +139,7 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(plName))
         return;
 
-    Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -184,7 +185,7 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_ACCEPT");
 
-    guild = sObjectMgr.GetGuildById(player->GetGuildIdInvited());
+    guild = sGuildMgr.GetGuildById(player->GetGuildIdInvited());
     if (!guild || player->GetGuildId())
         return;
 
@@ -219,7 +220,7 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
     Guild *guild;
     //sLog.outDebug("WORLD: Received CMSG_GUILD_INFO");
 
-    guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -241,7 +242,7 @@ void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
 {
     //sLog.outDebug("WORLD: Received CMSG_GUILD_ROSTER");
 
-    Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
         return;
 
@@ -261,7 +262,7 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(plName))
         return;
 
-    Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -319,7 +320,7 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(plName))
         return;
 
-    Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
 
     if (!guild)
     {
@@ -371,7 +372,7 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_LEAVE");
 
-    guild = sObjectMgr.GetGuildById(_player->GetGuildId());
+    guild = sGuildMgr.GetGuildById(_player->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -413,7 +414,7 @@ void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_DISBAND");
 
-    guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -445,7 +446,7 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(name))
         return;
 
-    guild = sObjectMgr.GetGuildById(oldLeader->GetGuildId());
+    guild = sGuildMgr.GetGuildById(oldLeader->GetGuildId());
 
     if (!guild)
     {
@@ -488,7 +489,7 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_MOTD");
 
-    guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -529,7 +530,7 @@ void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(name))
         return;
 
-    Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -570,7 +571,7 @@ void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
     if (!normalizePlayerName(plName))
         return;
 
-    Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -611,7 +612,7 @@ void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_RANK");
 
-    guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -658,7 +659,7 @@ void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_ADD_RANK");
 
-    guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -689,7 +690,7 @@ void WorldSession::HandleGuildDelRankOpcode(WorldPacket& /*recvPacket*/)
 
     //sLog.outDebug("WORLD: Received CMSG_GUILD_DEL_RANK");
 
-    guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -729,7 +730,7 @@ void WorldSession::HandleGuildChangeInfoOpcode(WorldPacket& recvPacket)
 
     recvPacket >> GINFO;
 
-    Guild *guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild *guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
@@ -780,7 +781,7 @@ void WorldSession::HandleGuildSaveEmblemOpcode(WorldPacket& recvPacket)
     recvPacket >> BorderColor;
     recvPacket >> BackgroundColor;
 
-    Guild *guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId());
+    Guild *guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
     {
         //"You are not part of a guild!";
@@ -821,7 +822,7 @@ void WorldSession::HandleGuildEventLogOpcode(WorldPacket& /* recvPacket */)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -839,7 +840,7 @@ void WorldSession::HandleGuildBankGetMoneyAmount(WorldPacket & /* recv_data */)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -854,7 +855,7 @@ void WorldSession::HandleGuildBankGetRights(WorldPacket& /* recv_data */)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -889,7 +890,7 @@ void WorldSession::HandleGuildBankQuery(WorldPacket & recv_data)
 
     if (uint32 GuildId = GetPlayer()->GetGuildId())
     {
-        if (Guild *pGuild = sObjectMgr.GetGuildById(GuildId))
+        if (Guild *pGuild = sGuildMgr.GetGuildById(GuildId))
         {
             pGuild->DisplayGuildBankTabsInfo(this);
             return;
@@ -915,7 +916,7 @@ void WorldSession::HandleGuildBankTabColon(WorldPacket & recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -944,7 +945,7 @@ void WorldSession::HandleGuildBankDeposit(WorldPacket & recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -1001,7 +1002,7 @@ void WorldSession::HandleGuildBankWithdraw(WorldPacket & recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -1108,7 +1109,7 @@ void WorldSession::HandleGuildBankDepositItem(WorldPacket & recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -1598,11 +1599,11 @@ void WorldSession::HandleGuildBankBuyTab(WorldPacket & recv_data)
     if (GuildId==0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
-    uint32 TabCost = sObjectMgr.GetGuildBankTabPrice(TabId) * GOLD;
+    uint32 TabCost = sGuildMgr.GetGuildBankTabPrice(TabId) * GOLD;
     if (!TabCost)
         return;
 
@@ -1657,7 +1658,7 @@ void WorldSession::HandleGuildBankModifyTab(WorldPacket & recv_data)
     if (GuildId==0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -1675,7 +1676,7 @@ void WorldSession::HandleGuildBankLog(WorldPacket & recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -1694,7 +1695,7 @@ void WorldSession::HandleGuildBankTabText(WorldPacket &recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 
@@ -1713,7 +1714,7 @@ void WorldSession::HandleGuildBankSetTabText(WorldPacket &recv_data)
     if (GuildId == 0)
         return;
 
-    Guild *pGuild = sObjectMgr.GetGuildById(GuildId);
+    Guild *pGuild = sGuildMgr.GetGuildById(GuildId);
     if (!pGuild)
         return;
 

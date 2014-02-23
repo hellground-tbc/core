@@ -55,6 +55,7 @@
 #include "CreatureEventAIMgr.h"
 #include "ChannelMgr.h"
 #include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 bool ChatHandler::HandleReloadAutobroadcastCommand(const char*)
 {
@@ -3170,7 +3171,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
         return false;
     }
 
-    sObjectMgr.AddGuild (guild);
+    sGuildMgr.AddGuild (guild);
     return true;
 }
 
@@ -3185,7 +3186,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
 
     std::string glName = par2;
-    Guild* targetGuild = sObjectMgr.GetGuildByName (glName);
+    Guild* targetGuild = sGuildMgr.GetGuildByName (glName);
     if (!targetGuild)
         return false;
 
@@ -3246,7 +3247,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     if (!plGuid || !glId)
         return false;
 
-    Guild* targetGuild = sObjectMgr.GetGuildById (glId);
+    Guild* targetGuild = sGuildMgr.GetGuildById (glId);
     if (!targetGuild)
         return false;
 
@@ -3288,7 +3289,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     if (!plGuid || !glId)
         return false;
 
-    Guild* targetGuild = sObjectMgr.GetGuildById (glId);
+    Guild* targetGuild = sGuildMgr.GetGuildById (glId);
     if (!targetGuild)
         return false;
 
@@ -3308,7 +3309,7 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
 
     std::string gld = args;
 
-    Guild* targetGuild = sObjectMgr.GetGuildByName(gld);
+    Guild* targetGuild = sGuildMgr.GetGuildByName(gld);
     if (!targetGuild)
         return false;
 

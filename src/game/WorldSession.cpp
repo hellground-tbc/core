@@ -47,6 +47,7 @@
 #include "WardenMac.h"
 #include "WardenChat.h"
 #include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -586,7 +587,7 @@ void WorldSession::LogoutPlayer(bool Save)
         }
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
-        Guild *guild = sObjectMgr.GetGuildById(_player->GetGuildId());
+        Guild *guild = sGuildMgr.GetGuildById(_player->GetGuildId());
         if (guild)
         {
             guild->LoadPlayerStatsByGuid(_player->GetGUID());

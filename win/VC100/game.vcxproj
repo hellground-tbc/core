@@ -471,6 +471,7 @@
     <ClCompile Include="..\..\src\game\DBCStores.cpp" />
     <ClCompile Include="..\..\src\game\GameEvent.cpp" />
     <ClCompile Include="..\..\src\game\GossipDef.cpp" />
+    <ClCompile Include="..\..\src\game\GuildMgr.cpp" />
     <ClCompile Include="..\..\src\game\luaengine\HookMgr.cpp" />
     <ClCompile Include="..\..\src\game\luaengine\LuaEngine.cpp" />
     <ClCompile Include="..\..\src\game\luaengine\LuaFunctions.cpp" />
@@ -647,6 +648,7 @@
     <ClInclude Include="..\..\src\game\DBCStructure.h" />
     <ClInclude Include="..\..\src\game\GameEvent.h" />
     <ClInclude Include="..\..\src\game\GossipDef.h" />
+    <ClInclude Include="..\..\src\game\GuildMgr.h" />
     <ClInclude Include="..\..\src\game\luaengine\AuraMethods.h" />
     <ClInclude Include="..\..\src\game\luaengine\CorpseMethods.h" />
     <ClInclude Include="..\..\src\game\luaengine\CreatureMethods.h" />

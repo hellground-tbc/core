@@ -31,6 +31,7 @@
 #include "MapManager.h"
 #include "GossipDef.h"
 #include "SocialMgr.h"
+#include "GuildMgr.h"
 
 /*enum PetitionType // dbc data
 {
@@ -148,7 +149,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recv_data)
 
     if (type == 9)
     {
-        if (sObjectMgr.GetGuildByName(name))
+        if (sGuildMgr.GetGuildByName(name))
         {
             SendGuildCommandResult(GUILD_CREATE_S, name, GUILD_NAME_EXISTS);
             return;
@@ -400,7 +401,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recv_data)
 
     if (type == 9)
     {
-        if (sObjectMgr.GetGuildByName(newname))
+        if (sGuildMgr.GetGuildByName(newname))
         {
             SendGuildCommandResult(GUILD_CREATE_S, newname, GUILD_NAME_EXISTS);
             return;
@@ -781,7 +782,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
 
     if (type == 9)
     {
-        if (sObjectMgr.GetGuildByName(name))
+        if (sGuildMgr.GetGuildByName(name))
         {
             SendGuildCommandResult(GUILD_CREATE_S, name, GUILD_NAME_EXISTS);
             return;
@@ -816,7 +817,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recv_data)
         }
 
         // register guild and add guildmaster
-        sObjectMgr.AddGuild(guild);
+        sGuildMgr.AddGuild(guild);
 
         // add members
         for (uint8 i = 0; i < signs; ++i)

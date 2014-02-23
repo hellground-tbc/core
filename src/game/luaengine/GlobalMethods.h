@@ -338,7 +338,7 @@ namespace LuaGlobalFunctions
     int GetGuildByName(lua_State* L)
     {
         const char* name = sEluna->CHECKVAL<const char*>(L, 1);
-        sEluna->Push(L, sObjectMgr.GetGuildByName(name));
+        sEluna->Push(L, sGuildMgr.GetGuildByName(name));
         return 1;
     }
 
@@ -355,7 +355,7 @@ namespace LuaGlobalFunctions
     {
         uint64 guid = sEluna->CHECKVAL<uint64>(L, 1);
 
-        sEluna->Push(L, sObjectMgr.GetGuildByLeader(uint64(guid)));
+        sEluna->Push(L, sGuildMgr.GetGuildByLeader(uint64(guid)));
         return 1;
     }
 
