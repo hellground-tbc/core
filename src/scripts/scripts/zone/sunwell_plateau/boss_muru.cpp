@@ -299,7 +299,7 @@ struct boss_entropiusAI : public ScriptedAI
     {
         if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
             ((boss_muruAI*)Muru)->EnterEvadeMode();
-        me->Kill(me, false);
+        me->setDeathState(JUST_DIED);
         me->RemoveCorpse();
         Summons.DespawnAll();
     }
