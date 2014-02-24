@@ -843,11 +843,16 @@ bool ChatHandler::HandleGMVisibleCommand(const char* args)
         return true;
     }
 
+    const uint32 VISUAL_AURA = 37800;
     std::string argstr = (char*)args;
+	Player* player = m_session->GetPlayer();
 
     if (argstr == "on")
     {
-        m_session->GetPlayer()->SetGMVisible(true);
+        if (player->HasAura(VISUAL_AURA, 0))
+            player->RemoveAurasDueToSpell(VISUAL_AURA);
+
+        player->SetGMVisible(true);
         m_session->SendNotification(LANG_INVISIBLE_VISIBLE);
         return true;
     }
@@ -856,6 +861,9 @@ bool ChatHandler::HandleGMVisibleCommand(const char* args)
     {
         m_session->SendNotification(LANG_INVISIBLE_INVISIBLE);
         m_session->GetPlayer()->SetGMVisible(false);
+
+		player->AddAura(VISUAL_AURA, player);
+
         return true;
     }
 
