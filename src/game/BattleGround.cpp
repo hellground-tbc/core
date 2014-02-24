@@ -1928,6 +1928,10 @@ bool BattleGround::SetPlayerReady(uint64 playerGUID)
     if ( !isArena() )
         return false;
 
+    uint32 readyCount = m_guidsReady[ 0 ].size() + m_guidsReady[ 1 ].size();
+    if ( readyCount == GetMaxPlayers() )
+        return false;
+
     uint32 team = GetPlayerTeam( playerGUID );
     if ( team == TEAM_NONE )
         return false;
@@ -1941,7 +1945,7 @@ bool BattleGround::SetPlayerReady(uint64 playerGUID)
     uint8 idx = team == ALLIANCE ? 0 : 1;
     m_guidsReady[ idx ].insert( playerGUID );
 
-    uint32 readyCount = m_guidsReady[ 0 ].size() + m_guidsReady[ 1 ].size();
+    readyCount = m_guidsReady[ 0 ].size() + m_guidsReady[ 1 ].size();
     if ( readyCount == GetMaxPlayers() )
     {
         SendMessageToAll( "Everyone are ready. Let's rumble!");
