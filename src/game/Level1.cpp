@@ -845,7 +845,7 @@ bool ChatHandler::HandleGMVisibleCommand(const char* args)
 
     const uint32 VISUAL_AURA = 37800;
     std::string argstr = (char*)args;
-	Player* player = m_session->GetPlayer();
+    Player* player = m_session->GetPlayer();
 
     if (argstr == "on")
     {
@@ -862,7 +862,7 @@ bool ChatHandler::HandleGMVisibleCommand(const char* args)
         m_session->SendNotification(LANG_INVISIBLE_INVISIBLE);
         m_session->GetPlayer()->SetGMVisible(false);
 
-		player->AddAura(VISUAL_AURA, player);
+        player->AddAura(VISUAL_AURA, player);
 
         return true;
     }
