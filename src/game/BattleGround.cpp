@@ -450,7 +450,6 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
     }
 }
 
-
 void BattleGround::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -1165,6 +1164,8 @@ void BattleGround::AddPlayer(Player *plr)
         case ARENA_TYPE_5v5:
         sBattleGroundMgr.inArenasCount[2]++; break;
         }
+
+        plr->Whisper("NOTICE: If you are ready, write: .arena ready. So, when everyone are ready arena preparation can end earlier.", LANG_COMMON, plr->GetGUID());
     }
     else
     {
@@ -1631,6 +1632,22 @@ void BattleGround::SendMessageToAll(char const* text)
     SendPacketToAll(&data);
 }
 
+void BattleGround::SendMessageToTeam(uint32 team, char const* text)
+{
+    WorldPacket data;
+    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    SendPacketToTeam(team, &data);
+}
+
+void BattleGround::SendMessageToTeam(uint32 team, int32 entry)
+{
+    char const* text = GetHellgroundString(entry);
+
+    WorldPacket data;
+    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    SendPacketToTeam(team, &data);
+}
+
 void BattleGround::PrepareMessageToAll(char const *format, ...)
 {
     va_list ap;
@@ -1904,4 +1921,35 @@ void BattleGround::SendObjectiveComplete(uint32 id, uint32 TeamID, float x, floa
                 plr->KilledMonster(id, 0);
         }
     }
+}
+
+bool BattleGround::SetPlayerReady(uint64 playerGUID)
+{
+    if ( !isArena() )
+        return false;
+
+    uint32 team = GetPlayerTeam( playerGUID );
+    if ( team == TEAM_NONE )
+        return false;
+
+    if ( GetStatus() != STATUS_WAIT_JOIN )
+        return false;
+
+    if ( GetStartDelayTime() <= sWorld.getConfig(CONFIG_ARENA_READY_START_TIMER) )
+        return false;
+
+    uint8 idx = team == ALLIANCE ? 0 : 1;
+    m_guidsReady[ idx ].insert( playerGUID );
+
+    uint32 readyCount = m_guidsReady[ 0 ].size() + m_guidsReady[ 1 ].size();
+    if ( readyCount == GetMaxPlayers() )
+    {
+        SendMessageToAll( "Everyone are ready. Let's rumble!");
+        SetStartDelayTime(sWorld.getConfig(CONFIG_ARENA_READY_START_TIMER));
+    }
+    else if ( m_guidsReady[ idx ].size() == GetMaxPlayersPerTeam() )
+    {
+        SendMessageToTeam(team == ALLIANCE ? HORDE : ALLIANCE, "Opponents are ready to start earlier, what about you?");
+    }
+    return true;
 }

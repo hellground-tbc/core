@@ -39,6 +39,12 @@ bool ChatHandler::load_command_table = true;
 
 ChatCommand * ChatHandler::getCommandTable()
 {
+    static ChatCommand arenaCommandTable[] =
+    {
+        { "ready",          PERM_PLAYER,    true,   &ChatHandler::HandleArenaReadyCommand,     "", NULL },
+        { NULL,             0,              false,  NULL,                                      "", NULL }
+    };
+
     static ChatCommand accountSetCommandTable[] =
     {
         { "addon",          PERM_HIGH_GMT,  true,   &ChatHandler::HandleAccountSetAddonCommand,     "", NULL },

@@ -240,6 +240,30 @@ bool ChatHandler::HandleAccountWeatherCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleArenaReadyCommand(const char* args)
+{
+    Player* player = m_session->GetPlayer();
+    if ( !player->InArena() )
+    {
+        PSendSysMessage("You can use this command only in arena.");
+        return false;
+    }
+
+    BattleGround* bg = player->GetBattleGround();
+    if ( bg == nullptr )
+        return false;
+
+    bool result = bg->SetPlayerReady(player->GetGUID());
+    if (result)
+    {
+        PSendSysMessage("You have been NOT marked as ready due to some problems.");
+        return false;
+    }
+
+    PSendSysMessage("You have been marked as ready.");
+    return true;
+}
+
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
     uint32 activeClientsNum = sWorld.GetActiveSessionCount();

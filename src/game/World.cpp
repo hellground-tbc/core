@@ -781,6 +781,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_ELO_COEFFICIENT]              = sConfig.GetIntDefault("Arena.ELOCoefficient",32);
     m_configs[CONFIG_ARENA_DAILY_REQUIREMENT]            = sConfig.GetIntDefault("Arena.DailyRequirement",0);
     m_configs[CONFIG_ARENA_DAILY_AP_REWARD]              = sConfig.GetIntDefault("Arena.DailyAPReward",0);
+    m_configs[CONFIG_ARENA_READY_START_TIMER]            = sConfig.GetIntDefault("Arena.ReadyStartTimer", 5000);
 
     // Battleground settings
     m_configs[CONFIG_BATTLEGROUND_ANNOUNCE_START]               = sConfig.GetIntDefault("BattleGround.AnnounceStart", 0);

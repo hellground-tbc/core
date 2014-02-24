@@ -1556,6 +1556,9 @@ WorldBossLevelDiff = 3
 # DailyAPReward: AP reward for daily arena
 #             Default: 0
 #
+# ReadyStartTimer: timer to set when everyone on arena are ready to fight
+#             Default: 5000
+#
 ###################################################################################################################
 
 Arena.MaxRatingDifference = 0
@@ -1580,6 +1583,7 @@ Arena.StatusInfo = 1
 Arena.ELOCoefficient = 32
 Arena.DailyRequirement = 0
 Arena.DailyAPReward = 0
+Arena.ReadyStartTimer = 5000
 
 ###################################################################################################################
 # BATTLEGROUND SETTINGS
