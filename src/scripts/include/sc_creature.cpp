@@ -343,7 +343,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
 
     bool casted = false;
 
-    if (m_creature->hasUnitState(UNIT_STAT_CASTING))
+    if (m_creature->hasUnitState(UNIT_STAT_CASTING) || me->IsNonMeleeSpellCasted(true))
         casted = true;
 
     if (!spellList.empty() && !casted)
