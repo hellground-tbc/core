@@ -3511,10 +3511,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 29838: //Second Wind (Rank 2)
                 spellInfo->procFlags &= ~PROC_FLAG_ON_TAKE_PERIODIC;
                 break;
-            case 46230: // Black Hole Effect (Entropius)
-                spellInfo->EffectRadiusIndex[0] = 8; // 5 yd radius
-                spellInfo->EffectRadiusIndex[2] = 8; // 5 yd radius
-                break;
             default:
                 break;
         }
