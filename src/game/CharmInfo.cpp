@@ -158,6 +158,15 @@ void CharmInfo::InitPossessCreateSpells()
         40322
     };
 
+    uint32 BlueDrakeID[5] =   //Power of the Blue Flight spells (Kij'jaeden fight)
+    {
+        45862,
+        45856,
+        45860,
+        60000,  //to make empty slot
+        45848
+    };
+
     if (m_unit->GetEntry() == 23109)     //HACK to allow proper spells for Vengeful Spirit
     {
         InitEmptyActionBar(false);
@@ -165,6 +174,18 @@ void CharmInfo::InitPossessCreateSpells()
         for (uint32 i = 0; i < 7; ++i)
         {
             uint32 spellid = SpiritSpellID[i];
+            AddSpellToActionBar(0, spellid, ACT_CAST);
+        }
+        return;
+    }
+
+    if (m_unit->GetEntry() == 25653)     //HACK to allow proper spells for the Power of the Blue Flight
+    {
+        InitEmptyActionBar(false);
+
+        for (uint32 i = 0; i < 5; ++i)
+        {
+            uint32 spellid = BlueDrakeID[i];
             AddSpellToActionBar(0, spellid, ACT_CAST);
         }
         return;
