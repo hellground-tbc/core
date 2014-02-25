@@ -594,7 +594,7 @@ struct mob_arcane_sphereAI : public ScriptedAI
         {
             DoResetThreat();
             if(Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0, 200, true, me->getVictimGUID()))
-                me->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, UNIT_ACTION_DOWAYPOINTS);
+                me->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false, true, UNIT_ACTION_DOWAYPOINTS);
             ChangeTargetTimer = 7000;   // to be tested
         }
         else

@@ -124,12 +124,12 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle)
         Mutate(new FollowMovementGenerator<Creature>(*target,dist,angle), UNIT_ACTION_DOWAYPOINTS);
 }
 
-void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, UnitActionId actionId /*= UNIT_ACTION_ASSISTANCE*/)
+void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, bool callStop, UnitActionId actionId /*= UNIT_ACTION_ASSISTANCE*/)
 {
     if (m_owner->GetTypeId() == TYPEID_PLAYER)
-        Mutate(new PointMovementGenerator<Player>(id,x,y,z, generatePath), actionId);
+        Mutate(new PointMovementGenerator<Player>(id,x,y,z, generatePath, callStop), actionId);
     else
-        Mutate(new PointMovementGenerator<Creature>(id,x,y,z, generatePath), actionId);
+        Mutate(new PointMovementGenerator<Creature>(id,x,y,z, generatePath, callStop), actionId);
 }
 
 void MotionMaster::MoveSeekAssistance(float x, float y, float z)

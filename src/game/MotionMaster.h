@@ -61,7 +61,7 @@ class HELLGROUND_IMPORT_EXPORT MotionMaster
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 timeLimit = 0);
-        void MovePoint(uint32 id, float x,float y,float z, bool generatePath = true, UnitActionId actionId = UNIT_ACTION_ASSISTANCE);
+        void MovePoint(uint32 id, float x,float y,float z, bool generatePath = true, bool callStop = true, UnitActionId actionId = UNIT_ACTION_ASSISTANCE);
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
         void MoveCharge(PathFinder path, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE);
         void MoveSeekAssistance(float x,float y,float z);

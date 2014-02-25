@@ -30,8 +30,8 @@ template<class UNIT>
 class PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
 {
     public:
-        PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false) : _id(id),
-            _x(x), _y(y), _z(z), _generatePath(generatePath) {}
+        PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false, bool callStop = true) : _id(id),
+            _x(x), _y(y), _z(z), _generatePath(generatePath), m_callStopMove( callStop ) {}
 
         void Initialize(UNIT &);
         void Finalize(UNIT &);
@@ -48,6 +48,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMoveme
         uint32 _id;
         float _x, _y, _z;
         bool _generatePath;
+        bool m_callStopMove;
 };
 
 class AssistanceMovementGenerator : public PointMovementGenerator<Creature>

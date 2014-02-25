@@ -33,7 +33,8 @@
 template<class UNIT>
 void PointMovementGenerator<UNIT>::Initialize(UNIT &unit)
 {
-    unit.StopMoving();
+    if ( m_callStopMove )
+        unit.StopMoving();
 
     unit.addUnitState(UNIT_STAT_ROAMING);
 

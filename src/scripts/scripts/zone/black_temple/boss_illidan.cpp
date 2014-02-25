@@ -530,7 +530,7 @@ struct boss_illidan_stormrageAI : public BossAI
                 pTrigger->GetNearPoint(final.coord_x, final.coord_y, final.coord_z, 80.0f, false, pTrigger->GetAngle(pGlaive));
                 final.coord_z = 354.519f;
                 pTrigger->SetSpeed(MOVE_RUN, 1.0f);
-                pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z, UNIT_ACTION_CONTROLLED);
+                pTrigger->GetMotionMaster()->MovePoint(0, final.coord_x, final.coord_y, final.coord_z, true, UNIT_ACTION_CONTROLLED);
 
                 pTrigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
