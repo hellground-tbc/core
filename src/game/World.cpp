@@ -843,8 +843,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WARDEN_KICK]                  = sConfig.GetBoolDefault("Warden.Kick", true);
     m_configs[CONFIG_WARDEN_BAN]                   = sConfig.GetBoolDefault("Warden.Ban", true);
     m_configs[CONFIG_WARDEN_LOG_ONLY_CHECK]        = sConfig.GetIntDefault("Warden.LogOnlyCheck",0);
-    m_configs[CONFIG_ENABLE_PASSIVE_ANTICHEAT]     = sConfig.GetIntDefault("AntiCheat.Enable", 1);
-    m_configs[CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE] = sConfig.GetIntDefault("Npc.InstaKillGuardianRange", 100.0f);  
+    m_configs[CONFIG_ENABLE_PASSIVE_ANTICHEAT]     = sConfig.GetIntDefault("AntiCheat.Enable", 1); 
 
     // RaF
     m_configs[CONFIG_UINT32_RAF_MAXGRANTLEVEL]       = sConfig.GetIntDefault("RAF.MaxGrantLevel", 60);

@@ -48,6 +48,7 @@ EndContentData */
 #include "BattleGround.h"
 #include "Totem.h"
 #include "PetAI.h"
+#include "Language.h"
 #include <list>
 
 #include <cstring>
@@ -3086,11 +3087,31 @@ struct npc_instakill_guardianAI : public Scripted_NoMovementAI
         me->SetReactState(REACT_PASSIVE);
     }
 
+    float distance;
+    
+    void Reset()
+    {
+        distance = 0.1f * m_creature->GetRespawnDelay();
+    }
+
     void MoveInLineOfSight(Unit* who)
     {
-        Player* player = who->ToPlayer();
-        if (player && !player->isGameMaster() && player->IsWithinDistInMap(me, sWorld.getConfig(CONFIG_NPC_INSTAKILL_GUARDIAN_RANGE)))
+        Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (!player || player->isGameMaster())
+            return;
+
+        WorldLocation loc;
+        player->GetPosition(loc);
+        if( m_creature->GetExactDist(&loc) < distance)
+        { 
+            sWorld.SendGMText(LANG_INSTA_KILL_GUARDIAN,
+                player->GetName(),player->GetGUIDLow(),
+                float(player->GetPositionX()),float(player->GetPositionY()),float(player->GetPositionZ()),player->GetMapId());
+            sLog.outLog(LOG_CHEAT,"Player %s (%u) killed by instakill guardian, position X: %f Y: %f Z: %f Map: %u",
+                player->GetName(),player->GetGUIDLow(),
+                float(player->GetPositionX()),float(player->GetPositionY()),float(player->GetPositionZ()),player->GetMapId());
             who->Kill(player);
+        }
     }
 
     void UpdateAI(const uint32 diff)
