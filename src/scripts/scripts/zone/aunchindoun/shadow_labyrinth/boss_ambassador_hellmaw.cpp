@@ -106,7 +106,10 @@ struct boss_ambassador_hellmawAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         if(IsBanished)
+        {
             EnterEvadeMode();
+            return;
+        }
 
         me->GetMotionMaster()->Clear();
         DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
