@@ -18951,6 +18951,12 @@ void Player::UpdateVisibilityOf(WorldObject const* viewPoint, WorldObject* targe
             if (Creature* c = target->ToCreature())
                 BeforeVisibilityDestroy<Creature>(c, this);
 
+            UpdateData udata;
+            WorldPacket packet;
+            target->BuildValuesUpdateBlockForPlayer(&udata,this);
+            udata.BuildPacket(&packet);
+            SendPacketToSelf(&packet);
+
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
         }
