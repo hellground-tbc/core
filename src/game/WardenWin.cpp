@@ -78,6 +78,11 @@ void WardenWin::Init(WorldSession *pClient, BigNumber *K)
     
     m_initialized = true;
     m_WardenTimer = WorldTimer::getMSTime();
+
+    m_checkIntervalMin = sWorld.getConfig(CONFIG_WARDEN_CHECK_INTERVAL_MIN);
+    m_checkIntervalMax = sWorld.getConfig(CONFIG_WARDEN_CHECK_INTERVAL_MAX);
+    m_maxMemChecks = sWorld.getConfig(CONFIG_WARDEN_MEM_CHECK_MAX);
+    m_maxRandomChecks = sWorld.getConfig(CONFIG_WARDEN_RANDOM_CHECK_MAX);
 }
 
 ClientWardenModule *WardenWin::GetModuleForClient(WorldSession *session)
@@ -216,7 +221,7 @@ void WardenWin::RequestData()
 
     SendDataId.clear();
 
-    for (int i = 0; i < 3; ++i)                             // for now include 3 MEM_CHECK's
+    for (int i = 0; i < m_maxMemChecks; ++i)                             // for now include 3 MEM_CHECK's
     {
         if (MemCheck.empty())
             break;
@@ -228,7 +233,7 @@ void WardenWin::RequestData()
     ByteBuffer buff;
     buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
 
-    uint32 count = (maxid > 5 ? 5 : maxid);
+    uint32 count = (maxid > m_maxRandomChecks ? m_maxRandomChecks : maxid);
 
     for (int i = 0; i < count; ++i)                             // for now include 5 random checks
     {

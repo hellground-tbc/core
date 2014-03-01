@@ -128,6 +128,11 @@ class WardenBase
         uint32 m_WardenTimer;
         ClientWardenModule *Module;
         bool m_initialized;
+
+        uint32 m_checkIntervalMin;
+        uint32 m_checkIntervalMax;
+        uint32 m_maxMemChecks;
+        uint32 m_maxRandomChecks;
 };
 
 #endif

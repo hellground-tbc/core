@@ -843,6 +843,10 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_WARDEN_KICK]                  = sConfig.GetBoolDefault("Warden.Kick", true);
     m_configs[CONFIG_WARDEN_BAN]                   = sConfig.GetBoolDefault("Warden.Ban", true);
     m_configs[CONFIG_WARDEN_LOG_ONLY_CHECK]        = sConfig.GetIntDefault("Warden.LogOnlyCheck",0);
+    m_configs[CONFIG_WARDEN_CHECK_INTERVAL_MIN]    = sConfig.GetIntDefault("Warden.CheckIntervalMin",25000);
+    m_configs[CONFIG_WARDEN_CHECK_INTERVAL_MAX]    = sConfig.GetIntDefault("Warden.CheckIntervalMax",35000);
+    m_configs[CONFIG_WARDEN_MEM_CHECK_MAX]         = sConfig.GetIntDefault("Warden.MemCheckMax",3);
+    m_configs[CONFIG_WARDEN_RANDOM_CHECK_MAX]      = sConfig.GetIntDefault("Warden.RandomCheckMax",5);
     m_configs[CONFIG_ENABLE_PASSIVE_ANTICHEAT]     = sConfig.GetIntDefault("AntiCheat.Enable", 1); 
 
     // RaF

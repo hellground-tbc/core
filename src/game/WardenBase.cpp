@@ -31,7 +31,8 @@
 #include "WardenBase.h"
 #include "WardenWin.h"
 
-WardenBase::WardenBase() : iCrypto(16), oCrypto(16), m_WardenCheckTimer(10000/*10 sec*/), m_WardenKickTimer(0), m_WardenDataSent(false), m_initialized(false)
+WardenBase::WardenBase() : iCrypto(16), oCrypto(16), m_WardenCheckTimer(10000/*10 sec*/), m_WardenKickTimer(0), m_WardenDataSent(false),
+    m_initialized(false), m_checkIntervalMin(25000), m_checkIntervalMax(35000), m_maxMemChecks(3), m_maxRandomChecks(5)
 {
 }
 
@@ -150,8 +151,7 @@ void WardenBase::Update()
             if (diff >= m_WardenCheckTimer)
             {
                 RequestData();
-                // 25-35 second
-                m_WardenCheckTimer = urand(25000, 35000);
+                m_WardenCheckTimer = urand(m_checkIntervalMin, m_checkIntervalMax);
             }
             else
                 m_WardenCheckTimer -= diff;

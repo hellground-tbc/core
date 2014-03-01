@@ -1819,6 +1819,16 @@ VMSS.MapFreezeDetectTime = 1000
 #        Warden check for testing, failed check with this number will only be logged, no punishing
 #        Default: 0 (Disabled)
 #
+#    Warden.CheckIntervalMin
+#    Warden.CheckIntervalMax
+#        Minimum/maximum time between warden checks (miliseconds)
+#        Default: 25000 ; 35000 (25-35 seconds)
+#
+#    Warden.MemCheckMax
+#    Warden.RandomCheckMax
+#        Number of memory checks/random checks send each time by warden
+#        Default: 3 ; 5
+#
 #    AntiCheat.Enable
 #        Enable passive anticheat
 #        Default: 1 (Enabled)
@@ -1832,6 +1842,11 @@ AntiCheat.Enable = 1
 Warden.Enabled = 1
 Warden.Kick = 0
 Warden.Ban = 0
+Warden.LogOnlyCheck = 0
+Warden.CheckIntervalMin = 25000
+Warden.CheckIntervalMax = 35000
+Warden.MemCheckMax = 3
+Warden.RandomCheckMax = 5
 Npc.InstaKillGuardianRange = 100
 
 ###################################################################################################################
