@@ -248,7 +248,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 
 void WorldSession::HandleMoverRelocation(MovementInfo& movementInfo)
 {
-    movementInfo.UpdateTime(WorldTimer::getMSTime());
+    uint32 mstime = WorldTimer::getMSTime();
+    if ( m_clientTimeDelay == 0 )
+        m_clientTimeDelay = mstime - movementInfo.time;
+
+    movementInfo.UpdateTime( movementInfo.time + m_clientTimeDelay );
 
     Unit *mover = _player->GetMover();
 

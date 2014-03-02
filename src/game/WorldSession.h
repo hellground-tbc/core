@@ -322,6 +322,8 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
+        void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
+
     public:                                                 // opcodes handlers
 
         void Handle_NULL(WorldPacket& recvPacket);          // not used
@@ -755,6 +757,9 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void moveItems(Item* myItems[], Item* hisItems[]);
 
         bool CheckMailBox(ObjectGuid& guid);
+
+        
+        uint32 m_clientTimeDelay;
 
         // logging helper
         void logUnexpectedOpcode(WorldPacket *packet, const char * reason);
