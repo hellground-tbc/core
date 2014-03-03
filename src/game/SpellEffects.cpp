@@ -4422,7 +4422,7 @@ void Spell::EffectSummonGuardian(uint32 i)
             return;                                        // find old guardian, ignore summon
 
     auto guardians = caster->GetGuardians();
-    if (guardians.size() >= 5)
+    if (guardians.size() >= 5 && !caster->GetSession()->HasPermissions(PERM_GMT))
     {
         std::stringstream stream;
         stream << "Guardians summoning exploit(spellid: " << GetSpellEntry()->Id << "), guardians count: " << guardians.size();
