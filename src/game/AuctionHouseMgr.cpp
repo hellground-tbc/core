@@ -70,7 +70,7 @@ uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32
     if (deposit < min_deposit)
         deposit = min_deposit;
 
-    return uint32(deposit * sWorld.getRate(RATE_AUCTION_DEPOSIT));
+    return uint32(deposit * sWorld.getConfig(RATE_AUCTION_DEPOSIT));
 }
 // does not clear ram
 void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
@@ -895,7 +895,7 @@ void WorldSession::BuildListAuctionItems(AuctionHouseObject::AuctionEntryMap con
 
 AuctionEntry* AuctionHouseObject::AddAuction(AuctionHouseEntry const* auctionHouseEntry, Item* it, uint32 etime, uint32 bid, uint32 buyout, uint32 deposit, Player * pl /*= NULL*/)
 {
-    uint32 auction_time = uint32(etime * sWorld.getRate(RATE_AUCTION_TIME));
+    uint32 auction_time = uint32(etime * sWorld.getConfig(RATE_AUCTION_TIME));
 
     AuctionEntry *AH = new AuctionEntry;
     AH->Id = sObjectMgr.GenerateAuctionID();
@@ -975,7 +975,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
 
 uint32 AuctionEntry::GetAuctionCut() const
 {
-    return uint32(auctionHouseEntry->cutPercent * bid * sWorld.getRate(RATE_AUCTION_CUT) / 100.f);
+    return uint32(auctionHouseEntry->cutPercent * bid * sWorld.getConfig(RATE_AUCTION_CUT) / 100.f);
 }
 
 /// the sum of outbid is (1% from current bid)*5, if bid is very small, it is 1c

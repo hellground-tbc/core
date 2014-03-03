@@ -235,11 +235,11 @@ bool LootStoreItem::Roll() const
         return true;
 
     if (mincountOrRef < 0)                                   // reference case
-        return roll_chance_f(chance*sWorld.getRate(RATE_DROP_ITEM_REFERENCED));
+        return roll_chance_f(chance*sWorld.getConfig(RATE_DROP_ITEM_REFERENCED));
 
     ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(itemid);
 
-    float qualityModifier = pProto ? sWorld.getRate(qualityToRate[pProto->Quality]) : 1.0f;
+    float qualityModifier = pProto ? sWorld.getConfig(qualityToRate[pProto->Quality]) : 1.0f;
 
     return roll_chance_f(chance*qualityModifier);
 }
@@ -872,11 +872,11 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
     if (maxAmount > 0)
     {
         if (maxAmount <= minAmount)
-            gold = uint32(maxAmount * sWorld.getRate(RATE_DROP_MONEY));
+            gold = uint32(maxAmount * sWorld.getConfig(RATE_DROP_MONEY));
         else if ((maxAmount - minAmount) < 32700)
-            gold = uint32(urand(minAmount, maxAmount) * sWorld.getRate(RATE_DROP_MONEY));
+            gold = uint32(urand(minAmount, maxAmount) * sWorld.getConfig(RATE_DROP_MONEY));
         else
-            gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld.getRate(RATE_DROP_MONEY)) << 8;
+            gold = uint32(urand(minAmount >> 8, maxAmount >> 8) * sWorld.getConfig(RATE_DROP_MONEY)) << 8;
     }
 }
 

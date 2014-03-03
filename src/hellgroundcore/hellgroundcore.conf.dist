@@ -531,6 +531,10 @@ MinRecordUpdateTimeDiff = 300
 #        Interval to update bans expiration in milliseconds
 #        Default: 30000 (half minute)
 #
+#    LuaEngine.Enabled
+#        Enables Eluna lua engine
+#        Default: 0 (false)
+#
 #    BeepAtStart
 #        Beep at core start finished (mostly work only at Unix/Linux systems)
 #        Default: 1 (true)
@@ -561,6 +565,7 @@ StrictPetNames = 0
 CharactersPerRealm = 10
 CharactersPerAccount = 50
 ActiveBansUpdateTime = 30000
+LuaEngine.Enabled = 0
 
 BeepAtStart = 1
 ShowProgressBars = 1
@@ -1912,14 +1917,3 @@ Network.OutKBuff = -1
 Network.OutUBuff = 65536
 Network.TcpNodelay = 1
 Network.KickOnBadPacket = 0
-
-###################################################################################################################
-#
-# LUAENGINE CONFIG
-#
-#   LuaEngine.Enabled
-#       LuaEngine.Enabled = 1         ( on / off )
-#
-###################################################################################################################
-
-LuaEngine.Enabled = 0

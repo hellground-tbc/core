@@ -127,8 +127,6 @@ enum WorldConfigs
     CONFIG_INTERVAL_LOG_UPDATE,
     CONFIG_MIN_LOG_UPDATE,
 
-    CONFIG_ELUNA_ENABLED,
-
     // Server settings
     CONFIG_GAME_TYPE,
     CONFIG_REALM_ZONE,
@@ -140,6 +138,7 @@ enum WorldConfigs
     CONFIG_CHARACTERS_PER_REALM,
     CONFIG_CHARACTERS_PER_ACCOUNT,
     CONFIG_ACTIVE_BANS_UPDATE_TIME,
+    CONFIG_ELUNA_ENABLED,
 
     // Server customization basic
     CONFIG_CHARACTERS_CREATING_DISABLED,
@@ -780,36 +779,32 @@ class HELLGROUND_EXPORT World
         void Update(uint32 diff);
         void UpdateSessions(const uint32 & diff);
 
-        /// Set a server rate (see #Rates)
-        void setRate(Rates rate,float value) { rate_values[rate]=value; }
-        /// Get a server rate (see #Rates)
-        float getRate(Rates rate) const { return rate_values[rate]; }
-
-        /// Set a server configuration element (see #WorldConfigs)
         void setConfig(WorldConfigs index, uint32 value)
         {
-            if (index<CONFIG_VALUE_COUNT)
-                m_configs[index]=value;
+            if (index < CONFIG_VALUE_COUNT)
+                m_configs[index] = value;
         }
 
+        /* Unused
         void setConfig(Rates index, float value)
         {
-            setRate(index, value);
-        }
+            if (index < MAX_RATES)
+                rate_values[index] = value;
+        }*/
 
-        /// Get a server configuration element (see #WorldConfigs)
         uint32 getConfig(WorldConfigs index) const
         {
-            if (index<CONFIG_VALUE_COUNT)
-                return m_configs[index];
-            else
-                return 0;
+            return (index < CONFIG_VALUE_COUNT) ? m_configs[index] : 0;
         }
 
         float getConfig(Rates index) const
         {
-            return getRate(index);
+            return (index < MAX_RATES) ? rate_values[index] : 0.0f ;
         }
+
+        void loadConfig(WorldConfigs index, const char* name, int32 def = 0);
+        void loadConfig(Rates index, const char* name, float def = 0);
+        void loadConfig(WorldConfigs index, const char* name, bool def);
 
         /// Are we on a "Player versus Player" server?
         bool IsPvPRealm() { return (getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }
@@ -942,6 +937,7 @@ class HELLGROUND_EXPORT World
 
         float rate_values[MAX_RATES];
         uint32 m_configs[CONFIG_VALUE_COUNT];
+        
         uint32 m_playerLimit;
         uint64 m_requiredPermissionMask;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales

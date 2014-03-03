@@ -177,7 +177,7 @@ namespace Hellground
             }else
             {
                 // level higher than 70 is not supported
-                xp = (uint32)(779700 * (pow(sWorld.getRate(RATE_XP_PAST_70), (int32)lvl - 69)));
+                xp = (uint32)(779700 * (pow(sWorld.getConfig(RATE_XP_PAST_70), (int32)lvl - 69)));
                 return ((xp < 0x7fffffff) ? xp : 0x7fffffff);
             }
 
