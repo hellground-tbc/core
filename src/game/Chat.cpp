@@ -662,6 +662,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand commandTable[] =
     {
         { "account",        PERM_PLAYER,    true,   NULL,                                           "", accountCommandTable },
+        { "arena",          PERM_PLAYER,    false,  NULL,                                           "", arenaCommandTable },
         { "ban",            PERM_GMT,       true,   NULL,                                           "", banCommandTable },
         { "baninfo",        PERM_GMT,       false,  NULL,                                           "", baninfoCommandTable },
         { "banlist",        PERM_GMT,       true,   NULL,                                           "", banlistCommandTable },

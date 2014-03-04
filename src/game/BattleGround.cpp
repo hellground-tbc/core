@@ -1165,7 +1165,7 @@ void BattleGround::AddPlayer(Player *plr)
         sBattleGroundMgr.inArenasCount[2]++; break;
         }
 
-        plr->Whisper("NOTICE: If you are ready, write: .arena ready. So, when everyone are ready arena preparation can end earlier.", LANG_COMMON, plr->GetGUID());
+        ChatHandler(plr).SendSysMessage("NOTICE: If you are ready, write: .arena ready. So, when everyone are ready arena preparation can end earlier.");
     }
     else
     {
