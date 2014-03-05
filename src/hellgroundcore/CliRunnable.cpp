@@ -381,9 +381,9 @@ bool ChatHandler::HandleAccountWhispLogCommand(const char* args)
         }
 
         if (accFlags & ACC_WHISPER_LOG)
-            PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
-        else
             PSendSysMessage("WhispLog have been disabled for account: %u.", account_id);
+        else
+            PSendSysMessage("WhispLog have been enabled for account: %u.", account_id);
     }
     else
     {

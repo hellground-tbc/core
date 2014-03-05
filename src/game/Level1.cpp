@@ -189,7 +189,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
         }
         else
         {
-            PSendSysMessage("Cooldown between messages didn't pass, come back later :]");
+            PSendSysMessage("Cooldown between messages didn't pass (%u seconds left) :]",(uint32)(time(NULL) - sGuildMgr.GetGuildAnnCooldown(gId)));
             return false;
         }
     }
