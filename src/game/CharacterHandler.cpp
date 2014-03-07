@@ -504,7 +504,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         m_playerLoading = false;
         return;
     }
-    pCurrChar->GetCamera().Init();
+
     pCurrChar->GetMotionMaster()->Initialize();
     SetPlayer(pCurrChar);
 
