@@ -174,8 +174,7 @@ void ViewPoint::CameraCall(void (Camera::*handler)())
 {
     if (!_cameras.empty())
     {
-        CameraList tempCameras = _cameras; // need to copy, orginal list is sometimes modified inside loop
-        for (CameraList::iterator itr = tempCameras.begin(); itr != tempCameras.end(); ++itr)
+        for (CameraList::iterator itr = _cameras.begin(); itr != _cameras.end(); ++itr)
         {
             Player* owner = ObjectAccessor::GetPlayer( *itr );
             if (owner)
