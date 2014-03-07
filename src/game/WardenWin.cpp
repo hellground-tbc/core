@@ -399,7 +399,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
     uint8 type;
  
     std::stringstream ids;
-    ids << "failed checks: ";
+    ids << "AntiCheat failed checks: ";
 
     for (std::vector<uint32>::iterator itr = SendDataId.begin(); itr != SendDataId.end(); ++itr)
     {
