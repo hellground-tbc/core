@@ -398,7 +398,6 @@ struct boss_malchezaarAI : public ScriptedAI
         {
             std::vector<InfernalPoint*>::iterator itr = positions.begin()+rand()%positions.size();
             point = *itr;
-            positions.erase(itr);
 
             posX = point->x;
             posY = point->y;
