@@ -41,6 +41,7 @@ class HELLGROUND_IMPORT_EXPORT Camera
         WorldObject* GetBody() { return _source;}
         Player* GetOwner() { return &_owner;}
 
+        void Init();
         // set camera's view to any worldobject
         // Note: this worldobject must be in same map, in same phase with camera's owner(player)
         // client supports only unit and dynamic objects as farsight objects
@@ -58,6 +59,7 @@ class HELLGROUND_IMPORT_EXPORT Camera
         // updates visibility of worldobjects around viewpoint for camera's owner
         void UpdateVisibilityForOwner();
 
+        const uint64& getOwnerGuid();
     private:
         // called when viewpoint changes visibility state
         void Event_AddedToWorld();
@@ -82,25 +84,15 @@ class HELLGROUND_IMPORT_EXPORT ViewPoint
 {
     friend class Camera;
 
-    typedef std::list<Camera*> CameraList;
+    typedef std::list<uint64> CameraList;
 
     CameraList _cameras;
     GridType * _grid;
 
-    void Attach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.push_back(c); }
-    void Detach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.remove(c); }
+    void Attach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.push_back(c->getOwnerGuid()); }
+    void Detach(Camera* c) {ACE_GUARD(ACE_Thread_Mutex,guard,m_mutex); _cameras.remove(c->getOwnerGuid()); }
 
-    void CameraCall(void (Camera::*handler)())
-    {
-        if (!_cameras.empty())
-        {
-            for(CameraList::iterator itr = _cameras.begin(); itr != _cameras.end();)
-            {
-                if (Camera *c = *(itr++))
-                    (c->*handler)();
-            }
-        }
-    }
+    void CameraCall(void (Camera::*handler)());
 private:
     ACE_Thread_Mutex m_mutex;
 
