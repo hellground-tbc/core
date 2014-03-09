@@ -941,7 +941,7 @@ void ChatHandler::PSendSysMessage(const char *format, ...)
     SendSysMessage(str);
 }
 
-bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcmd)
+bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, std::string& fullcmd)
 {
     char const* oldtext = text;
     std::string cmd = "";
@@ -958,10 +958,11 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
     {
         if (!hasStringAbbr(table[i].Name, cmd.c_str()))
             continue;
-        
+        fullcmd += table[i].Name;
         // select subcommand from child commands list
         if (table[i].ChildCommands != NULL)
         {
+            fullcmd += " ";
             if (!ExecuteCommandInTable(table[i].ChildCommands, text, fullcmd))
             {
                 if (text && text[0] != '\0')
@@ -1003,8 +1004,9 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                 else
                     sprintf(sel_string,"NONE");
 
-                sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s]",
-                    fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
+                sLog.outCommand(m_session->GetAccountId(),"Command: %s%s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s]",
+                    fullcmd.c_str(),(strlen(table[i].Name)!=0 ? (std::string(" ") + text).c_str() : oldtext),
+                    p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
                     sel_string);
             }
         }
@@ -1038,7 +1040,7 @@ int ChatHandler::ParseCommands(const char* text)
     ASSERT(text);
     ASSERT(*text);
 
-    std::string fullcmd = text;
+    std::string fullcmd = "";
     /// chat case (.command format)
     if (m_session)
     {

@@ -92,7 +92,7 @@ class ChatHandler
 
         bool SendGMMail(const char* pName, const char* msgSubject, const char* msgText);
 
-        bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcommand);
+        bool ExecuteCommandInTable(ChatCommand *table, const char* text, std::string& fullcommand);
         bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
         bool ShowHelpForSubCommands(ChatCommand *table, char const* cmd, char const* subcmd);
 
