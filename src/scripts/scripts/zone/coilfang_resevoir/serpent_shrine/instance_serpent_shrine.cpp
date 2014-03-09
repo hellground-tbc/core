@@ -413,7 +413,7 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                 Water = WATERSTATE_NONE;
             }
             
-            trashCheckTimer = 10000;
+            trashCheckTimer = 5000;
         }
         else
             trashCheckTimer -= diff;
@@ -436,12 +436,15 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                         if (Water == WATERSTATE_SCALDING)
                         {
                             if (!pPlayer->HasAura(SPELL_SCALDINGWATER))
+                            {
                                 pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER, true);
+                                break;
+                            }
                         }
                         else if (Water == WATERSTATE_FRENZY)
                         {
                             //spawn frenzy
-                            if (DoSpawnFrenzy)
+                            if (DoSpawnFrenzy && !pPlayer->isGameMaster())
                             {
                                 if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
                                 {
