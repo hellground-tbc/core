@@ -11,7 +11,9 @@
 #include <limits.h>
 #include <stddef.h>
 
-
+#if COMPILER == COMPILER_MICROSOFT
+# pragma warning ( disable : 4996)
+#endif
 /*
 ** ==================================================================
 ** Search for "@@" to find all configurable definitions.
