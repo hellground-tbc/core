@@ -3320,7 +3320,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 37363: // set 5y radius instead of 25y
                 spellInfo->EffectRadiusIndex[0] = 8;
-                spellInfo->EffectRadiusIndex[0] = 8;
+                spellInfo->EffectRadiusIndex[1] = 8;
+                spellInfo->EffectMiscValue[1] = 50;
                 break;
             case 42835: // set visual only
                 spellInfo->Effect[0] = 0;
