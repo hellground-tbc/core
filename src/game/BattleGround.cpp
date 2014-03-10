@@ -1064,7 +1064,7 @@ void BattleGround::AnnounceBGStart()
         case BATTLEGROUND_EY:
             ss << "Eye of the Storm "; break;
         case BATTLEGROUND_AB:
-            ss << "Arathi Bathin "; break;
+            ss << "Arathi Basin "; break;
         default: return;
     }
 
