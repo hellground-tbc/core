@@ -906,8 +906,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     m_Crypt.Init();
 
     AccountsDatabase.escape_string(lastLocalIp);
-
-    AccountsDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', '%s')", id, address.c_str(), lastLocalIp.c_str());
+    AccountsDatabase.PExecute("INSERT INTO account_login VALUES ('%u', NOW(), '%s', '%s', '%u')", id, address.c_str(), lastLocalIp.c_str(),IPToLocation(address));
 
     // Initialize Warden system only if it is enabled by config
     if (sWorld.getConfig(CONFIG_WARDEN_ENABLED))
@@ -1080,4 +1079,30 @@ bool WorldSocket::IsChatOpcode(uint16 opcode)
         return true;
     }
     return false;
+}
+
+uint32 WorldSocket::IPToLocation(const std::string& IP)
+{
+    std::ostringstream ret;
+    uint32 addressAsNumber = 0;
+    std::istringstream TempAddress(IP);
+    int addrBlock;
+
+    TempAddress >> addrBlock; TempAddress.get(); addressAsNumber += addrBlock; addressAsNumber *= 256;
+    TempAddress >> addrBlock; TempAddress.get(); addressAsNumber += addrBlock; addressAsNumber *= 256;
+    TempAddress >> addrBlock; TempAddress.get(); addressAsNumber += addrBlock; addressAsNumber *= 256;
+    TempAddress >> addrBlock; addressAsNumber += addrBlock;
+
+    QueryResultAutoPtr result = GameDataDatabase.PQuery(
+        "SELECT locId FROM blocks "
+        "WHERE endIpNum >= %u order by endIpNum limit 1;",addressAsNumber,addressAsNumber);
+    
+    if (!result)
+    {
+        ret << "Unknown Location for Ip " << IP << " (" << addressAsNumber << ")";
+        printf("%s", ret.str().c_str());
+        return 0;
+    }
+
+    return result->Fetch()[0].GetUInt32();
 }

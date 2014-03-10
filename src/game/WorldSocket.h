@@ -184,6 +184,7 @@ class WorldSocket : protected WorldHandler
         // Use to check if custom chat only client can use such opcode
         bool IsChatOpcode(uint16 opcode);
 
+        static uint32 IPToLocation(const std::string& IP);
     private:
         /// Time in which the last ping was received
         ACE_Time_Value m_LastPingTime;
