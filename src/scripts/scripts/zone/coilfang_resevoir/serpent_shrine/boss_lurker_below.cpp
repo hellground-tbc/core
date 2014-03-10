@@ -49,7 +49,7 @@ enum lurkerSpells
     SPELL_SPOUT_BREATH = 37431,
     SPELL_SPOUT_EFFECT = 37433,
     SPELL_GEYSER       = 37478,
-    SPELL_WHIRL        = 37363,
+    SPELL_WHIRL        = 37660,
     SPELL_WATERBOLT    = 37138,
     SPELL_SUBMERGE     = 37550,
 };
