@@ -390,11 +390,8 @@ void Pet::SavePetToDB(PetSaveMode mode)
         case PET_SAVE_IN_STABLE_SLOT_2:
         case PET_SAVE_NOT_IN_SLOT:
         {
-            RemoveAllAuras();
-
-            //only alive hunter pets get auras saved, the others don't
-            if (!(getPetType() == HUNTER_PET && isAlive()))
-                m_Auras.clear();
+            if (getPetType() != HUNTER_PET || !isAlive())
+                RemoveAllAuras();
         }
         default:
             break;
@@ -1463,6 +1460,7 @@ void Pet::_SaveAuras()
     RealmDataDatabase.PExecute("DELETE FROM pet_aura WHERE guid = '%u'", m_charmInfo->GetPetNumber());
 
     AuraMap const& auras = GetAuras();
+
     if (auras.empty())
         return;
 

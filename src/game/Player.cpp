@@ -1483,7 +1483,7 @@ void Player::setDeathState(DeathState s)
         RemoveAurasDueToSpell(m_ShapeShiftFormSpellId);
 
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add setDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
-        RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+        RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true, true);
 
         // remove uncontrolled pets
         RemoveMiniPet();
@@ -17245,10 +17245,14 @@ void Player::UpdateDuelFlag(time_t currTime)
     duel->opponent->duel->startTime  = currTime;
 }
 
-void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
+void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, bool isDying)
 {
     if (!pet)
         pet = GetPet();
+
+    // Remove auras off unsummoned pet when owner dies
+    if (isDying && !pet && GetTemporaryUnsummonedPetNumber())
+        RealmDataDatabase.PExecute("DELETE FROM pet_aura WHERE guid = '%u'", GetTemporaryUnsummonedPetNumber());
 
     if (returnreagent && (pet || m_temporaryUnsummonedPetNumber) && !InBattleGround())
     {
@@ -17313,6 +17317,10 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
                 break;
         }
     }
+
+    // Clear auras when owner dies
+    if (isDying)
+        pet->RemoveAllAuras();
 
     pet->SavePetToDB(mode);
 
