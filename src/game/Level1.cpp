@@ -176,11 +176,11 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             if (pGuild->GetMemberSize() < 10)
             {
-                PSendSysMessage("Your guild is to small, you need at least 10 members to append guild announce.");
+                PSendSysMessage("Your guild is to small, you need at least 10 members to send guild announce.");
                 return false;
             }
 
-            PSendSysMessage("Your message has been queued and will be displayed soon, please wait: %u seconds before sending another one.", sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
+            PSendSysMessage("Your message has been queued and will be displayed soon. Plase wait %s before sending another one.", secsToTimeString(sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN)).c_str());
 
             sGuildMgr.SaveGuildAnnCooldown(gId);
             sLog.outLog(LOG_GUILD_ANN, "Player %s (" UI64FMTD ") - guild: %s (%u) append guild announce: %s", m_session->GetPlayer()->GetName(), m_session->GetPlayer()->GetGUID(), pGuild->GetName().c_str(), gId, msg.c_str());
@@ -189,7 +189,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
         }
         else
         {
-            PSendSysMessage("Cooldown between messages didn't pass (%u seconds left) :]",(uint32)(time(NULL) - sGuildMgr.GetGuildAnnCooldown(gId)));
+            PSendSysMessage("Please wait before guild announce cooldown expires in %s", secsToTimeString(uint32(sGuildMgr.GetGuildAnnCooldown(gId) - time(NULL))).c_str());
             return false;
         }
     }
