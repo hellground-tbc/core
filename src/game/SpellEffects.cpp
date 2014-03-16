@@ -234,24 +234,36 @@ void Spell::EffectUnused(uint32 /*i*/)
 
 void Spell::EffectResurrectNew(uint32 i)
 {
-    if (!unitTarget || unitTarget->isAlive())
+    if (!unitTarget || !unitTarget->IsInWorld() || unitTarget->isAlive())
         return;
 
-    if (unitTarget->GetTypeId() != TYPEID_PLAYER)
-        return;
+    if (Player* pTarget = unitTarget->ToPlayer())
+    {
+        if (pTarget->isRessurectRequested())       // already have one active request
+            return;
 
-    if (!unitTarget->IsInWorld())
-        return;
+        uint32 health = damage;
+        uint32 mana = GetSpellEntry()->EffectMiscValue[i];
+        pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
+        SendResurrectRequest(pTarget);
+    }
+    else if (Pet* pet = unitTarget->ToPet())
+    {
+        if (pet->getPetType() != HUNTER_PET || pet->isAlive())
+            return;
 
-    Player* pTarget = ((Player*)unitTarget);
+        float x, y, z;
+        m_caster->GetPosition(x, y, z);
+        pet->NearTeleportTo(x, y, z, m_caster->GetOrientation());
 
-    if (pTarget->isRessurectRequested())       // already have one active request
-        return;
+        pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
+        pet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+        pet->setDeathState(ALIVE);
+        pet->clearUnitState(UNIT_STAT_ALL_STATE);
+        pet->SetHealth(uint32(damage));
 
-    uint32 health = damage;
-    uint32 mana = GetSpellEntry()->EffectMiscValue[i];
-    pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
-    SendResurrectRequest(pTarget);
+        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+    }
 }
 
 void Spell::EffectInstaKill(uint32 /*i*/)
@@ -7079,14 +7091,7 @@ void Spell::EffectSummonObject(uint32 i)
 
 void Spell::EffectResurrect(uint32 /*effIndex*/)
 {
-    if (!unitTarget)
-        return;
-    if (unitTarget->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    if (unitTarget->isAlive())
-        return;
-    if (!unitTarget->IsInWorld())
+    if (!unitTarget || !unitTarget->IsInWorld() || unitTarget->isAlive())
         return;
 
     switch (GetSpellEntry()->Id)
@@ -7111,16 +7116,34 @@ void Spell::EffectResurrect(uint32 /*effIndex*/)
             break;
     }
 
-    Player* pTarget = ((Player*)unitTarget);
+    if (Player* pTarget = unitTarget->ToPlayer())
+    {
+        if (pTarget->isRessurectRequested())       // already have one active request
+            return;
 
-    if (pTarget->isRessurectRequested())       // already have one active request
-        return;
+        uint32 health = pTarget->GetMaxHealth() * damage / 100;
+        uint32 mana   = pTarget->GetMaxPower(POWER_MANA) * damage / 100;
 
-    uint32 health = pTarget->GetMaxHealth() * damage / 100;
-    uint32 mana   = pTarget->GetMaxPower(POWER_MANA) * damage / 100;
+        pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
+        SendResurrectRequest(pTarget);
+    }
+    else if (Pet* pet = unitTarget->ToPet())
+    {
+        if (pet->getPetType() != HUNTER_PET || pet->isAlive())
+            return;
 
-    pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
-    SendResurrectRequest(pTarget);
+        float x, y, z;
+        m_caster->GetPosition(x, y, z);
+        pet->NearTeleportTo(x, y, z, m_caster->GetOrientation());
+
+        pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
+        pet->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+        pet->setDeathState(ALIVE);
+        pet->clearUnitState(UNIT_STAT_ALL_STATE);
+        pet->SetHealth(uint32(pet->GetMaxHealth() * damage / 100));
+
+        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+    }
 }
 
 void Spell::EffectAddExtraAttacks(uint32 /*i*/)
