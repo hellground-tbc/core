@@ -323,6 +323,22 @@ bool extractDataFromHG(std::string path, bool use_url, RawData& data)
     res = extractDataFromHG(path+".hg/cache/branchheads-base",path,use_url,data);
     if (!res)
         res = extractDataFromHG(path+"_hg/cache/branchheads-base",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/branchheads.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/branch.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/branch.cache",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/cache/branch",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+"_hg/cache/branch",path,use_url,data);
 
     return res;
 }
