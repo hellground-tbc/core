@@ -1502,7 +1502,7 @@ const char *CliHandler::GetHellgroundString(int32 entry) const
     return sObjectMgr.GetHellgroundStringForDBCLocale(entry);
 }
 
-bool CliHandler::isAvailable(ChatCommand const& cmd) const
+bool CliHandler::isAvailable(ChatCommand const& cmd, bool) const
 {
     // skip non-console commands in console case
     return cmd.AllowConsole;

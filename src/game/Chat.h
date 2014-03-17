@@ -629,7 +629,7 @@ class CliHandler : public ChatHandler
 
         // overwrite functions
         const char *GetHellgroundString(int32 entry) const;
-        bool isAvailable(ChatCommand const& cmd) const;
+        bool isAvailable(ChatCommand const& cmd, bool) const;
         void SendSysMessage(const char *str);
         char const* GetName() const;
         bool needReportToTarget(Player* chr) const;
