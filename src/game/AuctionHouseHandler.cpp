@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "WorldPacket.h"
@@ -31,6 +31,7 @@
 #include "Mail.h"
 #include "Util.h"
 #include "Chat.h"
+#include "luaengine/HookMgr.h"
 
 //please DO NOT use iterator++, because it is slower than ++iterator!!!
 //post-incrementation is always slower than pre-incrementation !
@@ -344,6 +345,9 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recv_data)
 
     AuctionEntry* AH = auctionHouse->AddAuction(auctionHouseEntry, it, etime, bid, buyout, deposit, pl);
 
+    // used by eluna
+    sHookMgr->OnAdd(auctionHouse);
+
     SendAuctionCommandResult(AH, AUCTION_STARTED, AUCTION_OK);
 }
 
@@ -496,6 +500,10 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket & recv_data)
     RealmDataDatabase.CommitTransaction();
     sAuctionMgr.RemoveAItem(auction->itemGuidLow);
     auctionHouse->RemoveAuction(auction->Id);
+    
+    // used by eluna
+    sHookMgr->OnRemove(auctionHouse);
+
     delete auction;
 }
 

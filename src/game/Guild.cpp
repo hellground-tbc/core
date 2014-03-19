@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Database/DatabaseEnv.h"
@@ -29,6 +29,8 @@
 #include "Chat.h"
 #include "SocialMgr.h"
 #include "Util.h"
+#include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 Guild::Guild()
 {
@@ -61,7 +63,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
 
     if (!sObjectMgr.GetPlayerNameByGUID(lGuid, lName))
         return false;
-    if (sObjectMgr.GetGuildByName(gname))
+    if (sGuildMgr.GetGuildByName(gname))
         return false;
 
     sLog.outLog(LOG_SPECIAL, "GUILD: creating guild %s to leader: %u", gname.c_str(), GUID_LOPART(lGuid));
@@ -73,7 +75,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
     guildbank_money = 0;
     purchased_tabs = 0;
 
-    Id = sObjectMgr.GenerateGuildId();
+    Id = sGuildMgr.GenerateGuildId();
 
     // gname already assigned to Guild::name, use it to encode string for DB
     RealmDataDatabase.escape_string(gname);
@@ -102,6 +104,11 @@ bool Guild::create(uint64 lGuid, std::string gname)
     CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
     rname = "Initiate";
     CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK);
+
+    Player* leader = sObjectMgr.GetPlayer(leaderGuid);
+
+    // used by eluna
+    sHookMgr->OnCreate(this, leader, gname.c_str());
 
     return AddMember(lGuid, (uint32)GR_GUILDMASTER);
 }
@@ -160,6 +167,9 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank)
 
     UpdateAccountsCount();
 
+    // used by eluna
+    sHookMgr->OnAddMember(this, pl, newmember.RankId);
+
     return true;
 }
 
@@ -170,6 +180,9 @@ void Guild::SetMOTD(std::string motd)
     // motd now can be used for encoding to DB
     RealmDataDatabase.escape_string(motd);
     RealmDataDatabase.PExecute("UPDATE guild SET motd='%s' WHERE guildid='%u'", motd.c_str(), Id);
+
+    // used by eluna
+    sHookMgr->OnMOTDChanged(this, motd);
 }
 
 void Guild::SetGINFO(std::string ginfo)
@@ -179,6 +192,9 @@ void Guild::SetGINFO(std::string ginfo)
     // ginfo now can be used for encoding to DB
     RealmDataDatabase.escape_string(ginfo);
     RealmDataDatabase.PExecute("UPDATE guild SET info='%s' WHERE guildid='%u'", ginfo.c_str(), Id);
+
+    // used by eluna
+    sHookMgr->OnInfoChanged(this, ginfo);
 }
 
 bool Guild::LoadGuildFromDB(uint32 GuildId)
@@ -524,6 +540,9 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
 
     RealmDataDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", GUID_LOPART(guid));
     UpdateAccountsCount();
+
+    // used by eluna
+    sHookMgr->OnRemoveMember(this, player, isDisbanding);
 }
 
 void Guild::ChangeRank(uint64 guid, uint32 newRank)
@@ -725,7 +744,11 @@ void Guild::Disband()
     RealmDataDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid = '%u'",Id);
     RealmDataDatabase.PExecute("DELETE FROM guild_eventlog WHERE guildid = '%u'",Id);
     RealmDataDatabase.CommitTransaction();
-    sObjectMgr.RemoveGuild(Id);
+
+    // used by eluna
+    sHookMgr->OnDisband(this);
+
+    sGuildMgr.RemoveGuild(Id);
 }
 
 void Guild::WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &member, Player *pl, WorldPacket &data)
@@ -766,7 +789,6 @@ void Guild::WriteMemberRosterPacket(Player *sessionPlayer, const MemberSlot &mem
         data << (HasRankRight(sessionPlayer->GetRank(), GR_RIGHT_VIEWOFFNOTE) ? member.OFFnote : "");
     }
 }
-
 
 void Guild::Roster(WorldSession *session)
 {
@@ -1389,6 +1411,13 @@ bool Guild::MemberMoneyWithdraw(uint32 amount, uint32 LowGuid)
         RealmDataDatabase.PExecute("UPDATE guild_member SET BankRemMoney='%u' WHERE guildid='%u' AND guid='%u'",
             itr->second.BankRemMoney, Id, LowGuid);
     }
+
+    // Trigger OnMemberWitdrawMoney event
+    Player* player = sObjectMgr.GetPlayer(ObjectGuid(HIGHGUID_PLAYER, LowGuid));
+
+    // used by eluna
+    sHookMgr->OnMemberWitdrawMoney(this, player, amount, false); // IsRepair not a part of Mangos, implement?
+
     return true;
 }
 
@@ -1737,6 +1766,10 @@ void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint
         }
         m_GuildBankEventLog_Item[TabId].push_back(NewEvent);
     }
+
+    // used by eluna
+    sHookMgr->OnBankEvent(this, LogEntry, TabId, PlayerGuidLow, ItemOrMoney, ItemStackCount, DestTabId);
+
     RealmDataDatabase.PExecute("INSERT INTO guild_bank_eventlog (guildid,LogGuid,LogEntry,TabId,PlayerGuid,ItemOrMoney,ItemStackCount,DestTabId,TimeStamp) VALUES ('%u','%u','%u','%u','%u','%u','%u','%u','" UI64FMTD "')",
         Id, NewEvent->LogGuid, uint32(NewEvent->LogEntry), uint32(TabId), NewEvent->PlayerGuid, NewEvent->ItemOrMoney, uint32(NewEvent->ItemStackCount), uint32(NewEvent->DestTabId), NewEvent->TimeStamp);
 }

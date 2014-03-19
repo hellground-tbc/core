@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -299,9 +299,9 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     {
         SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
         if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_GENERIC_SPELL])
-            schoolMask = SpellSchoolMask(pSpell->GetSpellInfo()->SchoolMask);
+            schoolMask = SpellSchoolMask(pSpell->GetSpellEntry()->SchoolMask);
         else if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_CHANNELED_SPELL])
-            schoolMask = SpellSchoolMask(pSpell->GetSpellInfo()->SchoolMask);
+            schoolMask = SpellSchoolMask(pSpell->GetSpellEntry()->SchoolMask);
 
         if (target->IsImmunedToDamage(schoolMask, false))
             return true;

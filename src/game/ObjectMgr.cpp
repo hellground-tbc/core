@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -114,17 +114,8 @@ ObjectMgr::ObjectMgr()
     m_hiPetNumber       = 1;
     m_ItemTextId        = 1;
     m_mailid            = 1;
-    m_guildId           = 1;
     m_arenaTeamId       = 1;
     m_auctionid         = 1;
-
-    mGuildBankTabPrice.resize(GUILD_BANK_MAX_TABS);
-    mGuildBankTabPrice[0] = 100;
-    mGuildBankTabPrice[1] = 250;
-    mGuildBankTabPrice[2] = 500;
-    mGuildBankTabPrice[3] = 1000;
-    mGuildBankTabPrice[4] = 2500;
-    mGuildBankTabPrice[5] = 5000;
 
     // Only zero condition left, others will be added while loading DB tables
     mConditions.resize(1);
@@ -155,10 +146,6 @@ ObjectMgr::~ObjectMgr()
     for (GroupSet::iterator itr = mGroupSet.begin(); itr != mGroupSet.end(); ++itr)
         delete (*itr);
 
-    for (GuildMap::iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        delete itr->second;
-    mGuildMap.clear();
-
     for (CacheVendorItemMap::iterator itr = m_mCacheVendorItemMap.begin(); itr != m_mCacheVendorItemMap.end(); ++itr)
         itr->second.Clear();
 
@@ -175,56 +162,6 @@ Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
     return NULL;
 }
 
-Guild * ObjectMgr::GetGuildById(const uint32 GuildId) const
-{
-    GuildMap::const_iterator itr = mGuildMap.find(GuildId);
-    if (itr != mGuildMap.end())
-        return itr->second;
-
-    return NULL;
-}
-
-Guild * ObjectMgr::GetGuildByName(const std::string& guildname) const
-{
-    std::string search = guildname;
-    std::transform(search.begin(), search.end(), search.begin(), toupper);
-    for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-    {
-        std::string gname = itr->second->GetName();
-        std::transform(gname.begin(), gname.end(), gname.begin(), toupper);
-        if (search == gname)
-            return itr->second;
-    }
-    return NULL;
-}
-
-std::string ObjectMgr::GetGuildNameById(const uint32 GuildId) const
-{
-    GuildMap::const_iterator itr = mGuildMap.find(GuildId);
-    if (itr != mGuildMap.end())
-        return itr->second->GetName();
-
-    return "";
-}
-
-Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
-{
-    for (GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        if (itr->second->GetLeader() == guid)
-            return itr->second;
-
-    return NULL;
-}
-
-void ObjectMgr::AddGuild(Guild* guild)
-{
-    mGuildMap[guild->GetId()] = guild;
-}
-
-void ObjectMgr::RemoveGuild(uint32 Id)
-{
-    mGuildMap.erase(Id);
-}
 ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid) const
 {
     ArenaTeamMap::const_iterator itr = mArenaTeamMap.find(arenateamid);
@@ -630,14 +567,14 @@ void ObjectMgr::ConvertCreatureAddonAuras(CreatureDataAddon* addon, char const* 
             sLog.outLog(LOG_DB_ERR, "Creature (%s: %u) has wrong effect %u for spell %u in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.effect_idx,cAura.spell_id,table);
             continue;
         }
-        SpellEntry const *AdditionalSpellInfo = sSpellStore.LookupEntry(cAura.spell_id);
-        if (!AdditionalSpellInfo)
+        SpellEntry const *AdditionalSpellEntry = sSpellStore.LookupEntry(cAura.spell_id);
+        if (!AdditionalSpellEntry)
         {
             sLog.outLog(LOG_DB_ERR, "Creature (%s: %u) has wrong spell %u defined in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.spell_id,table);
             continue;
         }
 
-        if (!AdditionalSpellInfo->Effect[cAura.effect_idx] || !AdditionalSpellInfo->EffectApplyAuraName[cAura.effect_idx])
+        if (!AdditionalSpellEntry->Effect[cAura.effect_idx] || !AdditionalSpellEntry->EffectApplyAuraName[cAura.effect_idx])
         {
             sLog.outLog(LOG_DB_ERR, "Creature (%s: %u) has not aura effect %u of spell %u defined in `auras` field in `%s`.",guidEntryStr,addon->guidOrEntry,cAura.effect_idx,cAura.spell_id,table);
             continue;
@@ -1314,41 +1251,6 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     sLog.outString();
 }
 
-void ObjectMgr::LoadGuildAnnCooldowns()
-{
-    uint32 count = 0;
-
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guild_id, cooldown_end FROM guild_announce_cooldown");
-
-    if (!result)
-    {
-        BarGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
-        sLog.outString(">> Loaded 0 guildann_cooldowns.");
-        return;
-    }
-
-    BarGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field *fields = result->Fetch();
-        bar.step();
-
-        uint32 guild_id       = fields[0].GetUInt32();
-        uint64 respawn_time = fields[1].GetUInt64();
-
-        mGuildCooldownTimes[guild_id] = time_t(respawn_time);
-
-        ++count;
-    } while (result->NextRow());
-
-    sLog.outString(">> Loaded %u guild ann cooldowns.", mGuildCooldownTimes.size());
-    sLog.outString();
-}
 
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
@@ -1919,7 +1821,7 @@ void ObjectMgr::LoadPetLevelInfo()
                 if (current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     sLog.outLog(LOG_DB_ERR, "Wrong (> %u) level %u in `pet_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    sLog.outDetail("Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `pet_levelstats` table, ignoring.",current_level);
+                    sLog.outDetail("Unused (> MaxPlayerLevel) level %u in `pet_levelstats` table, ignoring.",current_level);
                 continue;
             }
             else if (current_level < 1)
@@ -2295,7 +2197,7 @@ void ObjectMgr::LoadPlayerInfo()
                 if (current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     sLog.outLog(LOG_DB_ERR, "Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    sLog.outDetail("Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
+                    sLog.outDetail("Unused (> MaxPlayerLevel) level %u in `player_classlevelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -2388,7 +2290,7 @@ void ObjectMgr::LoadPlayerInfo()
                 if (current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
                     sLog.outLog(LOG_DB_ERR, "Wrong (> %u) level %u in `player_levelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
                 else
-                    sLog.outDetail("Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_levelstats` table, ignoring.",current_level);
+                    sLog.outDetail("Unused (> MaxPlayerLevel) level %u in `player_levelstats` table, ignoring.",current_level);
                 continue;
             }
 
@@ -2561,49 +2463,6 @@ void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 _class, uint8 level, Play
                 info->stats[STAT_SPIRIT]    += (lvl > 38 ? 3: (lvl > 5 ? 1: 0));
         }
     }
-}
-
-void ObjectMgr::LoadGuilds()
-{
-    Guild *newguild;
-    uint32 count = 0;
-
-    QueryResultAutoPtr result = RealmDataDatabase.Query("SELECT guildid FROM guild");
-
-    if (!result)
-    {
-
-        BarGoLink bar(1);
-
-        bar.step();
-
-        sLog.outString();
-        sLog.outString(">> Loaded %u guild definitions", count);
-        return;
-    }
-
-    BarGoLink bar(result->GetRowCount());
-
-    do
-    {
-        Field *fields = result->Fetch();
-
-        bar.step();
-        ++count;
-
-        newguild = new Guild;
-        if (!newguild->LoadGuildFromDB(fields[0].GetUInt32()))
-        {
-            newguild->Disband();
-            delete newguild;
-            continue;
-        }
-        AddGuild(newguild);
-
-    }while (result->NextRow());
-
-    sLog.outString();
-    sLog.outString(">> Loaded %u guild definitions", count);
 }
 
 void ObjectMgr::LoadArenaTeams()
@@ -3626,7 +3485,7 @@ void ObjectMgr::LoadInstanceTemplate()
         }
 
         // the reset_delay must be at least one day
-        temp->reset_delay = std::max((uint32)1, (uint32)(temp->reset_delay * sWorld.getRate(RATE_INSTANCE_RESET_TIME)));
+        temp->reset_delay = std::max((uint32)1, (uint32)(temp->reset_delay * sWorld.getConfig(RATE_INSTANCE_RESET_TIME)));
     }
 
     sLog.outString(">> Loaded %u Instance Template definitions", sInstanceTemplate.RecordCount);
@@ -4335,7 +4194,6 @@ void ObjectMgr::RemoveGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool 
     return;
 }
 
-
 void ObjectMgr::LoadAreaTriggerTeleports()
 {
     mAreaTriggers.clear();                                  // need for reload case
@@ -4605,10 +4463,6 @@ void ObjectMgr::SetHighestGuids()
     result = RealmDataDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
     if (result)
         m_arenaTeamId = (*result)[0].GetUInt32()+1;
-
-    result = RealmDataDatabase.Query("SELECT MAX(guildid) FROM guild");
-    if (result)
-        m_guildId = (*result)[0].GetUInt32()+1;
 }
 
 uint32 ObjectMgr::GenerateArenaTeamId()
@@ -4619,16 +4473,6 @@ uint32 ObjectMgr::GenerateArenaTeamId()
         World::StopNow(ERROR_EXIT_CODE);
     }
     return m_arenaTeamId++;
-}
-
-uint32 ObjectMgr::GenerateGuildId()
-{
-    if (m_guildId>=0xFFFFFFFE)
-    {
-        sLog.outLog(LOG_DEFAULT, "ERROR: Guild ids overflow!! Can't continue, shutting down server. ");
-        World::StopNow(ERROR_EXIT_CODE);
-    }
-    return m_guildId++;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
@@ -5518,13 +5362,6 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t
     RealmDataDatabase.CommitTransaction();
 }
 
-void ObjectMgr::SaveGuildAnnCooldown(uint32 guild_id)
-{
-    time_t tmpTime = time_t(time(NULL) + sWorld.getConfig(CONFIG_GUILD_ANN_COOLDOWN));
-    mGuildCooldownTimes[guild_id] = tmpTime;
-    RealmDataDatabase.PExecute("REPLACE INTO guild_announce_cooldown VALUES ('%u', '" UI64FMTD "')", guild_id, uint64(tmpTime));
-}
-
 void ObjectMgr::DeleteCreatureData(uint32 guid)
 {
     // remove mapid*cellid -> guid_set map
@@ -5928,7 +5765,7 @@ bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32
 
         sLog.outString();
         if (min_value == MIN_HELLGROUND_STRING_ID)              // error only in case internal strings
-            sLog.outLog(LOG_DB_ERR, ">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
+            sLog.outLog(LOG_DB_ERR, ">> Loaded 0 hellground strings. DB table `%s` is empty. Cannot continue.",table);
         else
             sLog.outString(">> Loaded 0 string templates. DB table `%s` is empty.",table);
         return false;
@@ -5956,7 +5793,7 @@ bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32
             continue;
         }
 
-        TrinityStringLocale& data = mHellgroundStringLocaleMap[entry];
+        HellgroundStringLocale& data = mHellgroundStringLocaleMap[entry];
 
         if (data.Content.size() > 0)
         {
@@ -5989,19 +5826,19 @@ bool ObjectMgr::LoadHellgroundStrings(DatabaseType& db, char const* table, int32
     } while (result->NextRow());
 
     sLog.outString();
-    if (min_value == MIN_HELLGROUND_STRING_ID)               // internal Trinity strings
-        sLog.outString(">> Loaded %u Trinity strings from table %s", count,table);
+    if (min_value == MIN_HELLGROUND_STRING_ID)               // internal Hellground strings
+        sLog.outString(">> Loaded %u hellground strings from table %s", count,table);
     else
         sLog.outString(">> Loaded %u string templates from %s", count,table);
 
     return true;
 }
 
-const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
+const char *ObjectMgr::GetHellgroundString(int32 entry, int locale_idx) const
 {
     // locale_idx==-1 -> default, locale_idx >= 0 in to idx+1
-    // Content[0] always exist if exist TrinityStringLocale
-    if (TrinityStringLocale const *msl = GetTrinityStringLocale(entry))
+    // Content[0] always exist if exist HellgroundStringLocale
+    if (HellgroundStringLocale const *msl = GetHellgroundStringLocale(entry))
     {
         if (msl->Content.size() > locale_idx+1 && !msl->Content[locale_idx+1].empty())
             return msl->Content[locale_idx+1].c_str();
@@ -6012,7 +5849,7 @@ const char *ObjectMgr::GetTrinityString(int32 entry, int locale_idx) const
     if (entry > 0)
         sLog.outLog(LOG_DB_ERR, "Entry %i not found in `HELLGROUND_string` table.",entry);
     else
-        sLog.outLog(LOG_DB_ERR, "Trinity string entry %i not found in DB.",entry);
+        sLog.outLog(LOG_DB_ERR, "hellground string entry %i not found in DB.",entry);
     return "<error>";
 }
 

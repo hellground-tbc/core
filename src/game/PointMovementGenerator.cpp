@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,8 @@
 template<class UNIT>
 void PointMovementGenerator<UNIT>::Initialize(UNIT &unit)
 {
-    unit.StopMoving();
+    if ( m_callStopMove )
+        unit.StopMoving();
 
     unit.addUnitState(UNIT_STAT_ROAMING);
 

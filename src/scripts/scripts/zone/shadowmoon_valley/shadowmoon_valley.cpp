@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -2112,7 +2115,7 @@ struct npc_AkamaAI : public ScriptedAI
                     {
                         target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
                         target->SetHealth(target->GetMaxHealth());
-                        target->GetUnitStateMgr().PushAction(UNIT_ACTION_STUN);
+                        target->GetUnitStateMgr().DropAction(UNIT_ACTION_STUN);
                     }
                 }
                 m_creature->Say(SAY_DIALOG_AKAMA_5, LANG_UNIVERSAL, 0);

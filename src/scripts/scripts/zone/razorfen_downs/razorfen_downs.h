@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2010 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2010 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef DEF_RAZORFEN_DOWNS_H
-#define DEF_RAZORFEN_DOWNS_H
+#ifndef SC_DEF_RAZORFEN_DOWNS_H
+#define SC_DEF_RAZORFEN_DOWNS_H
 
 enum eData
 {

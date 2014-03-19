@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Camera.h"
@@ -21,10 +22,10 @@
 #include "CellImpl.h"
 #include "Log.h"
 #include "Player.h"
+#include "ObjectAccessor.h"
 
 Camera::Camera(Player* pl) : _owner(*pl), _source(pl)
 {
-    _source->GetViewPoint().Attach(this);
 }
 
 Camera::~Camera()
@@ -34,6 +35,11 @@ Camera::~Camera()
 
     // for symmetry with constructor and way to make viewpoint's list empty
     _source->GetViewPoint().Detach(this);
+}
+
+void Camera::Init()
+{
+    _source->GetViewPoint().Attach(this);
 }
 
 void Camera::ReceivePacket(WorldPacket *data)
@@ -130,6 +136,11 @@ void Camera::UpdateVisibilityOf(WorldObject* target)
     _owner.UpdateVisibilityOf(_source, target);
 }
 
+const uint64& Camera::getOwnerGuid()
+{
+    return _owner.GetGUID();
+}
+
 template<class T>
 void Camera::UpdateVisibilityOf(T * target, UpdateData &data, std::set<WorldObject*>& vis)
 {
@@ -157,5 +168,19 @@ ViewPoint::~ViewPoint()
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: ViewPoint destructor called, but some cameras referenced to it");
         _cameras.clear();
+    }
+}
+
+void ViewPoint::CameraCall(void (Camera::*handler)())
+{
+    if (!_cameras.empty())
+    {
+        CameraList tempCameras = _cameras;
+        for(CameraList::iterator itr = tempCameras.begin(); itr != tempCameras.end(); ++itr)
+        {
+            Player* owner = sObjectAccessor.GetPlayer(*itr);
+            if (owner)
+                (owner->GetCamera().*handler)();
+        }
     }
 }

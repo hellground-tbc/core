@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
 #include "CharmInfo.h"
 
 #include "WorldPacket.h"
@@ -140,6 +158,15 @@ void CharmInfo::InitPossessCreateSpells()
         40322
     };
 
+    uint32 BlueDrakeID[5] =   //Power of the Blue Flight spells (Kij'jaeden fight)
+    {
+        45862,
+        45856,
+        45860,
+        60000,  //to make empty slot
+        45848
+    };
+
     if (m_unit->GetEntry() == 23109)     //HACK to allow proper spells for Vengeful Spirit
     {
         InitEmptyActionBar(false);
@@ -147,6 +174,18 @@ void CharmInfo::InitPossessCreateSpells()
         for (uint32 i = 0; i < 7; ++i)
         {
             uint32 spellid = SpiritSpellID[i];
+            AddSpellToActionBar(0, spellid, ACT_CAST);
+        }
+        return;
+    }
+
+    if (m_unit->GetEntry() == 25653)     //HACK to allow proper spells for the Power of the Blue Flight
+    {
+        InitEmptyActionBar(false);
+
+        for (uint32 i = 0; i < 5; ++i)
+        {
+            uint32 spellid = BlueDrakeID[i];
             AddSpellToActionBar(0, spellid, ACT_CAST);
         }
         return;

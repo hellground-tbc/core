@@ -1,3 +1,8 @@
+//==========================================
+// Matt Pietrek
+// MSDN Magazine, 2002
+// FILE: WheatyExceptionReport.h
+//==========================================
 #ifndef _WHEATYEXCEPTIONREPORT_
 #define _WHEATYEXCEPTIONREPORT_
 

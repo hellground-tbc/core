@@ -1,8 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef __InstanceSaveMgr_H
-#define __InstanceSaveMgr_H
+#ifndef HELLGROUND_INSTANCESAVEMGR_H
+#define HELLGROUND_INSTANCESAVEMGR_H
 
 #include "Platform/Define.h"
 #include "ace/Singleton.h"
@@ -79,10 +78,12 @@ class InstanceSave
         InstanceTemplate const* GetTemplate();
         MapEntry const* GetMapEntry();
 
+        bool HasPlayer(uint64 guid);
+
         /* online players bound to the instance (perm/solo)
            does not include the members of the group unless they have permanent saves */
-        void AddPlayer(Player *player) { m_playerList.push_back(player); }
-        bool RemovePlayer(Player *player) { m_playerList.remove(player); return UnloadIfEmpty(); }
+        void AddPlayer(uint64 guid) { m_playerList.push_back(guid); }
+        bool RemovePlayer(uint64 guid) { m_playerList.remove(guid); return UnloadIfEmpty(); }
         /* all groups bound to the instance */
         void AddGroup(Group *group) { m_groupList.push_back(group); }
         bool RemoveGroup(Group *group) { m_groupList.remove(group); return UnloadIfEmpty(); }
@@ -97,7 +98,7 @@ class InstanceSave
            but that would depend on a lot of things that can easily change in future */
         uint8 GetDifficulty() { return m_difficulty; }
 
-        typedef std::list<Player*> PlayerListType;
+        typedef std::list<uint64> PlayerListType;
         typedef std::list<Group*> GroupListType;
     private:
         bool UnloadIfEmpty();

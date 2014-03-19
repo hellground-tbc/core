@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -664,7 +664,7 @@ enum SpellEffects
     SPELL_EFFECT_SUMMON_OBJECT_SLOT3       = 106,
     SPELL_EFFECT_SUMMON_OBJECT_SLOT4       = 107,
     SPELL_EFFECT_DISPEL_MECHANIC           = 108,
-    SPELL_EFFECT_SUMMON_DEAD_PET           = 109,
+    SPELL_EFFECT_RESURRECT_PET             = 109,
     SPELL_EFFECT_DESTROY_ALL_TOTEMS        = 110,
     SPELL_EFFECT_DURABILITY_DAMAGE         = 111,
     SPELL_EFFECT_SUMMON_DEMON              = 112,
@@ -2185,6 +2185,7 @@ enum TotemCategory
 
 enum UnitDynFlags
 {
+    UNIT_DYNFLAG_NONE              = 0x0000,
     UNIT_DYNFLAG_LOOTABLE          = 0x0001,
     UNIT_DYNFLAG_TRACK_UNIT        = 0x0002,
     UNIT_DYNFLAG_OTHER_TAGGER      = 0x0004,

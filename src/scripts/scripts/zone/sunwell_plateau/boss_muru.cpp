@@ -1,4 +1,7 @@
-/* Copyright (C) 2009 Trinity <http://www.trinitycore.org/>
+/* 
+* Copyright (C) 2009 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+* 
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
@@ -12,25 +15,22 @@
 * You should have received a copy of the GNU General Public License
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
-*  Copyright (C) 2008 - 2013 HellgroundDev <http://gamefreedom.pl/>
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
+
 
 /* ScriptData
 SDName: Boss_Muru/Entropius
-SD%Complete: 90
-SDComment: Final testing and debugging
+SD%Complete: 99
+SDComment:
 */
 
 /* Additional scripts
-    * Shadowsword Berserker
-    * Shadowsword Fury Mage
-    * Void Sentinel
-    * Void Spawn
+
+* Shadowsword Berserker
+* Shadowsword Fury Mage
+* Void Sentinel
+* Void Spawn
+
 */
 
 #include "precompiled.h"
@@ -129,7 +129,7 @@ struct boss_muruAI : public Scripted_NoMovementAI
         TransitionTimer = 0;
         Summons.DespawnAll();
 
-        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) == DONE && pInstance->GetData(DATA_MURU_TESTING) != DONE)
+        if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) == DONE)
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -147,7 +147,6 @@ struct boss_muruAI : public Scripted_NoMovementAI
 
     void EnterEvadeMode()
     {
-        pInstance->SetData(DATA_MURU_TESTING, FAIL);
         CreatureAI::EnterEvadeMode();
         pInstance->SetData(DATA_MURU_EVENT, NOT_STARTED);
         me->SetVisibility(VISIBILITY_OFF);
@@ -155,30 +154,12 @@ struct boss_muruAI : public Scripted_NoMovementAI
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         Summons.DespawnAll();
         HumanoidStart = 10000;
-        if(pInstance->GetData(DATA_MURU_TESTING) != DONE)
-            ResetTimer = 30000;
-    }
-
-    void SendMessageAtStart(const char *format, ...)
-    {
-        va_list ap;
-        char str [1024];
-        va_start(ap, format);
-        vsnprintf(str,1024,format, ap);
-        va_end(ap);
-        me->Yell(str, 0, me->GetGUID());
+        ResetTimer = 30000;
     }
 
     void EnterCombat(Unit *who)
     {
-        if(pInstance->GetData(DATA_MURU_TESTING) == DONE)
-        {
-            EnterEvadeMode();
-            return;
-        }
         me->SetIngoreVictimSelection(true);
-        uint32 counter = pInstance->GetData(DATA_MURU_TESTING_COUNTER);
-        SendMessageAtStart("Welcome testers! You have still: %u boss tries left. Good luck!!", counter);
         DoCast(me, SPELL_NEGATIVE_ENERGY_PERIODIC);
         DoCast(me, SPELL_OPEN_PORTAL_PERIODIC);
         DoCast(me, SPELL_DARKNESS_PERIODIC);
@@ -189,8 +170,6 @@ struct boss_muruAI : public Scripted_NoMovementAI
         if(ResetTimer)
             return;
         if(pInstance->GetData(DATA_EREDAR_TWINS_EVENT) != DONE)
-            return;
-        if(pInstance->GetData(DATA_MURU_TESTING) == DONE)
             return;
 
         ScriptedAI::MoveInLineOfSight(who);
@@ -231,14 +210,14 @@ struct boss_muruAI : public Scripted_NoMovementAI
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 60.0f);
+        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 80.0f);
 
         if (me->GetSelection())
             me->SetSelection(NULL);
 
         if (EnrageTimer < diff)
         {
-            DoCast(me, SPELL_ENRAGE);
+            DoCast(me, SPELL_ENRAGE, true);
             EnrageTimer = 60000;
         }
         else
@@ -250,7 +229,7 @@ struct boss_muruAI : public Scripted_NoMovementAI
             {
                 pInstance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
                 // if anyone trapped outside front door, evade
-                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, 0, 41))
+                if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 400, true, 0, 60))
                 {
                     EnterEvadeMode();
                     return;
@@ -310,8 +289,7 @@ struct boss_entropiusAI : public ScriptedAI
     {
         if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
             ((boss_muruAI*)Muru)->EnterEvadeMode();
-        me->Kill(me, false);
-        me->RemoveCorpse();
+        me->DisappearAndDie();
         Summons.DespawnAll();
     }
 
@@ -359,11 +337,11 @@ struct boss_entropiusAI : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 60.0f);
+        DoSpecialThings(diff, DO_COMBAT_N_EVADE, 100.0f);
 
         if (EnrageTimer < diff)
         {
-            DoCast(me, SPELL_ENRAGE);
+            AddSpellToCast(me, SPELL_ENRAGE);
             EnrageTimer = 60000;
         }
         else
@@ -372,7 +350,7 @@ struct boss_entropiusAI : public ScriptedAI
         if (DarknessTimer < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true))
-                DoCast(target, SPELL_DARKNESS);
+                AddSpellToCast(target, SPELL_DARKNESS);
             DarknessTimer = 15000;
         }
         else
@@ -381,13 +359,14 @@ struct boss_entropiusAI : public ScriptedAI
         if (BlackHole < diff)
         {
             if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, me->getVictimGUID(), 10.0))
-                DoCast(target, SPELL_BLACK_HOLE);
+                AddSpellToCast(target, SPELL_BLACK_HOLE);
             BlackHole = urand(15000, 18000);
         }
         else
             BlackHole -= diff;
 
         DoMeleeAttackIfReady();
+        CastNextSpellIfAnyAndReady();
     }
 };
 
@@ -408,11 +387,13 @@ struct npc_muru_portalAI : public Scripted_NoMovementAI
     Creature* Muru;
     uint32 SummonTimer;
     uint32 TransformTimer;
+    uint32 CheckTimer;
 
     void Reset()
     {
         SummonTimer = 0;
         TransformTimer = 0;
+        CheckTimer = 1000;
     }
 
     void EnterCombat(Unit *who) {}
@@ -443,6 +424,18 @@ struct npc_muru_portalAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
+        if(me->isInCombat())
+        {
+            if (CheckTimer < diff)
+            {
+                if (pInstance->GetData(DATA_MURU_EVENT) == DONE || pInstance->GetData(DATA_MURU_EVENT) == NOT_STARTED)
+                    EnterEvadeMode();
+                CheckTimer = 1000;
+            }
+            else
+                CheckTimer -= diff;
+        }
+
         if(SummonTimer)
         {
             if(SummonTimer <= diff)
@@ -848,10 +841,13 @@ struct npc_blackholeAI : public ScriptedAI
             {
                 if (Unit* victim = me->GetUnit(victimGUID))
                 {
-                    if(me->IsWithinDistInMap(victim, 6.0))
+                    if(me->IsWithinDistInMap(victim, 5.0))
                     {
                         if(Unit* victim = SelectUnit(SELECT_TARGET_NEAREST, 0, 200, true, me->getVictimGUID(), 10.0))
+                        {
+                            victimGUID = victim->GetGUID();
                             me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
+                        }
                     }
                     else
                         me->GetMotionMaster()->MovePoint(0, victim->GetPositionX(), victim->GetPositionY(), 72.0, false);
@@ -885,21 +881,14 @@ struct npc_darknessAI : public Scripted_NoMovementAI
     }
 
     ScriptedInstance* pInstance;
-    Creature* Muru;
     uint32 VoidZoneTimer;
+    uint32 CheckTimer;
 
     void Reset()
     {
         DoCast(me, SPELL_VOID_ZONE_PRE_EFFECT_VISUAL, true);
         VoidZoneTimer = 3000;
-        if(Unit* Muru = me->GetUnit(pInstance->GetData64(DATA_MURU)))
-            ((boss_muruAI*)Muru)->JustSummoned(me);
-    }
-
-    void IsSummonedBy(Unit* summoner)
-    {
-        if(Creature* Muru = me->GetCreature(pInstance->GetData64(DATA_MURU)))
-            Muru->AI()->JustSummoned(me);
+        CheckTimer = 1000;
     }
 
     void UpdateAI(const uint32 diff)
@@ -916,6 +905,14 @@ struct npc_darknessAI : public Scripted_NoMovementAI
             else
                 VoidZoneTimer -= diff;
         }
+        if (CheckTimer)
+        {
+            if (pInstance->GetData(DATA_MURU_EVENT) == DONE || pInstance->GetData(DATA_MURU_EVENT) == NOT_STARTED)
+                me->DisappearAndDie();
+            CheckTimer = 1000;
+        }
+        else
+            CheckTimer -= diff;
     }
 };
 

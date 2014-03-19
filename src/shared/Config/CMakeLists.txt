@@ -1,10 +1,10 @@
 
 ########### next target ###############
 
-SET(trinityconfig_STAT_SRCS
+SET(hellgroundconfig_STAT_SRCS
    Config.cpp
    Config.h
 )
 
-add_library(trinityconfig STATIC ${trinityconfig_STAT_SRCS})
+add_library(hellgroundconfig STATIC ${hellgroundconfig_STAT_SRCS})
 

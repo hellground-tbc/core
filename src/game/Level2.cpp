@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,7 @@
 #include "TicketMgr.h"
 #include "CreatureAI.h"
 #include "ChannelMgr.h"
+#include "GuildMgr.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "MoveMap.h"                                        // for mmap manager
@@ -290,7 +291,7 @@ bool ChatHandler::HandleMuteInfoCommand(const char* args)
 
         std::string mutetime = secsToTimeString(muteLength, true);
         PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
-            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
+            fields[0].GetString(), mutetime.c_str(), active ? GetHellgroundString(LANG_MUTEINFO_YES):GetHellgroundString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
     }
     while (result->NextRow());
 
@@ -800,25 +801,25 @@ bool ChatHandler::HandleLookupFactionCommand(const char* args)
                 if (repState)                               // and then target!=NULL also
                 {
                     ReputationRank rank = target->GetReputationMgr().GetRank(factionEntry);
-                    std::string rankName = GetTrinityString(ReputationRankStrIndex[rank]);
+                    std::string rankName = GetHellgroundString(ReputationRankStrIndex[rank]);
 
                     ss << " " << rankName << "|h|r (" << target->GetReputationMgr().GetReputation(factionEntry) << ")";
 
                     if (repState->Flags & FACTION_FLAG_VISIBLE)
-                        ss << GetTrinityString(LANG_FACTION_VISIBLE);
+                        ss << GetHellgroundString(LANG_FACTION_VISIBLE);
                     if (repState->Flags & FACTION_FLAG_AT_WAR)
-                        ss << GetTrinityString(LANG_FACTION_ATWAR);
+                        ss << GetHellgroundString(LANG_FACTION_ATWAR);
                     if (repState->Flags & FACTION_FLAG_PEACE_FORCED)
-                        ss << GetTrinityString(LANG_FACTION_PEACE_FORCED);
+                        ss << GetHellgroundString(LANG_FACTION_PEACE_FORCED);
                     if (repState->Flags & FACTION_FLAG_HIDDEN)
-                        ss << GetTrinityString(LANG_FACTION_HIDDEN);
+                        ss << GetHellgroundString(LANG_FACTION_HIDDEN);
                     if (repState->Flags & FACTION_FLAG_INVISIBLE_FORCED)
-                        ss << GetTrinityString(LANG_FACTION_INVISIBLE_FORCED);
+                        ss << GetHellgroundString(LANG_FACTION_INVISIBLE_FORCED);
                     if (repState->Flags & FACTION_FLAG_INACTIVE)
-                        ss << GetTrinityString(LANG_FACTION_INACTIVE);
+                        ss << GetHellgroundString(LANG_FACTION_INACTIVE);
                 }
                 else
-                    ss << GetTrinityString(LANG_FACTION_NOREPUTATION);
+                    ss << GetHellgroundString(LANG_FACTION_NOREPUTATION);
 
                 SendSysMessage(ss.str().c_str());
                 counter++;
@@ -869,7 +870,7 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
         amount = -42000;
         for (; r < MAX_REPUTATION_RANK; ++r)
         {
-            std::string rank = GetTrinityString(ReputationRankStrIndex[r]);
+            std::string rank = GetHellgroundString(ReputationRankStrIndex[r]);
             if (rank.empty())
                 continue;
 
@@ -1983,11 +1984,11 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
     }
 
-    std::string username = GetTrinityString(LANG_ERROR);
-    std::string email = GetTrinityString(LANG_ERROR);
-    std::string last_ip = GetTrinityString(LANG_ERROR);
+    std::string username = GetHellgroundString(LANG_ERROR);
+    std::string email = GetHellgroundString(LANG_ERROR);
+    std::string last_ip = GetHellgroundString(LANG_ERROR);
     uint32 permissions = 0;
-    std::string last_login = GetTrinityString(LANG_ERROR);
+    std::string last_login = GetHellgroundString(LANG_ERROR);
 
 
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,ap.permission_mask,a.email,a.last_ip,a.last_login "
@@ -2021,7 +2022,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         }
     }
 
-    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetTrinityString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), permissions, last_ip.c_str(), last_login.c_str(), latency);
+    PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetHellgroundString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), permissions, last_ip.c_str(), last_login.c_str(), latency);
 
     std::string race_s, Class_s;
     switch(race)
@@ -2073,23 +2074,23 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             FactionEntry const *factionEntry = sFactionStore.LookupEntry(itr->second.ID);
             char const* factionName = factionEntry ? factionEntry->name[m_session->GetSessionDbcLocale()] : "#Not found#";
             ReputationRank rank = target->GetReputationMgr().GetRank(factionEntry);
-            std::string rankName = GetTrinityString(ReputationRankStrIndex[rank]);
+            std::string rankName = GetHellgroundString(ReputationRankStrIndex[rank]);
             std::ostringstream ss;
             ss << itr->second.ID << ": |cffffffff|Hfaction:" << itr->second.ID << "|h[" << factionName << "]|h|r " << rankName << "|h|r ("
                 << target->GetReputationMgr().GetReputation(factionEntry) << ")";
 
             if (itr->second.Flags & FACTION_FLAG_VISIBLE)
-                ss << GetTrinityString(LANG_FACTION_VISIBLE);
+                ss << GetHellgroundString(LANG_FACTION_VISIBLE);
             if (itr->second.Flags & FACTION_FLAG_AT_WAR)
-                ss << GetTrinityString(LANG_FACTION_ATWAR);
+                ss << GetHellgroundString(LANG_FACTION_ATWAR);
             if (itr->second.Flags & FACTION_FLAG_PEACE_FORCED)
-                ss << GetTrinityString(LANG_FACTION_PEACE_FORCED);
+                ss << GetHellgroundString(LANG_FACTION_PEACE_FORCED);
             if (itr->second.Flags & FACTION_FLAG_HIDDEN)
-                ss << GetTrinityString(LANG_FACTION_HIDDEN);
+                ss << GetHellgroundString(LANG_FACTION_HIDDEN);
             if (itr->second.Flags & FACTION_FLAG_INVISIBLE_FORCED)
-                ss << GetTrinityString(LANG_FACTION_INVISIBLE_FORCED);
+                ss << GetHellgroundString(LANG_FACTION_INVISIBLE_FORCED);
             if (itr->second.Flags & FACTION_FLAG_INACTIVE)
-                ss << GetTrinityString(LANG_FACTION_INACTIVE);
+                ss << GetHellgroundString(LANG_FACTION_INACTIVE);
 
             SendSysMessage(ss.str().c_str());
         }
@@ -3208,7 +3209,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
         return false;
     }
 
-    sLog.outDebug(GetTrinityString(LANG_GAMEOBJECT_CURRENT), goI->name, db_lowGUID, x, y, z, o);
+    sLog.outDebug(GetHellgroundString(LANG_GAMEOBJECT_CURRENT), goI->name, db_lowGUID, x, y, z, o);
 
     map->Add(pGameObj);
 
@@ -3306,7 +3307,7 @@ bool ChatHandler::HandleLookupEventCommand(const char* args)
 
         if (Utf8FitTo(descr, wnamepart))
         {
-            char const* active = activeEvents.find(id) != activeEvents.end() ? GetTrinityString(LANG_ACTIVE) : "";
+            char const* active = activeEvents.find(id) != activeEvents.end() ? GetHellgroundString(LANG_ACTIVE) : "";
 
             if (m_session)
                 PSendSysMessage(LANG_EVENT_ENTRY_LIST_CHAT,id,id,eventData.description.c_str(),active);
@@ -3330,7 +3331,7 @@ bool ChatHandler::HandleEventActiveListCommand(const char* args)
     GameEventMgr::GameEventDataMap const& events = sGameEventMgr.GetEventMap();
     GameEventMgr::ActiveEvents const& activeEvents = sGameEventMgr.GetActiveEventList();
 
-    char const* active = GetTrinityString(LANG_ACTIVE);
+    char const* active = GetHellgroundString(LANG_ACTIVE);
 
     for (GameEventMgr::ActiveEvents::const_iterator itr = activeEvents.begin(); itr != activeEvents.end(); ++itr)
     {
@@ -3382,7 +3383,7 @@ bool ChatHandler::HandleEventInfoCommand(const char* args)
 
     GameEventMgr::ActiveEvents const& activeEvents = sGameEventMgr.GetActiveEventList();
     bool active = activeEvents.find(event_id) != activeEvents.end();
-    char const* activeStr = active ? GetTrinityString(LANG_ACTIVE) : "";
+    char const* activeStr = active ? GetHellgroundString(LANG_ACTIVE) : "";
 
     std::string startTimeStr = TimeToTimestampStr(eventData.start);
     std::string endTimeStr = TimeToTimestampStr(eventData.end);
@@ -3663,7 +3664,7 @@ bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
     char* limit_str = strtok(NULL, " ");
     int32 limit = limit_str ? atoi(limit_str) : -1;
 
-    if (!AccountMgr::normilizeString(account))
+    if (!AccountMgr::normalizeString(account))
         return false;
 
     AccountsDatabase.escape_string(account);
@@ -4545,7 +4546,7 @@ bool ChatHandler::HandleGuildDisableAnnounceCommand(const char *args)
 
     std::string guildName = args;
 
-    Guild* guild = sObjectMgr.GetGuildByName(guildName);
+    Guild* guild = sGuildMgr.GetGuildByName(guildName);
     if (!guild)
         return false;
 
@@ -4563,7 +4564,7 @@ bool ChatHandler::HandleGuildEnableAnnounceCommand(const char *args)
 
     std::string guildName = args;
 
-    Guild* guild = sObjectMgr.GetGuildByName(guildName);
+    Guild* guild = sGuildMgr.GetGuildByName(guildName);
     if (!guild)
         return false;
 
@@ -4724,7 +4725,7 @@ bool ChatHandler::HandleTrollmuteInfoCommand(const char* args)
 
         std::string mutetime = secsToTimeString(muteLength, true);
         PSendSysMessage(LANG_MUTEINFO_HISTORYENTRY,
-            fields[0].GetString(), mutetime.c_str(), active ? GetTrinityString(LANG_MUTEINFO_YES):GetTrinityString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
+            fields[0].GetString(), mutetime.c_str(), active ? GetHellgroundString(LANG_MUTEINFO_YES):GetHellgroundString(LANG_MUTEINFO_NO), fields[3].GetString(), fields[4].GetString());
     }
     while (result->NextRow());
 

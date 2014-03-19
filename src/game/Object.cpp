@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@
 #include "OutdoorPvPMgr.h"
 
 #include "movement/packet_builder.h"
+#include "luaengine/HookMgr.h"
 
 uint32 GuidHigh2TypeId(uint32 guid_hi)
 {
@@ -1366,7 +1367,7 @@ namespace Hellground
                 : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID), i_withoutPrename(withoutPrename) {}
             void operator()(WorldPacket& data, int32 loc_idx)
             {
-                char const* text = sObjectMgr.GetTrinityString(i_textId, loc_idx);
+                char const* text = sObjectMgr.GetHellgroundString(i_textId, loc_idx);
                 // TODO: i_object.GetName() also must be localized?
                 i_object.BuildMonsterChat(&data, i_msgtype, text, i_language, i_object.GetNameForLocaleIdx(loc_idx), i_targetGUID, i_withoutPrename);
             }
@@ -1443,7 +1444,7 @@ void WorldObject::MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisp
         return;
 
     uint32 loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
-    char const* text = sObjectMgr.GetTrinityString(textId, loc_idx);
+    char const* text = sObjectMgr.GetHellgroundString(textId, loc_idx);
 
     WorldPacket data(SMSG_MESSAGECHAT, 200);
     BuildMonsterChat(&data,IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, text, LANG_UNIVERSAL, GetNameForLocaleIdx(loc_idx), receiver);
@@ -1457,9 +1458,9 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, int32 iText
     if(GetTypeId() == TYPEID_PLAYER)
     {
         uint32 loc_idx = ((Player*)this)->GetSession()->GetSessionDbLocaleIndex();
-        text = sObjectMgr.GetTrinityString(iTextEntry,loc_idx);
+        text = sObjectMgr.GetHellgroundString(iTextEntry,loc_idx);
     } else
-        text = sObjectMgr.GetTrinityStringForDBCLocale(iTextEntry);
+        text = sObjectMgr.GetHellgroundStringForDBCLocale(iTextEntry);
     BuildMonsterChat(data, msgtype, text, language, name, targetGuid, withoutPrename);
     if(GetTypeId() == TYPEID_PLAYER)
         data->put(5, (uint64)0);  // BAD HACK
@@ -1535,7 +1536,7 @@ void WorldObject::AddObjectToRemoveList()
     GetMap()->AddObjectToRemoveList(this);
 }
 
-Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime)
+Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TemporarySummonType spwtype,uint32 despwtime)
 {
     TemporarySummon* pCreature = new TemporarySummon(GetGUID());
 
@@ -1554,6 +1555,9 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     if (GetTypeId()==TYPEID_UNIT && ((Creature*)this)->IsAIEnabled)
         ((Creature*)this)->AI()->JustSummoned(pCreature);
+
+    if (Unit* summoner = ToUnit())
+        sHookMgr->OnSummoned(pCreature, summoner);
 
     if (pCreature->IsAIEnabled)
     {
@@ -1593,7 +1597,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, x, y, z, ang))
     {
         // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_override_CLASS_SCRIPTS);
         for (Unit::AuraList::const_iterator itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
             if ((*itr)->GetModifier()->m_miscvalue==2228)
@@ -1685,7 +1689,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if (petType == SUMMON_PET)
     {
         // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+        Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_override_CLASS_SCRIPTS);
         for (Unit::AuraList::const_iterator itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
             if ((*itr)->GetModifier()->m_miscvalue==2228)
@@ -1740,7 +1744,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
 
 Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint32 duration, CreatureAI* (*GetAI)(Creature*))
 {
-    TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
+    TemporarySummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Creature* summon = SummonCreature(WORLD_TRIGGER, x, y, z, ang, summonType, duration);
     if (!summon)
         return NULL;
@@ -1790,8 +1794,12 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
     //updates object's visibility for nearby players
     Hellground::VisibleChangesNotifier notifier(*this);
     float radius = World::GetVisibleObjectGreyDistance();
-    if(Map* map = GetMap())
+
+    if ( ToCorpse() != nullptr || !IsInWorld() )
+        radius = MAX_VISIBILITY_DISTANCE;
+    else if ( Map* map = GetMap() )
         radius += map->GetVisibilityDistance();
+
     Cell::VisitWorldObjects(this, notifier, radius);
 }
 

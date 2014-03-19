@@ -1,22 +1,22 @@
 /*
-* Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
-*
-* Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2009 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -47,7 +47,6 @@
 #include "SkillDiscovery.h"
 #include "SkillExtraItems.h"
 #include "SystemConfig.h"
-#include "Config/Config.h"
 #include "Util.h"
 #include "ItemEnchantmentMgr.h"
 #include "BattleGroundMgr.h"
@@ -55,6 +54,8 @@
 #include "InstanceData.h"
 #include "CreatureEventAIMgr.h"
 #include "ChannelMgr.h"
+#include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 bool ChatHandler::HandleReloadAutobroadcastCommand(const char*)
 {
@@ -70,6 +71,18 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
     PSendSysMessage("Db table with name starting from '%s' not found and can't be reloaded.",arg);
     SetSentErrorMessage(true);
     return false;
+}
+
+extern bool StartEluna();
+bool ChatHandler::HandleReloadElunaCommand(const char* /*args*/)
+{
+    sLog.outString("Re-Loading Eluna LuaEngine...");
+
+    if (StartEluna())
+        SendGlobalGMSysMessage("Eluna LuaEngine reloaded.");
+    else
+        SendGlobalGMSysMessage("Eluna Lua Engine is disabled can't reload.");
+    return true;
 }
 
 bool ChatHandler::HandleReloadAllCommand(const char*)
@@ -156,7 +169,7 @@ bool ChatHandler::HandleReloadAllScriptsCommand(const char*)
 bool ChatHandler::HandleReloadAllSpellCommand(const char*)
 {
     HandleReloadSkillDiscoveryTemplateCommand("a");
-    HandleReloadSkillExtraItemTemplateCommand("a");
+    HandleReloadSkillExtraItemPrototypeCommand("a");
     HandleReloadSpellAffectCommand("a");
     HandleReloadSpellRequiredCommand("a");
     HandleReloadSpellElixirCommand("a");
@@ -434,7 +447,7 @@ bool ChatHandler::HandleReloadReputationRewardRateCommand(const char*)
 {
     sLog.outString("Re-Loading `reputation_reward_rate` Table!");
     sObjectMgr.LoadReputationRewardRate();
-    SendGlobalSysMessage("DB table `reputation_reward_rate` reloaded.");
+    SendGlobalGMSysMessage("DB table `reputation_reward_rate` reloaded.");
     return true;
 }
 
@@ -442,7 +455,7 @@ bool ChatHandler::HandleReloadReputationSpilloverTemplateCommand(const char*)
 {
     sLog.outString("Re-Loading `reputation_spillover_template` Table!");
     sObjectMgr.LoadReputationSpilloverTemplate();
-    SendGlobalSysMessage("DB table `reputation_spillover_template` reloaded.");
+    SendGlobalGMSysMessage("DB table `reputation_spillover_template` reloaded.");
     return true;
 }
 
@@ -454,7 +467,7 @@ bool ChatHandler::HandleReloadSkillDiscoveryTemplateCommand(const char* /*args*/
     return true;
 }
 
-bool ChatHandler::HandleReloadSkillExtraItemTemplateCommand(const char* /*args*/)
+bool ChatHandler::HandleReloadSkillExtraItemPrototypeCommand(const char* /*args*/)
 {
     sLog.outString("Re-Loading Skill Extra Item Table...");
     LoadSkillExtraItemTable();
@@ -863,7 +876,7 @@ bool ChatHandler::HandleAccountSetPermissionsCommand(const char* args)
 
         // Check for account
         targetAccountName = arg1;
-        if (!AccountMgr::normilizeString(targetAccountName))
+        if (!AccountMgr::normalizeString(targetAccountName))
         {
             PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, targetAccountName.c_str());
             SetSentErrorMessage(true);
@@ -914,7 +927,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
         return false;
 
     std::string account_name = szAccount;
-    if (!AccountMgr::normilizeString(account_name))
+    if (!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
@@ -1133,13 +1146,13 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
 
         if (!sSpellStore.LookupEntry(spell_id))
         {
-            PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
+            PSendSysMessage(LANG_UNKNOWN_SPELL, target==m_session->GetPlayer() ? GetHellgroundString(LANG_YOU) : target->GetName());
             SetSentErrorMessage(true);
             return false;
         }
 
         target->RemoveSpellCooldown(spell_id,true);
-        PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName());
+        PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetHellgroundString(LANG_YOU) : target->GetName());
     }
     return true;
 }
@@ -2055,7 +2068,7 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
     if (!plTarget)
         plTarget = pl;
 
-    sLog.outDetail(GetTrinityString(LANG_ADDITEM), itemId, count);
+    sLog.outDetail(GetHellgroundString(LANG_ADDITEM), itemId, count);
 
     ItemPrototype const *pProto = ObjectMgr::GetItemPrototype(itemId);
     if (!pProto)
@@ -2134,7 +2147,7 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
     if (!plTarget)
         plTarget = pl;
 
-    sLog.outDetail(GetTrinityString(LANG_ADDITEMSET), itemsetId);
+    sLog.outDetail(GetHellgroundString(LANG_ADDITEMSET), itemsetId);
 
     bool found = false;
     for (uint32 id = 0; id < sItemStorage.MaxEntry; id++)
@@ -2616,7 +2629,7 @@ void ChatHandler::ShowItemListHelper(uint32 itemId, int loc_idx)//, Player* targ
     if (target)
     {
         if (target->CanUseItem(itemProto))
-            usableStr = GetTrinityString(LANG_COMMAND_ITEM_USABLE);
+            usableStr = GetHellgroundString(LANG_COMMAND_ITEM_USABLE);
     }*/
 
     if (m_session)
@@ -2776,7 +2789,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
             {
                 char const* knownStr = "";
                 if (target && target->HasSkill(id))
-                    knownStr = GetTrinityString(LANG_KNOWN);
+                    knownStr = GetHellgroundString(LANG_KNOWN);
 
                 // send skill in "id - [namedlink locale]" format
                 if (m_session)
@@ -2864,7 +2877,7 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
 
                 // include rank in link name
                 if (rank)
-                    ss << GetTrinityString(LANG_SPELL_RANK) << rank;
+                    ss << GetHellgroundString(LANG_SPELL_RANK) << rank;
 
                 if (m_session)
                     ss << " " << localeNames[loc] << "]|h|r";
@@ -2872,15 +2885,15 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args)
                     ss << " " << localeNames[loc];
 
                 if (talent)
-                    ss << GetTrinityString(LANG_TALENT);
+                    ss << GetHellgroundString(LANG_TALENT);
                 if (passive)
-                    ss << GetTrinityString(LANG_PASSIVE);
+                    ss << GetHellgroundString(LANG_PASSIVE);
                 if (learn)
-                    ss << GetTrinityString(LANG_LEARN);
+                    ss << GetHellgroundString(LANG_LEARN);
                 if (known)
-                    ss << GetTrinityString(LANG_KNOWN);
+                    ss << GetHellgroundString(LANG_KNOWN);
                 if (active)
-                    ss << GetTrinityString(LANG_ACTIVE);
+                    ss << GetHellgroundString(LANG_ACTIVE);
 
                 SendSysMessage(ss.str().c_str());
 
@@ -2938,12 +2951,12 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                             if (status == QUEST_STATUS_COMPLETE)
                             {
                                 if (target->GetQuestRewardStatus(qinfo->GetQuestId()))
-                                    statusStr = GetTrinityString(LANG_COMMAND_QUEST_REWARDED);
+                                    statusStr = GetHellgroundString(LANG_COMMAND_QUEST_REWARDED);
                                 else
-                                    statusStr = GetTrinityString(LANG_COMMAND_QUEST_COMPLETE);
+                                    statusStr = GetHellgroundString(LANG_COMMAND_QUEST_COMPLETE);
                             }
                             else if (status == QUEST_STATUS_INCOMPLETE)
-                                statusStr = GetTrinityString(LANG_COMMAND_QUEST_ACTIVE);
+                                statusStr = GetHellgroundString(LANG_COMMAND_QUEST_ACTIVE);
                         }
 
                         if (m_session)
@@ -2972,12 +2985,12 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                 if (status == QUEST_STATUS_COMPLETE)
                 {
                     if (target->GetQuestRewardStatus(qinfo->GetQuestId()))
-                        statusStr = GetTrinityString(LANG_COMMAND_QUEST_REWARDED);
+                        statusStr = GetHellgroundString(LANG_COMMAND_QUEST_REWARDED);
                     else
-                        statusStr = GetTrinityString(LANG_COMMAND_QUEST_COMPLETE);
+                        statusStr = GetHellgroundString(LANG_COMMAND_QUEST_COMPLETE);
                 }
                 else if (status == QUEST_STATUS_INCOMPLETE)
-                    statusStr = GetTrinityString(LANG_COMMAND_QUEST_ACTIVE);
+                    statusStr = GetHellgroundString(LANG_COMMAND_QUEST_ACTIVE);
             }
 
             if (m_session)
@@ -3158,7 +3171,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
         return false;
     }
 
-    sObjectMgr.AddGuild (guild);
+    sGuildMgr.AddGuild (guild);
     return true;
 }
 
@@ -3173,7 +3186,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         return false;
 
     std::string glName = par2;
-    Guild* targetGuild = sObjectMgr.GetGuildByName (glName);
+    Guild* targetGuild = sGuildMgr.GetGuildByName (glName);
     if (!targetGuild)
         return false;
 
@@ -3234,7 +3247,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     if (!plGuid || !glId)
         return false;
 
-    Guild* targetGuild = sObjectMgr.GetGuildById (glId);
+    Guild* targetGuild = sGuildMgr.GetGuildById (glId);
     if (!targetGuild)
         return false;
 
@@ -3276,7 +3289,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     if (!plGuid || !glId)
         return false;
 
-    Guild* targetGuild = sObjectMgr.GetGuildById (glId);
+    Guild* targetGuild = sGuildMgr.GetGuildById (glId);
     if (!targetGuild)
         return false;
 
@@ -3296,7 +3309,7 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
 
     std::string gld = args;
 
-    Guild* targetGuild = sObjectMgr.GetGuildByName(gld);
+    Guild* targetGuild = sGuildMgr.GetGuildByName(gld);
     if (!targetGuild)
         return false;
 
@@ -3723,14 +3736,14 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 
         g_team = data->team;
 
-        std::string team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_NOTEAM);
+        std::string team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_NOTEAM);
 
         if (g_team == 0)
-            team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ANY);
+            team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_ANY);
         else if (g_team == HORDE)
-            team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_HORDE);
+            team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_HORDE);
         else if (g_team == ALLIANCE)
-            team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
+            team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         PSendSysMessage(LANG_COMMAND_GRAVEYARDNEAREST, g_id,team_name.c_str(),player->GetCachedZone());
     }
@@ -3739,11 +3752,11 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
         std::string team_name;
 
         if (g_team == 0)
-            team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ANY);
+            team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_ANY);
         else if (g_team == HORDE)
-            team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_HORDE);
+            team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_HORDE);
         else if (g_team == ALLIANCE)
-            team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
+            team_name = GetHellgroundString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         if (g_team == ~uint32(0))
             PSendSysMessage(LANG_COMMAND_ZONENOGRAVEYARDS, player->GetCachedZone());
@@ -4228,14 +4241,14 @@ bool ChatHandler::HandleDebugSetValue(const char* args)
     if (isint32)
     {
         iValue = (uint32)atoi(py);
-        sLog.outDebug(GetTrinityString(LANG_SET_UINT), GUID_LOPART(guid), Opcode, iValue);
+        sLog.outDebug(GetHellgroundString(LANG_SET_UINT), GUID_LOPART(guid), Opcode, iValue);
         target->SetUInt32Value(Opcode , iValue);
         PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), Opcode,iValue);
     }
     else
     {
         fValue = (float)atof(py);
-        sLog.outDebug(GetTrinityString(LANG_SET_FLOAT), GUID_LOPART(guid), Opcode, fValue);
+        sLog.outDebug(GetHellgroundString(LANG_SET_FLOAT), GUID_LOPART(guid), Opcode, fValue);
         target->SetFloatValue(Opcode , fValue);
         PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), Opcode,fValue);
     }
@@ -4279,13 +4292,13 @@ bool ChatHandler::HandleDebugGetValue(const char* args)
     if (isint32)
     {
         iValue = target->GetUInt32Value(Opcode);
-        sLog.outDebug(GetTrinityString(LANG_GET_UINT), GUID_LOPART(guid), Opcode, iValue);
+        sLog.outDebug(GetHellgroundString(LANG_GET_UINT), GUID_LOPART(guid), Opcode, iValue);
         PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), Opcode,    iValue);
     }
     else
     {
         fValue = target->GetFloatValue(Opcode);
-        sLog.outDebug(GetTrinityString(LANG_GET_FLOAT), GUID_LOPART(guid), Opcode, fValue);
+        sLog.outDebug(GetHellgroundString(LANG_GET_FLOAT), GUID_LOPART(guid), Opcode, fValue);
         PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), Opcode, fValue);
     }
 
@@ -4308,7 +4321,7 @@ bool ChatHandler::HandleSet32Bit(const char* args)
     if (Value > 32)                                         //uint32 = 32 bits
         return false;
 
-    sLog.outDebug(GetTrinityString(LANG_SET_32BIT), Opcode, Value);
+    sLog.outDebug(GetHellgroundString(LANG_SET_32BIT), Opcode, Value);
 
     m_session->GetPlayer()->SetUInt32Value(Opcode , 2^Value);
 
@@ -4336,7 +4349,7 @@ bool ChatHandler::HandleDebugMod32Value(const char* args)
         return false;
     }
 
-    sLog.outDebug(GetTrinityString(LANG_CHANGE_32BIT), Opcode, Value);
+    sLog.outDebug(GetHellgroundString(LANG_CHANGE_32BIT), Opcode, Value);
 
     int CurrentValue = (int)m_session->GetPlayer()->GetUInt32Value(Opcode);
 
@@ -4416,8 +4429,8 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
         return false;
     }
 
-    char const* talentStr = GetTrinityString(LANG_TALENT);
-    char const* passiveStr = GetTrinityString(LANG_PASSIVE);
+    char const* talentStr = GetHellgroundString(LANG_TALENT);
+    char const* passiveStr = GetHellgroundString(LANG_PASSIVE);
 
     Unit::AuraMap const& uAuras = unit->GetAuras();
     PSendSysMessage(LANG_COMMAND_TARGET_LISTAURAS, uAuras.size());
@@ -5173,7 +5186,7 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
     switch (mode)
     {
         case BAN_ACCOUNT:
-            if (!AccountMgr::normilizeString(nameIPOrMail))
+            if (!AccountMgr::normalizeString(nameIPOrMail))
             {
                 PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameIPOrMail.c_str());
                 SetSentErrorMessage(true);
@@ -5267,7 +5280,7 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
     switch (mode)
     {
         case BAN_ACCOUNT:
-            if (!AccountMgr::normilizeString(nameIPOrMail))
+            if (!AccountMgr::normalizeString(nameIPOrMail))
             {
                 PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameIPOrMail.c_str());
                 SetSentErrorMessage(true);
@@ -5306,7 +5319,7 @@ bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
         return false;
 
     std::string account_name = cname;
-    if (!AccountMgr::normilizeString(account_name))
+    if (!AccountMgr::normalizeString(account_name))
     {
         PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
         SetSentErrorMessage(true);
@@ -5384,10 +5397,10 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
         if ((permanent || unbandate >= time(NULL)) && fields[5].GetBool())
             active = true;
 
-        std::string bantime = permanent ? GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(banLength, true);
+        std::string bantime = permanent ? GetHellgroundString(LANG_BANINFO_INFINITE) : secsToTimeString(banLength, true);
 
         PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
-            fields[0].GetString(), bantime.c_str(), active ? GetTrinityString(LANG_BANINFO_YES):GetTrinityString(LANG_BANINFO_NO), fields[3].GetString(), fields[4].GetString());
+            fields[0].GetString(), bantime.c_str(), active ? GetHellgroundString(LANG_BANINFO_YES):GetHellgroundString(LANG_BANINFO_NO), fields[3].GetString(), fields[4].GetString());
     }
     while (result->NextRow());
 
@@ -5419,8 +5432,8 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     Field *fields = result->Fetch();
     bool permanent = !fields[6].GetUInt64();
     PSendSysMessage(LANG_BANINFO_IPENTRY,
-        fields[0].GetString(), fields[1].GetString(), permanent ? GetTrinityString(LANG_BANINFO_NEVER):fields[2].GetString(),
-        permanent ? GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetString(), fields[5].GetString());
+        fields[0].GetString(), fields[1].GetString(), permanent ? GetHellgroundString(LANG_BANINFO_NEVER):fields[2].GetString(),
+        permanent ? GetHellgroundString(LANG_BANINFO_INFINITE):secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetString(), fields[5].GetString());
     return true;
 }
 
@@ -5865,18 +5878,8 @@ bool ChatHandler::HandlePLimitCommand(const char *args)
         if (!param)
             return false;
 
-        int l = strlen(param);
-
-        if (strncmp(param,"reset",l) == 0)
-            sWorld.SetPlayerLimit(sConfig.GetIntDefault("PlayerLimit", DEFAULT_PLAYER_LIMIT));
-        else
-        {
-            int val = atoi(param);
-            if (val < 0)
-                sWorld.SetMinimumPermissionMask(-val);
-            else
-                sWorld.SetPlayerLimit(val);
-        }
+        int val = atoi(param);
+        sWorld.SetPlayerLimit(val);
 
         // kick all low security level players
         if (!sWorld.GetMinimumPermissionMask() & PERM_PLAYER)
@@ -6469,7 +6472,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
     {
         ///- Convert Account name to Upper Format
         account_name = szAcc;
-        if (!AccountMgr::normilizeString(account_name))
+        if (!AccountMgr::normalizeString(account_name))
         {
             PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
             SetSentErrorMessage(true);

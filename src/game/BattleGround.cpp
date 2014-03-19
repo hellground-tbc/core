@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Object.h"
@@ -450,7 +450,6 @@ void BattleGround::YellToAll(Creature* creature, const char* text, uint32 langua
     }
 }
 
-
 void BattleGround::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
     for (BattleGroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
@@ -533,9 +532,9 @@ void BattleGround::EndBattleGround(uint32 winner)
     if (winner == ALLIANCE)
     {
         if (isBattleGround())
-            winmsg = GetTrinityString(LANG_BG_A_WINS);
+            winmsg = GetHellgroundString(LANG_BG_A_WINS);
         else
-            winmsg = GetTrinityString(LANG_ARENA_GOLD_WINS);
+            winmsg = GetHellgroundString(LANG_ARENA_GOLD_WINS);
 
         PlaySoundToAll(SOUND_ALLIANCE_WINS);                // alliance wins sound
 
@@ -544,9 +543,9 @@ void BattleGround::EndBattleGround(uint32 winner)
     else if (winner == HORDE)
     {
         if (isBattleGround())
-            winmsg = GetTrinityString(LANG_BG_H_WINS);
+            winmsg = GetHellgroundString(LANG_BG_H_WINS);
         else
-            winmsg = GetTrinityString(LANG_ARENA_GREEN_WINS);
+            winmsg = GetHellgroundString(LANG_ARENA_GREEN_WINS);
 
         PlaySoundToAll(SOUND_HORDE_WINS);                   // horde wins sound
 
@@ -802,7 +801,7 @@ void BattleGround::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         sObjectMgr.GetItemLocaleStrings(markProto->ItemId, loc_idx, &subject);
 
         // text
-        std::string textFormat = plr->GetSession()->GetTrinityString(LANG_BG_MARK_BY_MAIL);
+        std::string textFormat = plr->GetSession()->GetHellgroundString(LANG_BG_MARK_BY_MAIL);
         char textBuf[300];
         snprintf(textBuf,300,textFormat.c_str(),GetName(),GetName());
         uint32 itemTextId = sObjectMgr.CreateItemText(textBuf);
@@ -1065,7 +1064,7 @@ void BattleGround::AnnounceBGStart()
         case BATTLEGROUND_EY:
             ss << "Eye of the Storm "; break;
         case BATTLEGROUND_AB:
-            ss << "Arathi Bathin "; break;
+            ss << "Arathi Basin "; break;
         default: return;
     }
 
@@ -1165,6 +1164,8 @@ void BattleGround::AddPlayer(Player *plr)
         case ARENA_TYPE_5v5:
         sBattleGroundMgr.inArenasCount[2]++; break;
         }
+
+        ChatHandler(plr).SendSysMessage("NOTICE: If you are ready, write: .arena ready. So, when everyone are ready arena preparation can end earlier.");
     }
     else
     {
@@ -1631,6 +1632,22 @@ void BattleGround::SendMessageToAll(char const* text)
     SendPacketToAll(&data);
 }
 
+void BattleGround::SendMessageToTeam(uint32 team, char const* text)
+{
+    WorldPacket data;
+    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    SendPacketToTeam(team, &data);
+}
+
+void BattleGround::SendMessageToTeam(uint32 team, int32 entry)
+{
+    char const* text = GetHellgroundString(entry);
+
+    WorldPacket data;
+    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    SendPacketToTeam(team, &data);
+}
+
 void BattleGround::PrepareMessageToAll(char const *format, ...)
 {
     va_list ap;
@@ -1643,7 +1660,7 @@ void BattleGround::PrepareMessageToAll(char const *format, ...)
 
 void BattleGround::SendMessageToAll(int32 entry)
 {
-    char const* text = GetTrinityString(entry);
+    char const* text = GetHellgroundString(entry);
     WorldPacket data;
     ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, NULL, 0, text, NULL);
     SendPacketToAll(&data);
@@ -1659,10 +1676,10 @@ void BattleGround::EndNow()
 }
 
 // Battleground messages are localized using the dbc lang, they are not client language dependent
-const char *BattleGround::GetTrinityString(int32 entry)
+const char *BattleGround::GetHellgroundString(int32 entry)
 {
     // FIXME: now we have different DBC locales and need localized message for each target client
-    return sObjectMgr.GetTrinityStringForDBCLocale(entry);
+    return sObjectMgr.GetHellgroundStringForDBCLocale(entry);
 }
 
 bool BattleGround::HandlePlayerUnderMap(Player * plr, float z)
@@ -1904,4 +1921,39 @@ void BattleGround::SendObjectiveComplete(uint32 id, uint32 TeamID, float x, floa
                 plr->KilledMonster(id, 0);
         }
     }
+}
+
+bool BattleGround::SetPlayerReady(uint64 playerGUID)
+{
+    if ( !isArena() )
+        return false;
+
+    uint32 readyCount = m_guidsReady[ 0 ].size() + m_guidsReady[ 1 ].size();
+    if ( readyCount == GetMaxPlayers() )
+        return false;
+
+    uint32 team = GetPlayerTeam( playerGUID );
+    if ( team == TEAM_NONE )
+        return false;
+
+    if ( GetStatus() != STATUS_WAIT_JOIN )
+        return false;
+
+    if ( GetStartDelayTime() <= sWorld.getConfig(CONFIG_ARENA_READY_START_TIMER) )
+        return false;
+
+    uint8 idx = team == ALLIANCE ? 0 : 1;
+    m_guidsReady[ idx ].insert( playerGUID );
+
+    readyCount = m_guidsReady[ 0 ].size() + m_guidsReady[ 1 ].size();
+    if ( readyCount == GetMaxPlayers() )
+    {
+        SendMessageToAll( "Everyone are ready. Let's rumble!");
+        SetStartDelayTime(sWorld.getConfig(CONFIG_ARENA_READY_START_TIMER));
+    }
+    else if ( m_guidsReady[ idx ].size() == GetMaxPlayersPerTeam() )
+    {
+        SendMessageToTeam(team == ALLIANCE ? HORDE : ALLIANCE, "Opponents are ready to start earlier, what about you?");
+    }
+    return true;
 }

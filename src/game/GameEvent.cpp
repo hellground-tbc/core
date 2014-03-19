@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "GameEvent.h"
@@ -193,7 +193,7 @@ void GameEventMgr::LoadFromDB()
         mGameEvent.resize(max_event_id+1);
     }
 
-    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,UNIX_TIMESTAMP(start_time),UNIX_TIMESTAMP(end_time),occurence,length,description,world_event FROM game_event");
+    QueryResultAutoPtr result = GameDataDatabase.Query("SELECT entry,UNIX_TIMESTAMP(start_time),UNIX_TIMESTAMP(end_time),occurence,length,description,world_event,flags FROM game_event");
     if (!result)
     {
         mGameEvent.clear();
@@ -229,6 +229,7 @@ void GameEventMgr::LoadFromDB()
         pGameEvent.description  = fields[5].GetCppString();
         pGameEvent.state        = (GameEventState)(fields[6].GetUInt8());
         pGameEvent.nextstart    = 0;
+        pGameEvent.flags        = (GameEventFlag)(fields[7].GetUInt8());
 
         if (pGameEvent.length==0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {
@@ -1451,6 +1452,15 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
         {
             if (!hasCreatureQuestActiveEventExcept(itr->second,event_id))
             {
+                if (mGameEvent[event_id].flags & GAMEEVENT_FLAG_REMOVE_QUESTS_AT_END)
+                {
+                    //remove quest from both online and offline players
+                    RealmDataDatabase.PExecute("DELETE FROM character_queststatus WHERE quest = %u",itr->second);
+                    HashMapHolder<Player>::MapType& m = sObjectAccessor.GetPlayers();
+                    for (HashMapHolder<Player>::MapType::iterator pitr = m.begin(); pitr != m.end(); ++pitr)
+                        if (pitr->second->GetQuestStatus(itr->second) != QUEST_STATUS_NONE)
+                            pitr->second->SetQuestStatus(itr->second,QUEST_STATUS_NONE);
+                }
                 // Remove the pair(id,quest) from the multimap
                 QuestRelations::iterator qitr = CreatureQuestMap.find(itr->first);
                 if (qitr == CreatureQuestMap.end())
@@ -1476,6 +1486,15 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
         {
             if (!hasGameObjectQuestActiveEventExcept(itr->second,event_id))
             {
+                if (mGameEvent[event_id].flags & GAMEEVENT_FLAG_REMOVE_QUESTS_AT_END)
+                {
+                    //remove quest from both online and offline players
+                    RealmDataDatabase.PExecute("DELETE FROM character_queststatus WHERE quest = %u",itr->second);
+                    HashMapHolder<Player>::MapType& m = sObjectAccessor.GetPlayers();
+                    for (HashMapHolder<Player>::MapType::iterator pitr = m.begin(); pitr != m.end(); ++pitr)
+                        if (pitr->second->GetQuestStatus(itr->second) != QUEST_STATUS_NONE)
+                            pitr->second->SetQuestStatus(itr->second,QUEST_STATUS_NONE);
+                }
                 // Remove the pair(id,quest) from the multimap
                 QuestRelations::iterator qitr = GameObjectQuestMap.find(itr->first);
                 if (qitr == GameObjectQuestMap.end())

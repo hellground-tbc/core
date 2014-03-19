@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "ScriptMgr.h"
@@ -22,6 +23,7 @@
 #include "ObjectMgr.h"
 #include "WaypointMgr.h"
 #include "World.h"
+#include "luaengine/HookMgr.h"
 
 #include "../shared/Config/Config.h"
 
@@ -324,7 +326,7 @@ void ScriptMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)
         {
             if (itrM->second.dataint)
             {
-                if (!sObjectMgr.GetTrinityStringLocale (itrM->second.dataint))
+                if (!sObjectMgr.GetHellgroundStringLocale (itrM->second.dataint))
                     sLog.outLog(LOG_DB_ERR, "Table `db_script_string` has not existed string id  %u", itrM->first);
 
                 if (ids.count(itrM->second.dataint))
@@ -600,7 +602,7 @@ void ScriptMgr::LoadDbScriptStrings()
     std::set<int32> ids;
 
     for (int32 i = MIN_DB_SCRIPT_STRING_ID; i < MAX_DB_SCRIPT_STRING_ID; ++i)
-        if (sObjectMgr.GetTrinityStringLocale(i))
+        if (sObjectMgr.GetHellgroundStringLocale(i))
             ids.insert(i);
 
     CheckScripts(sQuestEndScripts,ids);
@@ -732,6 +734,10 @@ void ScriptMgr::LoadCompletedCinematicScripts()
 
 CreatureAI* ScriptMgr::GetCreatureAI(Creature* pCreature)
 {
+    // used by eluna
+    if (CreatureAI* luaAI = sHookMgr->GetAI(pCreature))
+        return luaAI;
+
     if (!m_pGetCreatureAI)
         return NULL;
 
@@ -748,11 +754,26 @@ InstanceData* ScriptMgr::CreateInstanceData(Map* pMap)
 
 bool ScriptMgr::OnGossipHello(Player* pPlayer, Creature* pCreature)
 {
+    // used by eluna
+    if (sHookMgr->OnGossipHello(pPlayer, pCreature))
+        return true;
+
     return m_pOnGossipHello != NULL && m_pOnGossipHello(pPlayer, pCreature);
 }
 
 bool ScriptMgr::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code)
 {
+    if (code)
+    {
+        // used by eluna
+        if (sHookMgr->OnGossipSelectCode(pPlayer, pCreature, sender, action, code))
+            return true;
+    }
+    else
+        // used by eluna
+        if (sHookMgr->OnGossipSelect(pPlayer, pCreature, sender, action))
+            return true;
+
     if (code)
         return m_pOnGossipSelectWithCode != NULL && m_pOnGossipSelectWithCode(pPlayer, pCreature, sender, action, code);
     else
@@ -762,6 +783,17 @@ bool ScriptMgr::OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 send
 bool ScriptMgr::OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action, const char* code)
 {
     if (code)
+    {
+        // used by eluna
+        if (sHookMgr->OnGossipSelectCode(pPlayer, pGameObject, sender, action, code))
+            return true;
+    }
+    else
+        // used by eluna
+        if (sHookMgr->OnGossipSelect(pPlayer, pGameObject, sender, action))
+            return true;
+
+    if (code)
         return m_pOnGOGossipSelectWithCode != NULL && m_pOnGOGossipSelectWithCode(pPlayer, pGameObject, sender, action, code);
     else
         return m_pOnGOGossipSelect != NULL && m_pOnGOGossipSelect(pPlayer, pGameObject, sender, action);
@@ -769,57 +801,96 @@ bool ScriptMgr::OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 
 
 bool ScriptMgr::OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
+    // used by eluna
+    if (sHookMgr->OnQuestAccept(pPlayer, pCreature, pQuest))
+        return true;
+
     return m_pOnQuestAccept != NULL && m_pOnQuestAccept(pPlayer, pCreature, pQuest);
 }
 
 bool ScriptMgr::OnQuestAccept(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest)
 {
+    if (sHookMgr->OnQuestAccept(pPlayer, pGameObject, pQuest))
+        return true;
+
     return m_pOnGOQuestAccept != NULL && m_pOnGOQuestAccept(pPlayer, pGameObject, pQuest);
 }
 
 bool ScriptMgr::OnQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest)
 {
+    // used by eluna
+    if(sHookMgr->OnQuestAccept(pPlayer, pItem, pQuest))
+        return true;
+
     return m_pOnItemQuestAccept != NULL && m_pOnItemQuestAccept(pPlayer, pItem, pQuest);
 }
 
 bool ScriptMgr::OnQuestRewarded(Player* pPlayer, Creature* pCreature, Quest const* pQuest)
 {
+    // used by eluna
+    if (sHookMgr->OnQuestReward(pPlayer, pCreature, pQuest))
+        return true;
+
     return m_pOnQuestRewarded != NULL && m_pOnQuestRewarded(pPlayer, pCreature, pQuest);
 }
 
 bool ScriptMgr::OnQuestRewarded(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest)
 {
+    // used by eluna
+    if (sHookMgr->OnQuestReward(pPlayer, pGameObject, pQuest))
+        return true;
+
     return m_pOnGOQuestRewarded != NULL && m_pOnGOQuestRewarded(pPlayer, pGameObject, pQuest);
 }
 
 uint32 ScriptMgr::GetDialogStatus(Player* pPlayer, Creature* pCreature)
 {
+    // used by eluna
+    if (uint32 dialogId = sHookMgr->GetDialogStatus(pPlayer, pCreature))
+        return dialogId;
+
     if (!m_pGetNPCDialogStatus)
-        return 100;
+        return DIALOG_STATUS_SCRIPTED_NO_STATUS;
 
     return m_pGetNPCDialogStatus(pPlayer, pCreature);
 }
 
 uint32 ScriptMgr::GetDialogStatus(Player* pPlayer, GameObject* pGameObject)
 {
+    // used by eluna
+    if (uint32 dialogId = sHookMgr->GetDialogStatus(pPlayer, pGameObject))
+        return dialogId;
+
     if (!m_pGetGODialogStatus)
-        return 100;
+        return DIALOG_STATUS_SCRIPTED_NO_STATUS;
 
     return m_pGetGODialogStatus(pPlayer, pGameObject);
 }
 
 bool ScriptMgr::OnGameObjectUse(Player* pPlayer, GameObject* pGameObject)
 {
+    // used by eluna
+    if (sHookMgr->OnGameObjectUse(pPlayer, pGameObject))
+        return true;
+
     return m_pOnGOUse != NULL && m_pOnGOUse(pPlayer, pGameObject);
 }
 
 bool ScriptMgr::OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets)
 {
+    // used by eluna
+    if(sHookMgr->OnUse(pPlayer, pItem, targets))
+        return true;
+
     return m_pOnItemUse != NULL && m_pOnItemUse(pPlayer, pItem, targets);
 }
 
 bool ScriptMgr::OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry)
 {
+    // used by eluna
+    if(sHookMgr->OnAreaTrigger(pPlayer, atEntry))
+        return true;
+
     return m_pOnAreaTrigger != NULL && m_pOnAreaTrigger(pPlayer, atEntry);
 }
 
@@ -835,16 +906,28 @@ bool ScriptMgr::OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget,
 
 bool ScriptMgr::OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, Creature* pTarget)
 {
+    // used by eluna
+    if(sHookMgr->OnDummyEffect(pCaster, spellId, effIndex, pTarget))
+        return true;
+
     return m_pOnEffectDummyCreature != NULL && m_pOnEffectDummyCreature(pCaster, spellId, effIndex, pTarget);
 }
 
 bool ScriptMgr::OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, GameObject* pTarget)
 {
+    // used by eluna
+    if(sHookMgr->OnDummyEffect(pCaster, spellId, effIndex, pTarget))
+        return true;
+
     return m_pOnEffectDummyGO != NULL && m_pOnEffectDummyGO(pCaster, spellId, effIndex, pTarget);
 }
 
 bool ScriptMgr::OnEffectDummy(Unit* pCaster, uint32 spellId, uint32 effIndex, Item* pTarget)
 {
+    // used by eluna
+    if(sHookMgr->OnDummyEffect(pCaster, spellId, effIndex, pTarget))
+        return true;
+
     return m_pOnEffectDummyItem != NULL && m_pOnEffectDummyItem(pCaster, spellId, effIndex, pTarget);
 }
 

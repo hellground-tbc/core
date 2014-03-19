@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -42,6 +42,8 @@
 #include "Chat.h"
 #include "SystemConfig.h"
 #include "GameEvent.h"
+#include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 class GameEvent;
 
@@ -88,6 +90,7 @@ bool LoginQueryHolder::Initialize()
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADBGCOORD,         "SELECT bgid, bgteam, bgmap, bgx, bgy, bgz, bgo FROM character_bgcoord WHERE guid = '%u'", GUID_LOPART(m_guid));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILS,           "SELECT id,messageType,sender,receiver,subject,itemTextId,expire_time,deliver_time,money,cod,checked,stationery,mailTemplateId,has_items FROM mail WHERE receiver = '%u' ORDER BY id DESC", GUID_LOPART(m_guid));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILEDITEMS,     "SELECT data, mail_id, item_guid, item_template FROM mail_items JOIN item_instance ON item_guid = guid WHERE receiver = '%u'", GUID_LOPART(m_guid));
+    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADDAILYARENA,      "SELECT dailyarenawins FROM character_stats_ro WHERE guid = '%u'", GUID_LOPART(m_guid));
 
     return res;
 }
@@ -371,6 +374,8 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     if ((have_same_race && skipCinematics == 1) || skipCinematics == 2)
         pNewChar->setCinematic(true);                       // not show intro
 
+    pNewChar->SetAtLoginFlag(AT_LOGIN_FIRST);               // First login
+
     // Player created, save it now
     pNewChar->SaveToDB();
     charcount += 1;
@@ -391,6 +396,9 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
     std::string IP_str = GetRemoteAddress();
     sLog.outDetail("Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
     sLog.outLog(LOG_CHAR, "Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
+
+    // used by eluna
+    sHookMgr->OnCreate(pNewChar);
 }
 
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
@@ -408,7 +416,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
     std::string name;
 
     // is guild leader
-    if (sObjectMgr.GetGuildByLeader(guid))
+    if (sGuildMgr.GetGuildByLeader(guid))
     {
         WorldPacket data(SMSG_CHAR_DELETE, 1);
         data << (uint8)CHAR_DELETE_FAILED_GUILD_LEADER;
@@ -446,6 +454,9 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
     WorldPacket data(SMSG_CHAR_DELETE, 1);
     data << (uint8)CHAR_DELETE_SUCCESS;
     SendPacket(&data);
+
+    // used by eluna
+    sHookMgr->OnDelete(GUID_LOPART(guid));
 }
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
@@ -493,7 +504,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         m_playerLoading = false;
         return;
     }
-
+    pCurrChar->GetCamera().Init();
     pCurrChar->GetMotionMaster()->Initialize();
     SetPlayer(pCurrChar);
 
@@ -577,7 +588,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     if (pCurrChar->GetGuildId() != 0)
     {
-        Guild* guild = sObjectMgr.GetGuildById(pCurrChar->GetGuildId());
+        Guild* guild = sGuildMgr.GetGuildById(pCurrChar->GetGuildId());
         if (guild)
         {
             data.Initialize(SMSG_GUILD_EVENT, (2+guild->GetMOTD().size()+1));
@@ -626,6 +637,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         }
     }
 
+    sObjectAccessor.AddPlayer(pCurrChar);
+
     if (!pCurrChar->GetMap()->Add(pCurrChar))
     {
         // normal delayed teleport protection not applied (and this correct) for this case (Player object just created)
@@ -636,7 +649,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             pCurrChar->TeleportToHomebind();
     }
 
-    sObjectAccessor.AddPlayer(pCurrChar);
     //sLog.outDebug("Player %s added to Map.",pCurrChar->GetName());
     pCurrChar->GetSocial()->SendSocialList();
 
@@ -746,6 +758,13 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         SendNotification(LANG_RESET_SPELLS);
     }
 
+    // used by eluna
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST))
+        sHookMgr->OnFirstLogin(pCurrChar);
+
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST))
+        pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
+
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
     {
         pCurrChar->resetTalents(true);
@@ -756,7 +775,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if (sWorld.IsShutdowning())
         sWorld.ShutdownMsg(true,pCurrChar);
 
-    if (sWorld.getConfig(CONFIG_ALL_TAXI_PATHS))
+    if (sWorld.getConfig(CONFIG_START_ALL_TAXI_PATHS))
         pCurrChar->SetTaxiCheater(true);
 
     if (pCurrChar->isGameMaster())
@@ -771,6 +790,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     m_playerLoading = false;
 
     sWorld.ModifyLoggedInCharsCount(_player->GetTeamId(), 1);
+
+    // used by eluna
+    sHookMgr->OnLogin(pCurrChar);
 
     delete holder;
 }

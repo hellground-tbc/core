@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "AuctionHouseMgr.h"
@@ -69,7 +70,7 @@ uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32
     if (deposit < min_deposit)
         deposit = min_deposit;
 
-    return uint32(deposit * sWorld.getRate(RATE_AUCTION_DEPOSIT));
+    return uint32(deposit * sWorld.getConfig(RATE_AUCTION_DEPOSIT));
 }
 // does not clear ram
 void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
@@ -97,12 +98,12 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry *auction)
         bidderAccId = sObjectMgr.GetPlayerAccountIdByGUID(bidderGuid);
         bidderPermissions = bidderAccId ? AccountMgr::GetPermissions(bidderAccId) : PERM_PLAYER;
         if (!sObjectMgr.GetPlayerNameByGUID(bidderGuid, bidderName))
-            bidderName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+            bidderName = sObjectMgr.GetHellgroundStringForDBCLocale(LANG_UNKNOWN);
     }
 
     std::string ownerName;
     if (!sObjectMgr.GetPlayerNameByGUID(ownerGuid, ownerName))
-        ownerName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+        ownerName = sObjectMgr.GetHellgroundStringForDBCLocale(LANG_UNKNOWN);
 
     uint32 ownerAccId = sObjectMgr.GetPlayerAccountIdByGUID(ownerGuid);
 
@@ -383,7 +384,7 @@ void AuctionHouseMgr::LoadAuctions()
             {
                 std::string plName;
                 if (!sObjectMgr.GetPlayerNameByGUID(ObjectGuid(HIGHGUID_PLAYER, auction->owner), plName))
-                    plName = sObjectMgr.GetTrinityStringForDBCLocale(LANG_UNKNOWN);
+                    plName = sObjectMgr.GetHellgroundStringForDBCLocale(LANG_UNKNOWN);
 
                 Utf8toWStr(plName, plWName);
             }
@@ -894,7 +895,7 @@ void WorldSession::BuildListAuctionItems(AuctionHouseObject::AuctionEntryMap con
 
 AuctionEntry* AuctionHouseObject::AddAuction(AuctionHouseEntry const* auctionHouseEntry, Item* it, uint32 etime, uint32 bid, uint32 buyout, uint32 deposit, Player * pl /*= NULL*/)
 {
-    uint32 auction_time = uint32(etime * sWorld.getRate(RATE_AUCTION_TIME));
+    uint32 auction_time = uint32(etime * sWorld.getConfig(RATE_AUCTION_TIME));
 
     AuctionEntry *AH = new AuctionEntry;
     AH->Id = sObjectMgr.GenerateAuctionID();
@@ -974,7 +975,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
 
 uint32 AuctionEntry::GetAuctionCut() const
 {
-    return uint32(auctionHouseEntry->cutPercent * bid * sWorld.getRate(RATE_AUCTION_CUT) / 100.f);
+    return uint32(auctionHouseEntry->cutPercent * bid * sWorld.getConfig(RATE_AUCTION_CUT) / 100.f);
 }
 
 /// the sum of outbid is (1% from current bid)*5, if bid is very small, it is 1c

@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
     {
         for (SkillDiscoveryList::iterator item_iter = tab->second.begin(); item_iter != tab->second.end(); ++item_iter)
         {
-            if (roll_chance_f(item_iter->chance * sWorld.getRate(RATE_SKILL_DISCOVERY))
+            if (roll_chance_f(item_iter->chance * sWorld.getConfig(RATE_SKILL_DISCOVERY))
                 && !player->HasSpell(item_iter->spellId))
                 return item_iter->spellId;
         }
@@ -152,7 +152,7 @@ uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
     {
         for (SkillDiscoveryList::iterator item_iter = tab->second.begin(); item_iter != tab->second.end(); ++item_iter)
         {
-            if (roll_chance_f(item_iter->chance * sWorld.getRate(RATE_SKILL_DISCOVERY))
+            if (roll_chance_f(item_iter->chance * sWorld.getConfig(RATE_SKILL_DISCOVERY))
                 && !player->HasSpell(item_iter->spellId))
                 return item_iter->spellId;
         }

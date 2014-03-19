@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "MotionMaster.h"
@@ -123,12 +124,12 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle)
         Mutate(new FollowMovementGenerator<Creature>(*target,dist,angle), UNIT_ACTION_DOWAYPOINTS);
 }
 
-void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, UnitActionId actionId /*= UNIT_ACTION_ASSISTANCE*/)
+void MotionMaster::MovePoint(uint32 id, float x, float y, float z, bool generatePath, bool callStop, UnitActionId actionId /*= UNIT_ACTION_ASSISTANCE*/)
 {
     if (m_owner->GetTypeId() == TYPEID_PLAYER)
-        Mutate(new PointMovementGenerator<Player>(id,x,y,z, generatePath), actionId);
+        Mutate(new PointMovementGenerator<Player>(id,x,y,z, generatePath, callStop), actionId);
     else
-        Mutate(new PointMovementGenerator<Creature>(id,x,y,z, generatePath), actionId);
+        Mutate(new PointMovementGenerator<Creature>(id,x,y,z, generatePath, callStop), actionId);
 }
 
 void MotionMaster::MoveSeekAssistance(float x, float y, float z)

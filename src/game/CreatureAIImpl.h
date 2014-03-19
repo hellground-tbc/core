@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,15 +10,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-#ifndef CREATUREAIIMPL_H
-#define CREATUREAIIMPL_H
+
+#ifndef HELLGROUND_CREATUREAIIMPL_H
+#define HELLGROUND_CREATUREAIIMPL_H
 
 #include "Common.h"
 #include "Platform/Define.h"
@@ -472,9 +473,9 @@ enum AICondition
 
 #define AI_DEFAULT_COOLDOWN 5000
 
-struct AISpellInfoType
+struct AISpellEntryType
 {
-    AISpellInfoType() : target(AITARGET_SELF), condition(AICOND_COMBAT)
+    AISpellEntryType() : target(AITARGET_SELF), condition(AICOND_COMBAT)
         , cooldown(AI_DEFAULT_COOLDOWN), realCooldown(0), maxRange(0.0f){}
     AITarget target;
     AICondition condition;
@@ -483,7 +484,7 @@ struct AISpellInfoType
     float maxRange;
 };
 
-HELLGROUND_IMPORT_EXPORT AISpellInfoType * GetAISpellInfo(uint32 i);
+HELLGROUND_IMPORT_EXPORT AISpellEntryType * GetAISpellEntry(uint32 i);
 
 
 inline void CreatureAI::SetGazeOn(Unit *target)
@@ -627,19 +628,19 @@ inline void UnitAI::DoCastAOE(uint32 spellId, bool triggered)
     me->CastSpell((Unit*)NULL, spellId, triggered);
 }
 
-inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime, TempSummonType uiType)
+inline Creature *CreatureAI::DoSummon(uint32 uiEntry, const WorldLocation &pos, uint32 uiDespawntime, TemporarySummonType uiType)
 {
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
-inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
+inline Creature *CreatureAI::DoSummon(uint32 uiEntry, WorldObject* obj, float fRadius, uint32 uiDespawntime, TemporarySummonType uiType)
 {
     WorldLocation pos;
     obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);
     return me->SummonCreature(uiEntry, pos.coord_x, pos.coord_y, pos.coord_z, pos.orientation, uiType, uiDespawntime);
 }
 
-inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TempSummonType uiType)
+inline Creature *CreatureAI::DoSummonFlyer(uint32 uiEntry, WorldObject *obj, float _fZ, float fRadius, uint32 uiDespawntime, TemporarySummonType uiType)
 {
     WorldLocation pos;
     obj->GetNearPoint(pos.coord_x,pos.coord_y,pos.coord_z,obj->GetObjectSize(), fRadius);

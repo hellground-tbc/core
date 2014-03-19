@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /** \file
@@ -46,6 +46,8 @@
 #include "WardenWin.h"
 #include "WardenMac.h"
 #include "WardenChat.h"
+#include "luaengine/HookMgr.h"
+#include "GuildMgr.h"
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
@@ -94,7 +96,7 @@ LookingForGroup_auto_join(false), LookingForGroup_auto_add(false), m_muteTime(mu
 m_trollmuteTime(trollmute_time), m_trollmuteReason(trollmute_reason), _player(NULL), m_Socket(sock),
 m_permissions(permissions), _accountId(id), m_expansion(expansion), m_opcodesDisabled(opcDisabled),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
-_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0),
+_logoutTime(0), m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerSave(false), m_playerRecentlyLogout(false), m_latency(0), m_clientTimeDelay(0),
 m_accFlags(accFlags), m_Warden(NULL)
 {
     _mailSendTimer.Reset(5*IN_MILISECONDS);
@@ -280,6 +282,9 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
     if (!packet)
         return;
 
+    //if (!sHookMgr->OnPacketReceive(this, *packet))
+    //    return;
+
     if (packet->GetOpcode() >= NUM_MSG_TYPES)
     {
         sLog.outLog(LOG_DEFAULT, "ERROR: SESSION: received non-existed opcode %s (0x%.4X)",
@@ -430,7 +435,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             logverbose = true;
 
     if (verbose == 2) // log if session update is logged as slow
-        if (overtimediff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+        if (overtimediff > sWorld.getConfig(CONFIG_SESSION_UPDATE_MIN_LOG_DIFF))
             logverbose = true;
 
     if (logverbose)
@@ -492,6 +497,9 @@ void WorldSession::LogoutPlayer(bool Save)
 
         if (uint64 lguid = GetPlayer()->GetLootGUID())
             DoLootRelease(lguid);
+
+        ///- used by eluna
+        sHookMgr->OnLogout(_player);
 
         ///- If the player just died before logging out, make him appear as a ghost
         //FIXME: logout must be delayed in case lost connection with client in time of combat
@@ -576,7 +584,7 @@ void WorldSession::LogoutPlayer(bool Save)
         }
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
-        Guild *guild = sObjectMgr.GetGuildById(_player->GetGuildId());
+        Guild *guild = sGuildMgr.GetGuildById(_player->GetGuildId());
         if (guild)
         {
             guild->LoadPlayerStatsByGuid(_player->GetGUID());
@@ -707,7 +715,7 @@ void WorldSession::SendNotification(const char *format,...)
 
 void WorldSession::SendNotification(int32 string_id,...)
 {
-    char const* format = GetTrinityString(string_id);
+    char const* format = GetHellgroundString(string_id);
     if (format)
     {
         va_list ap;
@@ -723,9 +731,9 @@ void WorldSession::SendNotification(int32 string_id,...)
     }
 }
 
-const char * WorldSession::GetTrinityString(int32 entry) const
+const char * WorldSession::GetHellgroundString(int32 entry) const
 {
-    return sObjectMgr.GetTrinityString(entry,GetSessionDbLocaleIndex());
+    return sObjectMgr.GetHellgroundString(entry,GetSessionDbLocaleIndex());
 }
 
 void WorldSession::Handle_NULL(WorldPacket& recvPacket)
@@ -809,7 +817,7 @@ uint32 WorldSession::RecordSessionTimeDiff(const char *text, ...)
     uint32 thisTime = WorldTimer::getMSTime();
     uint32 diff = WorldTimer::getMSTimeDiff(m_currentSessionTime, thisTime);
 
-    if (diff > sWorld.getConfig(CONFIG_MIN_LOG_SESSION_UPDATE))
+    if (diff > sWorld.getConfig(CONFIG_SESSION_UPDATE_MIN_LOG_DIFF))
     {
         va_list ap;
         char str [256];

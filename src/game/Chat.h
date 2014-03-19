@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,16 +10,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITYCORE_CHAT_H
-#define TRINITYCORE_CHAT_H
+#ifndef HELLGROUND_CHAT_H
+#define HELLGROUND_CHAT_H
 
 #include "SharedDefines.h"
 
@@ -35,6 +35,7 @@ class ChatCommand
     public:
         const char *       Name;
         uint64             RequiredPermissions;                   // function pointer required correct align (use uint32)
+        uint64             SelfPermissions;
         bool               AllowConsole;
         bool (ChatHandler::*Handler)(const char* args);
         std::string        Help;
@@ -63,7 +64,7 @@ class ChatHandler
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
         static std::string GetNameLink(const std::string & name);
 
-        virtual const char *GetTrinityString(int32 entry) const;
+        virtual const char *GetHellgroundString(int32 entry) const;
 
         virtual void SendSysMessage( const char *str);
         void SendSysMessage(         int32     entry);
@@ -82,7 +83,7 @@ class ChatHandler
 
         bool hasStringAbbr(const char* name, const char* part);
 
-        virtual bool isAvailable(ChatCommand const& cmd) const;
+        virtual bool isAvailable(ChatCommand const& cmd, bool self) const;
         virtual bool needReportToTarget(Player* chr) const;
 
         void SendGlobalSysMessage(const char *str);
@@ -91,7 +92,7 @@ class ChatHandler
 
         bool SendGMMail(const char* pName, const char* msgSubject, const char* msgText);
 
-        bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcommand);
+        bool ExecuteCommandInTable(ChatCommand *table, const char* text, std::string& fullcommand);
         bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
         bool ShowHelpForSubCommands(ChatCommand *table, char const* cmd, char const* subcmd);
 
@@ -110,6 +111,8 @@ class ChatHandler
         bool HandleAccountXPToggleCommand(const char* args);
         bool HandleAccountBattleGroundAnnCommand(const char* args);
         bool HandleAccountAnnounceBroadcastCommand(const char* args);
+
+        bool HandleArenaReadyCommand(const char* args);
 
         bool HandleBanAccountCommand(const char* args);
         bool HandleBanCharacterCommand(const char* args);
@@ -317,6 +320,7 @@ class ChatHandler
         bool HandleQuestRemove(const char * args);
         bool HandleQuestComplete(const char * args);
 
+        bool HandleReloadElunaCommand(const char* args);
         bool HandleReloadCommand(const char* args);
         bool HandleReloadAllCommand(const char* args);
         bool HandleReloadAllAreaCommand(const char* args);
@@ -371,7 +375,7 @@ class ChatHandler
         bool HandleReloadReputationRewardRateCommand(const char* args);
         bool HandleReloadReputationSpilloverTemplateCommand(const char* args);
         bool HandleReloadSkillDiscoveryTemplateCommand(const char* args);
-        bool HandleReloadSkillExtraItemTemplateCommand(const char* args);
+        bool HandleReloadSkillExtraItemPrototypeCommand(const char* args);
         bool HandleReloadSkillFishingBaseLevelCommand(const char* args);
         bool HandleReloadSpellAffectCommand(const char* args);
         bool HandleReloadSpellRequiredCommand(const char* args);
@@ -420,7 +424,6 @@ class ChatHandler
         bool HandleServerMuteCommand(const char* args);
         bool HandleServerRestartCommand(const char* args);
         bool HandleServerSetMotdCommand(const char* args);
-        bool HandleServerSetLogLevelCommand(const char* args);
         bool HandleServerSetDiffTimeCommand(const char* args);
         bool HandleServerShutDownCommand(const char* args);
         bool HandleServerRollShutDownCommand(const char* args);
@@ -625,8 +628,8 @@ class CliHandler : public ChatHandler
         explicit CliHandler(Print* zprint) : m_print(zprint) {}
 
         // overwrite functions
-        const char *GetTrinityString(int32 entry) const;
-        bool isAvailable(ChatCommand const& cmd) const;
+        const char *GetHellgroundString(int32 entry) const;
+        bool isAvailable(ChatCommand const& cmd, bool) const;
         void SendSysMessage(const char *str);
         char const* GetName() const;
         bool needReportToTarget(Player* chr) const;

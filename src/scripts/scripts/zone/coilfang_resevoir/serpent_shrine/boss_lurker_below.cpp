@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -46,7 +49,7 @@ enum lurkerSpells
     SPELL_SPOUT_BREATH = 37431,
     SPELL_SPOUT_EFFECT = 37433,
     SPELL_GEYSER       = 37478,
-    SPELL_WHIRL        = 37363,
+    SPELL_WHIRL        = 37660,
     SPELL_WATERBOLT    = 37138,
     SPELL_SUBMERGE     = 37550,
 };

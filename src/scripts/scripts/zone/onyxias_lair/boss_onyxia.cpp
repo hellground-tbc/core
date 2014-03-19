@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -6,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /* ScriptData
@@ -109,14 +112,14 @@ struct boss_onyxiaAI : public ScriptedAI
     {
         if (m_creature->IsLevitating())
         {
-            m_creature->SendMeleeAttackStart(m_creature->getVictim());
+            m_creature->SendMeleeAttackStart(m_creature->getVictimGUID());
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
             m_creature->SetLevitate(false);
             DoStartMovement(m_creature->getVictim());
         }
         else
         {
-            m_creature->SendMeleeAttackStop(m_creature->getVictim());
+            m_creature->SendMeleeAttackStop(m_creature->getVictimGUID());
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             m_creature->SetLevitate(true);
         }
@@ -132,7 +135,7 @@ struct boss_onyxiaAI : public ScriptedAI
             if (!m_nextWay || m_nextWay == 6)
                 return;
 
-            m_creature->SendMeleeAttackStop(m_creature->getVictim());
+            m_creature->SendMeleeAttackStop(m_creature->getVictimGUID());
             DoCast(m_creature->getVictim(), SPELL_FIREBALL);
             m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(), 100);
         }
@@ -270,7 +273,7 @@ struct boss_onyxiaAI : public ScriptedAI
                 m_nextWay = i + 1;
                 m_nextMoveTimer = 2500;
                 //DoTextEmote("Onyxia takes in a deep breath...", NULL, true);//DoScriptText(EMOTE_BREATH, m_creature);
-                m_creature->SendMeleeAttackStop(m_creature->getVictim());
+                m_creature->SendMeleeAttackStop(m_creature->getVictimGUID());
                 DoCast(m_creature, SPELL_DEEPBREATH);
                 m_creature->SetSpeed(MOVE_RUN, 2.5f);
                 break;

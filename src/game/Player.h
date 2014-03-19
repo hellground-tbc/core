@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,16 +10,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef _PLAYER_H
-#define _PLAYER_H
+#ifndef HELLGROUND_PLAYER_H
+#define HELLGROUND_PLAYER_H
 
 #include "Common.h"
 
@@ -113,6 +113,8 @@ struct SpellModifier
 
 typedef UNORDERED_MAP<uint16, PlayerSpell> PlayerSpellMap;
 typedef std::list<SpellModifier*> SpellModList;
+
+typedef UNORDERED_MAP<uint64, std::pair<uint32, uint64>> ConsecutiveKillsMap;
 
 struct SpellCooldown
 {
@@ -577,7 +579,8 @@ enum AtLoginFlags
     AT_LOGIN_RENAME         = 0x1,
     AT_LOGIN_RESET_SPELLS   = 0x2,
     AT_LOGIN_RESET_TALENTS  = 0x4,
-    AT_LOGIN_DISPLAY_CHANGE = 0x8
+    AT_LOGIN_DISPLAY_CHANGE = 0x8,
+    AT_LOGIN_FIRST          = 0x20,
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -841,6 +844,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADBGCOORD              = 17,
     PLAYER_LOGIN_QUERY_LOADMAILS                = 18,
     PLAYER_LOGIN_QUERY_LOADMAILEDITEMS          = 19,
+    PLAYER_LOGIN_QUERY_LOADDAILYARENA           = 20,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -861,10 +865,11 @@ struct InstancePlayerBind
 {
     InstanceSave *save;
     bool perm;
+
     /* permanent PlayerInstanceBinds are created in Raid/Heroic instances for players
        that aren't already permanently bound when they are inside when a boss is killed
        or when they enter an instance that the group leader is permanently bound to. */
-    InstancePlayerBind() : save(NULL), perm(false) {}
+    InstancePlayerBind() : save(nullptr), perm(false) {}
 };
 
 struct AccessRequirement
@@ -1083,7 +1088,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void UpdateInnerTime (int time) { time_inn_enter = time; };
 
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
-        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
+        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false, bool isDying = false);
         void RemoveMiniPet();
         Pet* GetMiniPet();
         void SetMiniPet(Pet* pet) { m_miniPet = pet->GetGUID(); }
@@ -1385,17 +1390,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
 
         uint32 GetMoney() { return GetUInt32Value (PLAYER_FIELD_COINAGE); }
-        void ModifyMoney(int32 d)
-        {
-            if (d < 0)
-                SetMoney (GetMoney() > uint32(-d) ? GetMoney() + d : 0);
-            else
-                SetMoney (GetMoney() < uint32(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
-
-            // "At Gold Limit"
-            if (GetMoney() >= MAX_MONEY_AMOUNT)
-                SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD,NULL,NULL);
-        }
+        void ModifyMoney(int32 d);
         void SetMoney(uint32 value)
         {
             SetUInt32Value (PLAYER_FIELD_COINAGE, value);
@@ -1505,7 +1500,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void learnQuestRewardedSpells(Quest const* quest);
 
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
-        void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1,points); }
+        void SetFreeTalentPoints(uint32 points);
         bool resetTalents(bool no_cost = false);
         uint32 resetTalentsCost() const;
         void UpdateFreeTalentPoints(bool resetIfNeed = true);
@@ -1867,6 +1862,7 @@ class HELLGROUND_EXPORT Player : public Unit
         void ModifyHonorPoints(int32 value);
         void ModifyArenaPoints(int32 value);
         uint32 GetMaxPersonalArenaRatingRequirement();
+        uint16 m_DailyArenasWon;
 
         //End of PvP System
 
@@ -2179,6 +2175,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
 
         bool HasAtLoginFlag(AtLoginFlags f) const { return m_atLoginFlags & f; }
+        void RemoveAtLoginFlag(AtLoginFlags f) { m_atLoginFlags &= ~f; }
         void SetAtLoginFlag(AtLoginFlags f) { m_atLoginFlags |= f; }
 
         LookingForGroup m_lookingForGroup;
@@ -2437,7 +2434,7 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_Tutorials[8];
         bool m_TutorialsChanged;
 
-        bool m_DailyQuestChanged;
+        bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
         uint32 m_drunkTimer;
@@ -2534,6 +2531,13 @@ class HELLGROUND_EXPORT Player : public Unit
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
+        
+        void AddConsecutiveKill(uint64 guid);
+        uint32 GetConsecutiveKillsCount(uint64 guid);
+
+        void UpdateConsecutiveKills();
+
+        ConsecutiveKillsMap m_consecutiveKills;
 
         // Current teleport data
         WorldLocation m_teleport_dest;

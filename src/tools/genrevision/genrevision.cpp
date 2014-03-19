@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include <fstream>
@@ -22,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#pragma warning(disable:4996) //sprintf is unsave warnings
+#pragma warning(disable:4996) //sprintf is unsafe warnings
 
 struct RawData
 {
@@ -319,15 +320,15 @@ bool extractDataFromHG(std::string path, bool use_url, RawData& data)
 {
     bool res = false;
 
-    res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
+    res = extractDataFromHG(path+".hg/cache/branchheads-base",path,use_url,data);
     if (!res)
-        res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
-    if (!res)
-        res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
+        res = extractDataFromHG(path+"_hg/cache/branchheads-base",path,use_url,data);
     if (!res)
         res = extractDataFromHG(path+".hg/cache/branchheads",path,use_url,data);
     if (!res)
         res = extractDataFromHG(path+"_hg/cache/branchheads",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/branchheads.cache",path,use_url,data);
     if (!res)
         res = extractDataFromHG(path+"_hg/branchheads.cache",path,use_url,data);
     if (!res)

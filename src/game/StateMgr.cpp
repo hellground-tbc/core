@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009-2012 /dev/rsa for MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 /* StateMgr based on idea and part of code from SilverIce (http:://github.com/SilverIce
 */
@@ -81,7 +82,7 @@ public:
         if (target->GetTypeId() == TYPEID_PLAYER)
             target->SetStandState(UNIT_STAND_STATE_STAND);
 
-        target->SendMeleeAttackStop(NULL);
+        target->SendMeleeAttackStop(0);
 
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, target->GetPackGUID().size() + 4);
         data << target->GetPackGUID();
@@ -146,7 +147,7 @@ public:
         target->m_movementInfo.RemoveMovementFlag(MOVEFLAG_MOVING);
         target->m_movementInfo.AddMovementFlag(MOVEFLAG_ROOT);
 
-        target->SendMeleeAttackStop(NULL);
+        target->SendMeleeAttackStop(0);
 
         if (target->GetTypeId() == TYPEID_PLAYER)
         {

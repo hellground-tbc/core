@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -201,10 +201,10 @@ void PetAI::AutocastPreparedSpells()
                 me->SendCreateUpdateToPlayer((Player*)m_owner);
         }
 
-        me->AddCreatureSpellCooldown(spell->GetSpellInfo()->Id);
+        me->AddCreatureSpellCooldown(spell->GetSpellEntry()->Id);
 
         if (me->isPet())
-            ((Pet*)me)->CheckLearning(spell->GetSpellInfo()->Id);
+            ((Pet*)me)->CheckLearning(spell->GetSpellEntry()->Id);
 
         spell->prepare(&targets);
     }
@@ -221,7 +221,7 @@ void PetAI::UpdateAI(const uint32 diff)
 {
     m_owner = me->GetCharmerOrOwner();
 
-    // quest support - Razorthorn Ravager, switch to ScriptedAI when charmed and not in combat
+    // quest support - Razorthorn Ravager, switch to CreatureAI when charmed and not in combat
     if (me->GetEntry() == 24922 && me->isCharmed() && !me->isInCombat())
         me->NeedChangeAI = true;
 

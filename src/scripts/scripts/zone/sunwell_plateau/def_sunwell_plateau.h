@@ -1,9 +1,24 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
-#ifndef DEF_SUNWELLPLATEAU_H
-#define DEF_SUNWELLPLATEAU_H
+#ifndef SC_DEF_SUNWELLPLATEAU_H
+#define SC_DEF_SUNWELLPLATEAU_H
 
 /*** Encounters ***/
 #define DATA_KALECGOS_EVENT         1
@@ -45,8 +60,8 @@
 #define DATA_BRUTALLUS_TRIGGER      30
 #define DATA_EREDAR_TWINS_INTRO     31
 
-#define DATA_MURU_TESTING_COUNTER   50
-#define DATA_MURU_TESTING           51
+#define DATA_KJ_TESTING_COUNTER     50
+#define DATA_KJ_TESTING             51
 
 #define SISTER_DEATH                1
 

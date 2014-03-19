@@ -1,6 +1,21 @@
-/* Copyright (C) 2006 - 2008 TrinityScript <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software licensed under GPL version 2
- * Please see the included DOCS/LICENSE.TXT for more information */
+/*
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 #include "precompiled.h"
 #include "Database/DatabaseEnv.h"
@@ -12,10 +27,10 @@
 
 #include "../game/ScriptMgr.h"
 
-#define _FULLVERSION "TrinityScript"
+#define _FULLVERSION "HellgroundScript"
 
 #ifndef _HELLGROUND_SCRIPT_CONFIG
-# define _HELLGROUND_SCRIPT_CONFIG  "trinitycore.conf"
+# define _HELLGROUND_SCRIPT_CONFIG  "hellgroundcore.conf"
 #endif // _HELLGROUND_SCRIPT_CONFIG
 
 int num_sc_scripts;
@@ -54,7 +69,7 @@ void FreeScriptLibrary()
 HELLGROUND_DLL_EXPORT
 void InitScriptLibrary()
 {
-    //Trinity Script startup
+    //Hellground Script startup
     outstring_log(" _   _      _ _ _____                           _ ");
     outstring_log("| | | |    | | |  __ \\                         | |");
     outstring_log("| |_| | ___| | | |  \\/_ __ ___  _   _ _ __   __| |");
@@ -62,7 +77,7 @@ void InitScriptLibrary()
     outstring_log("| | | |  __/ | | |_\\ \\ | | (_) | |_| | | | | (_| |");
     outstring_log("\\_| |_/\\___|_|_|\\____/_|  \\___/ \\__,_|_| |_|\\__,_|");
     outstring_log("http://hellground.net based on http://TrinityCore.org");
-    outstring_log("Trinity Script initializing %s", _FULLVERSION);
+    outstring_log("Hellground Script initializing %s", _FULLVERSION);
 
     //Load database (must be called after TScriptConfig.SetSource). In case it failed, no need to even try load.
     LoadDatabase();
@@ -252,7 +267,7 @@ void Script::RegisterSelf(bool bReportError)
 HELLGROUND_DLL_EXPORT
 char const* GetScriptLibraryVersion()
 {
-    return "Default Trinity scripting library";
+    return "Default Hellground scripting library";
 }
 
 HELLGROUND_DLL_EXPORT

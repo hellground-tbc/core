@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS
- *
- * Copyright (C) 2008 Trinity
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Language.h"
@@ -27,6 +27,7 @@
 #include "TicketMgr.h"
 #include "World.h"
 #include "Chat.h"
+#include "luaengine/HookMgr.h"
 
 void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
 {
@@ -69,6 +70,9 @@ void WorldSession::HandleGMTicketCreateOpcode(WorldPacket & recv_data)
 
     // remove ticket by player, shouldn't happen
     sTicketMgr.RemoveGMTicketByPlayer(GetPlayer()->GetGUID(), GetPlayer()->GetGUID());
+
+    // used by eluna
+    sHookMgr->OnGmTicketCreate(_player, ticketText);
 
     // add ticket
     sTicketMgr.AddGMTicket(ticket, false);
@@ -122,11 +126,15 @@ void WorldSession::HandleGMTicketUpdateOpcode(WorldPacket & recv_data)
 
     sWorld.SendGMText(LANG_COMMAND_TICKETUPDATED, GetPlayer()->GetName(), ticket->guid);
 
+    sHookMgr->OnGmTicketUpdate(_player, ticket->message);
 }
 
 void WorldSession::HandleGMTicketDeleteOpcode(WorldPacket & /*recv_data*/)
 {
     // NO recv_data, NO packet check size
+
+    // used by eluna
+    sHookMgr->OnGmTicketDelete(_player);
 
     GM_Ticket* ticket = sTicketMgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
 

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2012 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,11 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef MANGOS_MOTIONMASTER_H
-#define MANGOS_MOTIONMASTER_H
+#ifndef HELLGROUND_MOTIONMASTER_H
+#define HELLGROUND_MOTIONMASTER_H
 
 #include "Common.h"
 #include "SharedDefines.h"
@@ -60,7 +61,7 @@ class HELLGROUND_IMPORT_EXPORT MotionMaster
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 timeLimit = 0);
-        void MovePoint(uint32 id, float x,float y,float z, bool generatePath = true, UnitActionId actionId = UNIT_ACTION_ASSISTANCE);
+        void MovePoint(uint32 id, float x,float y,float z, bool generatePath = true, bool callStop = true, UnitActionId actionId = UNIT_ACTION_ASSISTANCE);
         void MoveCharge(float x, float y, float z, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE, bool generatePath = false);
         void MoveCharge(PathFinder path, float speed = SPEED_CHARGE, uint32 id = EVENT_CHARGE);
         void MoveSeekAssistance(float x,float y,float z);

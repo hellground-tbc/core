@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -405,8 +408,12 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                 else
                     Water = WATERSTATE_FRENZY;
             }
-
-            trashCheckTimer = 10000;
+            else if (Encounters[2] == DONE)
+            {
+                Water = WATERSTATE_NONE;
+            }
+            
+            trashCheckTimer = 5000;
         }
         else
             trashCheckTimer -= diff;
@@ -429,12 +436,15 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                         if (Water == WATERSTATE_SCALDING)
                         {
                             if (!pPlayer->HasAura(SPELL_SCALDINGWATER))
+                            {
                                 pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER, true);
+                                break;
+                            }
                         }
                         else if (Water == WATERSTATE_FRENZY)
                         {
                             //spawn frenzy
-                            if (DoSpawnFrenzy)
+                            if (DoSpawnFrenzy && !pPlayer->isGameMaster())
                             {
                                 if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
                                 {
@@ -444,6 +454,10 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                                 }
                                 DoSpawnFrenzy = false;
                             }
+                        }
+                        else if (Water == WATERSTATE_NONE)
+                        {
+                            break;
                         }
                     }
                 }

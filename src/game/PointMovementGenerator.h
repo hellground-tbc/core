@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@ template<class UNIT>
 class PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMovementGenerator<UNIT> >
 {
     public:
-        PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false) : _id(id),
-            _x(x), _y(y), _z(z), _generatePath(generatePath) {}
+        PointMovementGenerator(uint32 id, float x, float y, float z, bool generatePath = false, bool callStop = true) : _id(id),
+            _x(x), _y(y), _z(z), _generatePath(generatePath), m_callStopMove( callStop ) {}
 
         void Initialize(UNIT &);
         void Finalize(UNIT &);
@@ -48,6 +48,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< UNIT, PointMoveme
         uint32 _id;
         float _x, _y, _z;
         bool _generatePath;
+        bool m_callStopMove;
 };
 
 class AssistanceMovementGenerator : public PointMovementGenerator<Creature>

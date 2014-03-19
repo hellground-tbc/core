@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -390,11 +390,8 @@ void Pet::SavePetToDB(PetSaveMode mode)
         case PET_SAVE_IN_STABLE_SLOT_2:
         case PET_SAVE_NOT_IN_SLOT:
         {
-            RemoveAllAuras();
-
-            //only alive hunter pets get auras saved, the others don't
-            if (!(getPetType() == HUNTER_PET && isAlive()))
-                m_Auras.clear();
+            if (getPetType() != HUNTER_PET || !isAlive())
+                RemoveAllAuras();
         }
         default:
             break;
@@ -633,7 +630,7 @@ void Pet::RegenerateFocus()
     if (curValue >= maxValue)
         return;
 
-    float addvalue = 24 * sWorld.getRate(RATE_POWER_FOCUS);
+    float addvalue = 24 * sWorld.getConfig(RATE_POWER_FOCUS);
 
     AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
     for (AuraList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
@@ -659,7 +656,7 @@ void Pet::ModifyLoyalty(int32 addvalue)
     uint32 loyaltylevel = GetLoyaltyLevel();
 
     if (addvalue > 0)                                        //only gain influenced, not loss
-        addvalue = int32((float)addvalue * sWorld.getRate(RATE_LOYALTY));
+        addvalue = int32((float)addvalue * sWorld.getConfig(RATE_LOYALTY));
 
     if (loyaltylevel >= BEST_FRIEND && (addvalue + m_loyaltyPoints) > int32(GetMaxLoyaltyPoints(loyaltylevel)))
         return;
@@ -1463,6 +1460,7 @@ void Pet::_SaveAuras()
     RealmDataDatabase.PExecute("DELETE FROM pet_aura WHERE guid = '%u'", m_charmInfo->GetPetNumber());
 
     AuraMap const& auras = GetAuras();
+
     if (auras.empty())
         return;
 

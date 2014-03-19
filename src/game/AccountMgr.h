@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef _sAccountMgr_H
-#define _sAccountMgr_H
+#ifndef HELLGROUND_ACCOUNTMGR_H
+#define HELLGROUND_ACCOUNTMGR_H
 
 #include "Common.h"
 #include <string>
@@ -49,7 +49,7 @@ namespace AccountMgr
     bool HasPermissions(uint32 accId, uint64 perms);
     bool GetName(uint32 acc_id, std::string &name);
 
-    bool normilizeString(std::string& utf8str);
+    bool normalizeString(std::string& utf8str);
 
     std::vector<uint32> GetRAFAccounts(uint32 accid, bool referred = true);
     AccountOpResult AddRAFLink(uint32 accid, uint32 friendid);

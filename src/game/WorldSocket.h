@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /** \addtogroup u2w User to World Communication
@@ -24,8 +24,8 @@
  * \author Derex <derex101@gmail.com>
  */
 
-#ifndef _WORLDSOCKET_H
-#define _WORLDSOCKET_H
+#ifndef HELLGROUND_WORLDSOCKET_H
+#define HELLGROUND_WORLDSOCKET_H
 
 #include <ace/Basic_Types.h>
 #include <ace/Synch_Traits.h>
@@ -184,6 +184,7 @@ class WorldSocket : protected WorldHandler
         // Use to check if custom chat only client can use such opcode
         bool IsChatOpcode(uint16 opcode);
 
+        static uint32 IPToLocation(const std::string& IP);
     private:
         /// Time in which the last ping was received
         ACE_Time_Value m_LastPingTime;

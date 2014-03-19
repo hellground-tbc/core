@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2009 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "UnitAI.h"
@@ -344,8 +344,8 @@ float UnitAI::DoGetSpellMaxRange(uint32 spellId, bool positive)
 void UnitAI::DoCast(uint32 spellId)
 {
     Unit *target = NULL;
-    //sLog.outLog(LOG_DEFAULT, "ERROR: aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
-    switch (AISpellInfo[spellId].target)
+    //sLog.outLog(LOG_DEFAULT, "ERROR: aggre %u %u", spellId, (uint32)AISpellEntry[spellId].target);
+    switch (AISpellEntry[spellId].target)
     {
         default:
         case AITARGET_SELF:     target = me; break;
@@ -381,11 +381,11 @@ void UnitAI::DoCast(uint32 spellId)
 
 #define UPDATE_TARGET(a) {if(AIInfo->target<a) AIInfo->target=a;}
 
-void UnitAI::FillAISpellInfo()
+void UnitAI::FillAISpellEntry()
 {
-    AISpellInfo = new AISpellInfoType[GetSpellStore()->GetNumRows()];
+    AISpellEntry = new AISpellEntryType[GetSpellStore()->GetNumRows()];
 
-    AISpellInfoType *AIInfo = AISpellInfo;
+    AISpellEntryType *AIInfo = AISpellEntry;
     const SpellEntry * spellInfo;
 
     for (uint32 i = 0; i < GetSpellStore()->GetNumRows(); ++i, ++AIInfo)

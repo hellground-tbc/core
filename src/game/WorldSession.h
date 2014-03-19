@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 /// @{
 /// \file
 
-#ifndef __WORLDSESSION_H
-#define __WORLDSESSION_H
+#ifndef HELLGROUND_WORLDSESSION_H
+#define HELLGROUND_WORLDSESSION_H
 
 #include "Common.h"
 #include "Log.h"
@@ -316,11 +316,13 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         // Locales
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
         int GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
-        const char *GetTrinityString(int32 entry) const;
+        const char *GetHellgroundString(int32 entry) const;
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
         uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
+
+        void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
 
     public:                                                 // opcodes handlers
 
@@ -755,6 +757,9 @@ class HELLGROUND_IMPORT_EXPORT WorldSession
         void moveItems(Item* myItems[], Item* hisItems[]);
 
         bool CheckMailBox(ObjectGuid& guid);
+
+        
+        uint32 m_clientTimeDelay;
 
         // logging helper
         void logUnexpectedOpcode(WorldPacket *packet, const char * reason);

@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "CreatureAI.h"
+#include "luaengine/HookMgr.h"
 
 Totem::Totem() : Creature()
 {
@@ -107,6 +108,9 @@ void Totem::Summon(Unit* owner)
     // call JustSummoned function when totem summoned from spell
     if (owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->IsAIEnabled)
         ((Creature*)owner)->AI()->JustSummoned(this);
+
+    if (Unit* summoner = owner->ToUnit())
+        sHookMgr->OnSummoned(this, summoner);
 }
 
 void Totem::UnSummon()

@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -199,6 +199,6 @@ int32  Quest::GetRewOrReqMoney() const
     if (RewOrReqMoney <=0)
         return RewOrReqMoney;
 
-    return int32(RewOrReqMoney * sWorld.getRate(RATE_DROP_MONEY));
+    return int32(RewOrReqMoney * sWorld.getConfig(RATE_DROP_MONEY));
 }
 

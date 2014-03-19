@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -379,7 +382,7 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 23417: cEntry[0] = 16975; break; // Sanctified Crystal
         case 32698: cEntry[0] = 22181; break; // Wrangling Rope
         case 34257: cEntry[0] = 24918; targetState = T_ALIVE; break; // Fel Siphon
-        case 28547: cEntry[0] = 17157; cEntry[1] = 18865; break;
+        case 28547: cEntry[0] = 18881; cEntry[1] = 18865; break; //Elemental power extractor
         case 12284: cEntry[0] = 7047; cEntry[1] = 7048; cEntry[2] = 7049; break; // Draco-Incarcinatrix 900
         case 23337: cEntry[0] = 16880; targetState = T_ALIVE; break;    // Cenarion Antidote
         case 29818: cEntry[0] = 20774; targetState = T_ALIVE; break;    // Energy Field Modulator

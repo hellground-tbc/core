@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Unit.h"
@@ -58,7 +58,7 @@ SpellMgr::SpellMgr()
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:  //105
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:  //106
             case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:  //107
-            case SPELL_EFFECT_SUMMON_DEAD_PET:      //109
+            case SPELL_EFFECT_RESURRECT_PET:        //109
             case SPELL_EFFECT_SUMMON_DEMON:         //112
             case SPELL_EFFECT_TRIGGER_SPELL_2:      //151 ritual of summon
                 EffectTargetType[i] = SPELL_REQUIRE_DEST;
@@ -2066,13 +2066,13 @@ SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spell
 
     for (uint32 nextSpellId = spellInfo->Id; nextSpellId != 0; nextSpellId = GetPrevSpellInChain(nextSpellId))
     {
-        SpellEntry const *nextSpellInfo = sSpellStore.LookupEntry(nextSpellId);
-        if (!nextSpellInfo)
+        SpellEntry const *nextSpellEntry = sSpellStore.LookupEntry(nextSpellId);
+        if (!nextSpellEntry)
             break;
 
         // if found appropriate level
-        if (playerLevel + 10 >= nextSpellInfo->spellLevel)
-            return nextSpellInfo;
+        if (playerLevel + 10 >= nextSpellEntry->spellLevel)
+            return nextSpellEntry;
 
         // one rank less then
     }
@@ -2192,37 +2192,37 @@ void SpellMgr::LoadSpellChains()
 
         if (mSkillLineAbilityMap.lower_bound(spell_id)->second->id!=ability_id)
             continue;
-        SpellEntry const *SpellInfo=sSpellStore.LookupEntry(spell_id);
-        if (!SpellInfo)
+        SpellEntry const *SpellEntry=sSpellStore.LookupEntry(spell_id);
+        if (!SpellEntry)
             continue;
-        std::string sRank = SpellInfo->Rank[sWorld.GetDefaultDbcLocale()];
+        std::string sRank = SpellEntry->Rank[sWorld.GetDefaultDbcLocale()];
         if (sRank.empty())
             continue;
         //exception to polymorph spells-make pig and turtle other chain than sheep
-        if ((SpellInfo->SpellFamilyName==SPELLFAMILY_MAGE) && (SpellInfo->SpellFamilyFlags & 0x1000000) && (SpellInfo->SpellIconID!=82))
+        if ((SpellEntry->SpellFamilyName==SPELLFAMILY_MAGE) && (SpellEntry->SpellFamilyFlags & 0x1000000) && (SpellEntry->SpellIconID!=82))
             continue;
 
         SpellRankEntry entry;
         SpellRankValue value;
         entry.SkillId=AbilityInfo->skillId;
-        entry.SpellName=SpellInfo->SpellName[sWorld.GetDefaultDbcLocale()];
-        entry.DurationIndex=SpellInfo->DurationIndex;
-        entry.RangeIndex=SpellInfo->rangeIndex;
-        entry.ProcFlags=SpellInfo->procFlags;
-        entry.SpellFamilyFlags=SpellInfo->SpellFamilyFlags;
-        entry.TargetAuraState=SpellInfo->TargetAuraState;
-        entry.SpellVisual=SpellInfo->SpellVisual;
-        entry.ManaCost=SpellInfo->manaCost;
+        entry.SpellName=SpellEntry->SpellName[sWorld.GetDefaultDbcLocale()];
+        entry.DurationIndex=SpellEntry->DurationIndex;
+        entry.RangeIndex=SpellEntry->rangeIndex;
+        entry.ProcFlags=SpellEntry->procFlags;
+        entry.SpellFamilyFlags=SpellEntry->SpellFamilyFlags;
+        entry.TargetAuraState=SpellEntry->TargetAuraState;
+        entry.SpellVisual=SpellEntry->SpellVisual;
+        entry.ManaCost=SpellEntry->manaCost;
 
         for (;;)
         {
             AbilityInfo=mSkillLineAbilityMap.lower_bound(spell_id)->second;
             value.Id=spell_id;
-            value.Rank=SpellInfo->Rank[sWorld.GetDefaultDbcLocale()];
+            value.Rank=SpellEntry->Rank[sWorld.GetDefaultDbcLocale()];
             RankMap.insert(std::pair<SpellRankEntry, SpellRankValue>(entry,value));
             spell_id=AbilityInfo->forward_spellid;
-            SpellInfo=sSpellStore.LookupEntry(spell_id);
-            if (!SpellInfo)
+            SpellEntry=sSpellStore.LookupEntry(spell_id);
+            if (!SpellEntry)
                 break;
         }
     }
@@ -2274,10 +2274,10 @@ void SpellMgr::LoadSpellChains()
         {
             for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
             {
-                SpellEntry const *SpellInfo=sSpellStore.LookupEntry(itr2->second.Id);
-                if (SpellInfo->spellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
+                SpellEntry const *SpellEntry=sSpellStore.LookupEntry(itr2->second.Id);
+                if (SpellEntry->spellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
                 {
-                    min_spell_lvl=SpellInfo->spellLevel;
+                    min_spell_lvl=SpellEntry->spellLevel;
                     min_itr=itr2;
                 }
             }
@@ -3098,8 +3098,14 @@ void SpellMgr::LoadSpellCustomAttr()
             case 24178: // Will of Hakkar
                 spellInfo->AttributesEx |= SPELL_ATTR_EX_CHANNELED_1;
                 break;
-            // Leggins of BeastMastery
-            case 38297:
+            case 28282: // Ashbringer
+                spellInfo->Effect[2] = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->EffectImplicitTargetA[2] = TARGET_UNIT_CASTER;
+                spellInfo->EffectApplyAuraName[2] = SPELL_AURA_FORCE_REACTION;
+                spellInfo->EffectMiscValue[2] = 56; // Scarlet Crusade
+                spellInfo->EffectBasePoints[2] = 4; // Friendly
+                break;
+            case 38297: // Leggins of BeastMastery
                 spellInfo->Effect[0] = 0;
                 spellInfo->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
                 break;
@@ -3314,7 +3320,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 37363: // set 5y radius instead of 25y
                 spellInfo->EffectRadiusIndex[0] = 8;
-                spellInfo->EffectRadiusIndex[0] = 8;
+                spellInfo->EffectRadiusIndex[1] = 8;
+                spellInfo->EffectMiscValue[1] = 50;
                 break;
             case 42835: // set visual only
                 spellInfo->Effect[0] = 0;
@@ -3509,7 +3516,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
         }
     }
-    CreatureAI::FillAISpellInfo();
+    CreatureAI::FillAISpellEntry();
 }
 
 // TODO: move this to database along with slot position in cast bar

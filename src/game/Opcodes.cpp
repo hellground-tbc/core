@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,12 +10,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /** \file
@@ -1069,7 +1069,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x40E*/ { "MSG_GM_CHANGE_ARENA_RATING",       STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },
     /*0x40F*/ { "CMSG_DECLINE_CHANNEL_INVITE",      STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,  &WorldSession::HandleChannelDeclineInvite      },
     /*0x410*/ { "CMSG_GROUPACTION_THROTTLED",       STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },
-    /*0x411*/ { "SMSG_OVERRIDE_LIGHT",              STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
+    /*0x411*/ { "SMSG_override_LIGHT",              STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x412*/ { "SMSG_TOTEM_CREATED",               STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_ServerSide               },
     /*0x413*/ { "CMSG_TOTEM_DESTROYED",             STATUS_LOGGEDIN,    PROCESS_THREADUNSAFE,  &WorldSession::HandleTotemDestroy              },
     /*0x414*/ { "CMSG_EXPIRE_RAID_INSTANCE",        STATUS_NEVER,       PROCESS_INPLACE, &WorldSession::Handle_NULL                     },

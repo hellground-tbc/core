@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,14 +81,14 @@ void OPvPCapturePointZM_Beacon::ChangeState()
     {
         if (((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled)
             ((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled--;
-        sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(ZMBeaconLooseA[m_TowerType]));
+        sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(ZMBeaconLooseA[m_TowerType]));
     }
     // if changing from controlling horde to alliance
     else if (m_OldState == OBJECTIVESTATE_HORDE)
     {
         if (((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled)
             ((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled--;
-        sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(ZMBeaconLooseH[m_TowerType]));
+        sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(ZMBeaconLooseH[m_TowerType]));
     }
 
     switch (m_State)
@@ -96,13 +97,13 @@ void OPvPCapturePointZM_Beacon::ChangeState()
             m_TowerState = ZM_TOWERSTATE_A;
             if (((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled<ZM_NUM_BEACONS)
                 ((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled++;
-            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(ZMBeaconCaptureA[m_TowerType]));
+            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(ZMBeaconCaptureA[m_TowerType]));
             break;
         case OBJECTIVESTATE_HORDE:
             m_TowerState = ZM_TOWERSTATE_H;
             if (((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled<ZM_NUM_BEACONS)
                 ((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled++;
-            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(ZMBeaconCaptureH[m_TowerType]));
+            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(ZMBeaconCaptureH[m_TowerType]));
             break;
         case OBJECTIVESTATE_NEUTRAL:
         case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
@@ -217,7 +218,7 @@ int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
         if (plr->HasAura(ZM_BATTLE_STANDARD_A,0) && m_GraveYardState != ZM_GRAVEYARD_A)
         {
             if (m_GraveYardState == ZM_GRAVEYARD_H)
-                sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_ZM_LOOSE_GY_H));
+                sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(LANG_OPVP_ZM_LOOSE_GY_H));
             m_GraveYardState = ZM_GRAVEYARD_A;
             DelObject(0);   // only one gotype is used in the whole outdoor pvp, no need to call it a constant
             AddObject(0,ZM_Banner_A.entry,0,ZM_Banner_A.map,ZM_Banner_A.x,ZM_Banner_A.y,ZM_Banner_A.z,ZM_Banner_A.o,ZM_Banner_A.rot0,ZM_Banner_A.rot1,ZM_Banner_A.rot2,ZM_Banner_A.rot3);
@@ -225,12 +226,12 @@ int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
             sObjectMgr.AddGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, ALLIANCE, false);   // add gy
             m_PvP->TeamApplyBuff(TEAM_ALLIANCE, ZM_CAPTURE_BUFF);
             plr->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_A);
-            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_ZM_CAPTURE_GY_A));
+            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(LANG_OPVP_ZM_CAPTURE_GY_A));
         }
         else if (plr->HasAura(ZM_BATTLE_STANDARD_H,0) && m_GraveYardState != ZM_GRAVEYARD_H)
         {
             if (m_GraveYardState == ZM_GRAVEYARD_A)
-                sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_ZM_LOOSE_GY_A));
+                sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(LANG_OPVP_ZM_LOOSE_GY_A));
             m_GraveYardState = ZM_GRAVEYARD_H;
             DelObject(0);   // only one gotype is used in the whole outdoor pvp, no need to call it a constant
             AddObject(0,ZM_Banner_H.entry,0,ZM_Banner_H.map,ZM_Banner_H.x,ZM_Banner_H.y,ZM_Banner_H.z,ZM_Banner_H.o,ZM_Banner_H.rot0,ZM_Banner_H.rot1,ZM_Banner_H.rot2,ZM_Banner_H.rot3);
@@ -238,7 +239,7 @@ int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
             sObjectMgr.AddGraveYardLink(ZM_GRAVEYARD_ID, ZM_GRAVEYARD_ZONE, HORDE, false);   // add gy
             m_PvP->TeamApplyBuff(TEAM_HORDE, ZM_CAPTURE_BUFF);
             plr->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_H);
-            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_ZM_CAPTURE_GY_H));
+            sWorld.SendZoneText(ZM_GRAVEYARD_ZONE,sObjectMgr.GetHellgroundStringForDBCLocale(LANG_OPVP_ZM_CAPTURE_GY_H));
         }
         UpdateTowerState();
     }
@@ -335,12 +336,12 @@ bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player * plr, Creature * c, GossipO
     {
         if (itr->second == ZM_ALLIANCE_FIELD_SCOUT && plr->GetTeam() == ALLIANCE && m_BothControllingFaction == ALLIANCE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_A)
         {
-            gso.OptionText.assign(sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_ALLIANCE));
+            gso.OptionText.assign(sObjectMgr.GetHellgroundStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_ALLIANCE));
             return true;
         }
         else if (itr->second == ZM_HORDE_FIELD_SCOUT && plr->GetTeam() == HORDE && m_BothControllingFaction == HORDE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_H)
         {
-            gso.OptionText.assign(sObjectMgr.GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_HORDE));
+            gso.OptionText.assign(sObjectMgr.GetHellgroundStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_HORDE));
             return true;
         }
     }

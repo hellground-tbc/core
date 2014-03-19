@@ -1,8 +1,19 @@
-/* Copyright (C) 2008 - 2011 HellgroundDev <http://gamefreedom.pl/>
+/* 
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /* ScriptData
@@ -377,7 +388,8 @@ enum SunbladeProtector
 };
 
 #define PROTECTOR_YELL "Unit entering energy conservation mode."
-#define PROTECTOR_AGGRO "Enemy presence detected."
+#define PROTECTOR_AGGRO_1 "Enemy presence detected."
+#define PROTECTOR_AGGRO_2 "Local proximity threat detected. Exiting energy conservation mode."
 #define PROTECTOR_ACTIVATED "Unit is now operational and attacking targets."
 
 struct mob_sunblade_protectorAI : public ScriptedAI
@@ -415,7 +427,7 @@ struct mob_sunblade_protectorAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         if(!isInactive)
-            DoYell(PROTECTOR_AGGRO, 0, me);
+            DoYell((urand(0,1) ? PROTECTOR_AGGRO_1 : PROTECTOR_AGGRO_2), 0, me);
         else
             DoYell(PROTECTOR_ACTIVATED, 0, me);
         DoZoneInCombat(80.0f);
@@ -2256,7 +2268,7 @@ CreatureAI* GetAI_mob_priestess_of_torment(Creature *_Creature)
 enum ShadowswordGuardian
 {
     SPELL_BEAR_DOWN                 = 46239,
-    SPELL_EARTHQUAKE                = 46240
+    SPELL_EARTHQUAKE                = 46932
 };
 
 struct mob_shadowsword_guardianAI : public ScriptedAI
@@ -2285,6 +2297,11 @@ struct mob_shadowsword_guardianAI : public ScriptedAI
 
     void EnterCombat(Unit*)
     {
+        if (pInstance->GetData(DATA_MURU_EVENT) != DONE)
+        {
+            EnterEvadeMode();
+            return;
+        }
         DoCast(me, SPELL_EARTHQUAKE);
         DoZoneInCombat(80.0f);
     }

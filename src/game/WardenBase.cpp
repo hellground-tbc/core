@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,12 +9,12 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #include "Common.h"
@@ -30,7 +31,8 @@
 #include "WardenBase.h"
 #include "WardenWin.h"
 
-WardenBase::WardenBase() : iCrypto(16), oCrypto(16), m_WardenCheckTimer(10000/*10 sec*/), m_WardenKickTimer(0), m_WardenDataSent(false), m_initialized(false)
+WardenBase::WardenBase() : iCrypto(16), oCrypto(16), m_WardenCheckTimer(10000/*10 sec*/), m_WardenKickTimer(0), m_WardenDataSent(false),
+    m_initialized(false), m_checkIntervalMin(25000), m_checkIntervalMax(35000), m_maxMemChecks(3), m_maxRandomChecks(5)
 {
 }
 
@@ -149,8 +151,7 @@ void WardenBase::Update()
             if (diff >= m_WardenCheckTimer)
             {
                 RequestData();
-                // 25-35 second
-                m_WardenCheckTimer = urand(25000, 35000);
+                m_WardenCheckTimer = urand(m_checkIntervalMin, m_checkIntervalMax);
             }
             else
                 m_WardenCheckTimer -= diff;

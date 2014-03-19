@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,16 +10,16 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef __BATTLEGROUND_H
-#define __BATTLEGROUND_H
+#ifndef HELLGROUND_BATTLEGROUND_H
+#define HELLGROUND_BATTLEGROUND_H
 
 #include "Common.h"
 #include "SharedDefines.h"
@@ -414,6 +414,8 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
         void PrepareMessageToAll(char const *format,...);
         void SendMessageToAll(char const* text);
         void SendMessageToAll(int32 entry);
+        void SendMessageToTeam(uint32 team, char const* text);
+        void SendMessageToTeam(uint32 team, int32 entry);
         void SendObjectiveComplete(uint32 id, uint32 TeamID, float x, float y);
 
         /* Raid Group */
@@ -483,7 +485,7 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 
         void DoorOpen(uint32 type);
         void DoorClose(uint32 type);
-        const char *GetTrinityString(int32 entry);
+        const char *GetHellgroundString(int32 entry);
 
         virtual bool HandlePlayerUnderMap(Player * plr, float z);
         void AddOrSetPlayerToCorrectBgGroup(Player *plr, uint64 guid, uint32 team);
@@ -495,9 +497,14 @@ class HELLGROUND_IMPORT_EXPORT BattleGround
 
         void SetDeleteThis(){ m_SetDeleteThis = true; }
 
+        bool SetPlayerReady(uint64 guid);
+
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends BattleGround
         void EndNow();
+
+        std::set<uint64>                        m_guidsReady[2];
+
 
         /* Scorekeeping */
                                                             // Player scores

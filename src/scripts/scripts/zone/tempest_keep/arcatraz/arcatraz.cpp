@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -520,66 +523,72 @@ CreatureAI* GetAI_npc_felfire_wave(Creature* _Creature)
     return new npc_felfire_waveAI(_Creature);
 }
 
-#define SPELL_AURA   (HeroicMode ? 38828 : 36716)
+#define SPELL_AURA      (HeroicMode ? 38828 : 36716)
+#define SPELL_EXPLODE   (HeroicMode ? 38830 : 36719)
 
 struct npc_arcatraz_sentinelAI : public ScriptedAI
 {
     npc_arcatraz_sentinelAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = (c->GetInstanceData());
+        pInstance = c->GetInstanceData();
         HeroicMode = me->GetMap()->IsHeroic();
     }
 
-    uint32 Reset_Timer;
+    uint32 ThreatWipe_Timer;
+    uint32 Suicide_Timer;
 
     ScriptedInstance *pInstance;
     bool HeroicMode;
 
     void Reset()
     {
-        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 32);
-        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 7);
-        DoCast(me, SPELL_AURA);
-        Reset_Timer = 10000;
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_DEAD);
+        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        me->CastSpell(me, SPELL_AURA, true);
+
+        ThreatWipe_Timer = urand(5000, 10000);
+        Suicide_Timer = 0;
     }
 
     void EnterCombat(Unit *who)
     {
-        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0);
-        me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-        uint32 hp = (me->GetMaxHealth()*40)/100;
-        if (hp)
-            me->SetHealth(hp);
-    }
-
-    void EnterEvadeMode()
-    {
-        me->RemoveAllAuras();
-        me->DeleteThreatList();
-        me->CombatStop();
-        
-        if (!me->isAlive())
-            return;    
-
-        me->GetMotionMaster()->MoveTargetedHome();
-    }
-
-    void JustReachedHome()
-    {
-        Reset();
+        me->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
+        me->SetUInt32Value(UNIT_FIELD_BYTES_1, PLAYER_STATE_NONE);
+        me->SetHealth(me->GetMaxHealth() * 40 / 100);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!UpdateVictim())
+        if (!UpdateVictim())
             return;
 
-        if( Reset_Timer < diff )
+        if (!Suicide_Timer)
         {
-            DoResetThreat();
-            Reset_Timer = 10000;
+            if (ThreatWipe_Timer < diff)
+            {
+                DoResetThreat();
+                ThreatWipe_Timer = urand(10000, 15000);
+            }
+            else
+                ThreatWipe_Timer -= diff;
 
-        }else Reset_Timer -=diff;
+            if (me->GetHealth()*100/me->GetMaxHealth() <= 12)
+            {
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->RemoveAllAuras();
+                me->CastSpell(me, SPELL_EXPLODE, true);
+
+                Suicide_Timer = 10000;
+            }
+        }
+        else
+        {
+            if (Suicide_Timer < diff)
+                me->Kill(me, false);
+            else
+                Suicide_Timer -= diff;
+        }
 
         DoMeleeAttackIfReady();
     }

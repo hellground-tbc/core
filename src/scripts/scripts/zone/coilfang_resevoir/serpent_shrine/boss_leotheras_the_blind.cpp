@@ -1,4 +1,7 @@
-/* Copyright (C) 2006 - 2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* 
+ * Copyright (C) 2006-2008 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -189,10 +192,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
     uint64 SpellBinderGUID[3];
     uint64 actualtarget;
 
-    bool LeoDebugBool[13];
-    std::string LeoDebugString[1];
-    float LeoDebugFloat[3];
-
     void Reset()
     {
         CheckChannelers();
@@ -222,13 +221,10 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
 
         m_creature->SetReactState(REACT_AGGRESSIVE);
         m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
-        for (uint8 i=0;i<13;i++)
-            LeoDebugBool[i] = false;
     }
 
     void CheckChannelers()
     {
-        m_creature->Yell("[Leo Debug] Check channelers",LANG_UNIVERSAL,0);
         for(uint8 i = 0; i < 3; i++)
         {
             Creature *add = Unit::GetCreature(*m_creature,SpellBinderGUID[i]);
@@ -251,7 +247,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
             Creature* binder = m_creature->SummonCreature(MOB_SPELLBINDER,nx,ny,z,o,TEMPSUMMON_DEAD_DESPAWN,0);
             if (binder)
                 SpellBinderGUID[i] = binder->GetGUID();
-
         }
     }
     void MoveInLineOfSight(Unit *who)
@@ -406,35 +401,8 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (m_creature->isInCombat())// Leo debug
-        {
-            LeoDebugBool[0] = true;
-            LeoDebugBool[7] = m_creature->getThreatManager().isThreatListEmpty();
-            LeoDebugBool[8] = m_creature->HasReactState(REACT_PASSIVE);
-            LeoDebugBool[9] = m_creature->HasReactState(REACT_AGGRESSIVE);
-            if(m_creature->getVictim())
-            {
-                LeoDebugBool[10] = true;
-                LeoDebugBool[11] = m_creature->IsOutOfThreatArea(me->getVictim());
-                LeoDebugString[0] = m_creature->getVictim()->GetName();
-                LeoDebugFloat[0] = m_creature->getVictim()->GetPositionX();
-                LeoDebugFloat[1] = m_creature->getVictim()->GetPositionY();
-                LeoDebugFloat[2] = m_creature->getVictim()->GetPositionZ();
-                LeoDebugBool[12] = m_creature->getVictim()->isInAccessiblePlacefor(m_creature);
-            }
-        }
         if (!UpdateVictim() || m_creature->HasAura(AURA_BANISH, 0))
         {
-            if (LeoDebugBool[0] && !m_creature->HasAura(AURA_BANISH, 0))
-            {
-                m_creature->Yell("[Leo Debug]:Evade in UpdateVictim",LANG_UNIVERSAL,0);
-                char format[200];
-                sprintf(format,"Debug info: %u%u%u%u %u%u%u%u %u%u%u%u %u| %s %f %f %f",
-                    LeoDebugBool[1],LeoDebugBool[2],LeoDebugBool[3],LeoDebugBool[4],LeoDebugBool[5],LeoDebugBool[6],
-                    LeoDebugBool[7],LeoDebugBool[8],LeoDebugBool[9],LeoDebugBool[10],LeoDebugBool[11],LeoDebugBool[12],
-                    Berserk_Timer,LeoDebugString[0].c_str(),LeoDebugFloat[0],LeoDebugFloat[1],LeoDebugFloat[2]);
-                m_creature->Yell(format,LANG_UNIVERSAL,0);
-            }
 
             if(BanishTimer < diff)
             {
@@ -445,9 +413,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
                 BanishTimer -= diff;
             return;
         }
-        for (uint8 i=0;i<13;i++)
-            LeoDebugBool[i] = false;
-        LeoDebugString[0] = "NULL";
 
         if(PulseCombat_Timer < diff)
         {
@@ -467,7 +432,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
                     DoResetThreat();
                     m_creature->GetMotionMaster()->Clear();
                     m_creature->GetMotionMaster()->MovePoint(0,newTarget->GetPositionX(),newTarget->GetPositionY(),newTarget->GetPositionZ());
-                    LeoDebugBool[1] = true;
                 }
                 Whirlwind_Timer = 2000;
             }
@@ -493,7 +457,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
                 m_creature->GetMotionMaster()->MoveChase(m_creature->GetUnit(actualtarget));
                 DoZoneInCombat();
                 m_creature->SetReactState(REACT_AGGRESSIVE);
-                LeoDebugBool[2] = true;
             }
         }
 
@@ -520,7 +483,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
                     Whirlwind_Timer = 2000;
                     NeedThreatReset = true;
                     m_creature->SetReactState(REACT_PASSIVE);
-                    LeoDebugBool[3] = true;
                 }
                 else
                     Whirlwind_Timer -= diff;
@@ -542,7 +504,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
                     SwitchToDemon_Timer = 45000;
                     m_creature->SetReactState(REACT_AGGRESSIVE);
                     m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
-                    LeoDebugBool[4] = true;
                 }
                 else
                     SwitchToDemon_Timer -= diff;
@@ -634,7 +595,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
 
                 SwitchToHuman_Timer = 60000;
                 m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
-                LeoDebugBool[5] = true;
             }
             else
                 SwitchToHuman_Timer -= diff;
@@ -659,7 +619,6 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
             m_creature->SetUInt32Value(UNIT_FIELD_DISPLAYID, MODEL_NIGHTELF);
             m_creature->LoadEquipment(m_creature->GetEquipmentId());
             m_creature->SetMeleeDamageSchool(SPELL_SCHOOL_NORMAL);
-            LeoDebugBool[6] = true;
         }
     }
 };
@@ -784,7 +743,6 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
 
     void JustRespawned()
     {
-        m_creature->Yell("Just Respawned (LOL!)",LANG_UNIVERSAL,0);
         Reset();
     }
 

@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2008 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 Hellground <http://hellground.net/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 /// @{
 /// \file
 
-#ifndef _OPCODES_H
-#define _OPCODES_H
+#ifndef HELLGROUND_OPCODES_H
+#define HELLGROUND_OPCODES_H
 
 #include "Common.h"
 
@@ -1077,7 +1077,7 @@ enum Opcodes
     MSG_GM_CHANGE_ARENA_RATING                      = 0x40E,
     CMSG_DECLINE_CHANNEL_INVITE                     = 0x40F,
     CMSG_GROUPACTION_THROTTLED                      = 0x410,
-    SMSG_OVERRIDE_LIGHT                             = 0x411,
+    SMSG_override_LIGHT                             = 0x411,
     SMSG_TOTEM_CREATED                              = 0x412,
     CMSG_TOTEM_DESTROYED                            = 0x413,
     CMSG_EXPIRE_RAID_INSTANCE                       = 0x414,
