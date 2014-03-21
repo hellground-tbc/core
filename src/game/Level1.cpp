@@ -176,7 +176,7 @@ bool ChatHandler::HandleGuildAnnounceCommand(const char *args)
 
             if (pGuild->GetMemberSize() < 10)
             {
-                PSendSysMessage("Your guild is to small, you need at least 10 members to send guild announce.");
+                PSendSysMessage("Your guild is too small, you need at least 10 members to send guild announce.");
                 return false;
             }
 
