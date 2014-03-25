@@ -21204,7 +21204,7 @@ void Player::ChangeRace(uint8 new_race)
     sLog.outLog(LOG_CHAR,"Starting race change for player %s [%u]",GetName(),GetGUIDLow());
     Races old_race = Races(getRace());
 
-    if (bool((1 << new_race) & 0x44D) != bool((1 << old_race) & 0x2B2))
+    if (bool((1 << new_race) & 0x89A) != bool((1 << old_race) & 0x89A))
     {
         sLog.outLog(LOG_CHAR,"Race change: invalid race change, trans-faction NYI");
         return;
