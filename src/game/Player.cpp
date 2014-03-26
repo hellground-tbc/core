@@ -21225,7 +21225,8 @@ void Player::ChangeRace(uint8 new_race)
         sLog.outLog(LOG_CHAR,"Race change: skins not found (race %u gender %u)",new_race,getGender());
         return;
     }
-    SetUInt32Value(PLAYER_BYTES,result->Fetch()[urand(0,2)].GetUInt32());
+    SetUInt32Value(PLAYER_BYTES,result->Fetch()[urand(0,2)].GetUInt32()); //face, hair, skin and hair color
+    SetByteValue(PLAYER_BYTES_2,0,0); //facial hair
 
     if (getGender() == GENDER_FEMALE)
     {
