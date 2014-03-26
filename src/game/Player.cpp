@@ -21217,6 +21217,16 @@ void Player::ChangeRace(uint8 new_race)
         return;
     }
 
+    QueryResultAutoPtr result = GameDataDatabase.PQuery(
+        "SELECT skin1,skin2,skin3 FROM race_change_skins WHERE race = %u AND gender = %u",new_race,getGender());
+
+    if (!result)
+    {
+        sLog.outLog(LOG_CHAR,"Race change: skins not found (race %u gender %u)",new_race,getGender());
+        return;
+    }
+    SetUInt32Value(PLAYER_BYTES,result->Fetch()[urand(0,2)].GetUInt32());
+
     if (getGender() == GENDER_FEMALE)
     {
         SetDisplayId(new_info->displayId_f);
@@ -21227,7 +21237,6 @@ void Player::ChangeRace(uint8 new_race)
         SetDisplayId(new_info->displayId_m);
         SetNativeDisplayId(new_info->displayId_m);
     }
-
     uint32 unitbytes0 = GetUInt32Value(UNIT_FIELD_BYTES_0) & 0xFFFFFF00;
     unitbytes0 |= new_race;
     SetUInt32Value(UNIT_FIELD_BYTES_0, unitbytes0);
