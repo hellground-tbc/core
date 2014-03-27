@@ -21201,19 +21201,19 @@ void Player::ChangeRace(uint8 new_race)
         {28481,29743,29744,28481,29745,29746,29747}
     };
 
-    sLog.outLog(LOG_CHAR,"Starting race change for player %s [%u]",GetName(),GetGUIDLow());
+    sLog.outLog(LOG_RACE_CHANGE,"Starting race change for player %s [%u] from %u to %u",GetName(),GetGUIDLow(),getRace(),new_race);
     Races old_race = Races(getRace());
 
     if (bool((1 << new_race) & 0x89A) != bool((1 << old_race) & 0x89A))
     {
-        sLog.outLog(LOG_CHAR,"Race change: invalid race change, trans-faction NYI");
+        sLog.outLog(LOG_RACE_CHANGE,"Race change: invalid race change, trans-faction NYI");
         return;
     }
 
     const PlayerInfo* new_info = sObjectMgr.GetPlayerInfo(new_race,getClass());
     if (!new_info)
     {
-        sLog.outLog(LOG_CHAR,"Race change: invalid race/class pair");
+        sLog.outLog(LOG_RACE_CHANGE,"Race change: invalid race/class pair: %u / %u",new_race,getClass());
         return;
     }
 
@@ -21222,7 +21222,7 @@ void Player::ChangeRace(uint8 new_race)
 
     if (!result)
     {
-        sLog.outLog(LOG_CHAR,"Race change: skins not found (race %u gender %u)",new_race,getGender());
+        sLog.outLog(LOG_RACE_CHANGE,"Race change: skins not found (race %u gender %u)",new_race,getGender());
         return;
     }
     SetUInt32Value(PLAYER_BYTES,result->Fetch()[urand(0,2)].GetUInt32()); //face, hair, skin and hair color
@@ -21322,7 +21322,7 @@ void Player::ChangeRace(uint8 new_race)
             }
         }
     }
-    sLog.outLog(LOG_CHAR,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
+    sLog.outLog(LOG_RACE_CHANGE,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
 }
 
 void Player::SetCanWhisperToGM(bool on)
