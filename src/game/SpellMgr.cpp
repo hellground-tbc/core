@@ -2846,6 +2846,8 @@ void SpellMgr::LoadSpellCustomAttr()
                      spellInfo->AuraInterruptFlags |= AURA_INTERRUPT_FLAG_CAST;
                  else if (spellInfo->SpellIconID == 2367) // remove flag from steam tonk & crashin trashin racers
                      spellInfo->AttributesEx4 &= ~SPELL_ATTR_EX4_FORCE_TRIGGERED;
+                 else if (spellInfo->Id == 34171 || spellInfo->Id == 37956) // underbat tentacle lash
+                     spellInfo->AttributesEx2 |= SPELL_ATTR_EX2_FROM_BEHIND;
                  break;
             }
             case SPELLFAMILY_SHAMAN:
