@@ -30,6 +30,8 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#define SHATTRATH_CITY_ZONE 3703
+
 int
 TotemAI::Permissible(const Creature *creature)
 {
@@ -96,7 +98,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
     // If have target
     if (victim)
     {
-        if (victim->GetZoneId() == 3703)
+        if (victim->GetZoneId() == SHATTRATH_CITY_ZONE)
             return;
         // remember
         i_victimGuid = victim->GetGUID();
