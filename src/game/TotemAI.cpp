@@ -30,7 +30,6 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-
 int
 TotemAI::Permissible(const Creature *creature)
 {
@@ -83,8 +82,8 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if (!victim || (!SpellMgr::SpellIgnoreLOS(spellInfo, 0) && !i_totem.IsWithinLOSInMap(victim)) ||
-        !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||
-        (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem, &i_totem, false))
+       !victim->isTargetableForAttack() || !i_totem.IsWithinDistInMap(victim, max_range) ||  
+       (i_totem.IsFriendlyTo(victim) && victim != &i_totem) || !victim->isVisibleForOrDetect(&i_totem, &i_totem, false))
     {
         victim = NULL;
 
@@ -97,6 +96,8 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
     // If have target
     if (victim)
     {
+        if (victim->GetZoneId() == 3703)
+            return;
         // remember
         i_victimGuid = victim->GetGUID();
 
