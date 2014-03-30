@@ -30,7 +30,9 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-#define SHATTRATH_CITY_ZONE 3703
+
+#define SHATTRATH_CITY_ZONE 3703 //shattrath sanctuary
+#define STAIRS_OF_DESTINY_ZONE 3483 // the dark portal sanctuary -- those two are the only sanctuaries in our expansion
 
 int
 TotemAI::Permissible(const Creature *creature)
@@ -98,7 +100,10 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
     // If have target
     if (victim)
     {
-        if (victim->GetZoneId() == SHATTRATH_CITY_ZONE)
+    //this should prevent target-type totems from attacking from unattackable zones and attacking while being unattackable
+        if (((i_totem.GetZoneId() == SHATTRATH_CITY_ZONE || i_totem.GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
+         (victim->GetZoneId() == SHATTRATH_CITY_ZONE || victim->GetZoneId() == STAIRS_OF_DESTINY_ZONE)) &&
+         (victim->GetObjectGuid().IsPlayer() || (victim->GetObjectGuid().IsPet() && victim->GetCharmerOrOwner()->GetObjectGuid().IsPlayer())))
             return;
         // remember
         i_victimGuid = victim->GetGUID();
