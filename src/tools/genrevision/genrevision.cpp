@@ -320,7 +320,9 @@ bool extractDataFromHG(std::string path, bool use_url, RawData& data)
 {
     bool res = false;
 
-    res = extractDataFromHG(path+".hg/cache/branchheads-base",path,use_url,data);
+    res = extractDataFromHG(path+".hg/cache/branchheads-served",path,use_url,data);
+    if (!res)
+        res = extractDataFromHG(path+".hg/cache/branchheads-base",path,use_url,data);
     if (!res)
         res = extractDataFromHG(path+"_hg/cache/branchheads-base",path,use_url,data);
     if (!res)
