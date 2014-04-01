@@ -21192,7 +21192,7 @@ void Player::ChangeRace(uint8 new_race)
         {1132,5665,5668,1132,18796,18797,18798},
         {5864,5872,5873,5864,18785,18786,18787},
         {8629,8631,8632,8629,18766,18767,18902},
-        {13331,13332,13333,13331,13334,18791,0},
+        {13331,13332,13333,13331,13334,18791,13334},
         {15277,15290,15277,15290,18793,18794,18795},
         {8595,8563,13321,13322,18772,18773,18774},
         {8588,8591,8592,8588,18788,18789,18790},
@@ -21201,19 +21201,19 @@ void Player::ChangeRace(uint8 new_race)
         {28481,29743,29744,28481,29745,29746,29747}
     };
 
-    sLog.outLog(LOG_RACE_CHANGE,"Starting race change for player %s [%u] from %u to %u",GetName(),GetGUIDLow(),getRace(),new_race);
+    sLog.outLog(LOG_RACE_CHANGE,"[%u] Starting race change for player %s from %u to %u",GetGUIDLow(),GetName(),getRace(),new_race);
     Races old_race = Races(getRace());
 
     if (bool((1 << new_race) & 0x89A) != bool((1 << old_race) & 0x89A))
     {
-        sLog.outLog(LOG_RACE_CHANGE,"Race change: invalid race change, trans-faction NYI");
+        sLog.outLog(LOG_RACE_CHANGE,"[%u] Invalid race change, trans-faction NYI",GetGUIDLow());
         return;
     }
 
     const PlayerInfo* new_info = sObjectMgr.GetPlayerInfo(new_race,getClass());
     if (!new_info)
     {
-        sLog.outLog(LOG_RACE_CHANGE,"Race change: invalid race/class pair: %u / %u",new_race,getClass());
+        sLog.outLog(LOG_RACE_CHANGE,"[%u] Invalid race/class pair: %u / %u",GetGUIDLow(),new_race,getClass());
         return;
     }
 
@@ -21222,7 +21222,7 @@ void Player::ChangeRace(uint8 new_race)
 
     if (!result)
     {
-        sLog.outLog(LOG_RACE_CHANGE,"Race change: skins not found (race %u gender %u)",new_race,getGender());
+        sLog.outLog(LOG_RACE_CHANGE,"[%u] skins not found (race %u gender %u)",GetGUIDLow(),new_race,getGender());
         return;
     }
     SetUInt32Value(PLAYER_BYTES,result->Fetch()[urand(0,2)].GetUInt32()); //face, hair, skin and hair color
@@ -21276,7 +21276,8 @@ void Player::ChangeRace(uint8 new_race)
 
     //reps
     setFaction(Player::getFactionForRace(new_race));
-    GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]);
+    if (!GetReputationMgr().SwitchReputation(CapitalForRace[old_race],CapitalForRace[new_race]))
+        sLog.outLog(LOG_RACE_CHANGE,"[%u] Problem encountered while changing reputation",GetGUIDLow());
 
     //Mounts
     for (uint8 type = 0;type<7;type++){
@@ -21322,7 +21323,7 @@ void Player::ChangeRace(uint8 new_race)
             }
         }
     }
-    sLog.outLog(LOG_RACE_CHANGE,"Race change for player %s [%u] succesful",GetName(),GetGUIDLow());
+    sLog.outLog(LOG_RACE_CHANGE,"[%u] Race change for player %s succesful",GetGUIDLow(),GetName());
 }
 
 void Player::SetCanWhisperToGM(bool on)

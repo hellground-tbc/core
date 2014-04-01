@@ -3914,7 +3914,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
 
         //Must be behind the target.
-        if (GetSpellEntry()->AttributesEx2 == 0x100000 && (GetSpellEntry()->AttributesEx & 0x200) == 0x200 && target->HasInArc(M_PI, m_caster)
+        if ((GetSpellEntry()->AttributesEx2 == SPELL_ATTR_EX2_FROM_BEHIND) && (GetSpellEntry()->AttributesEx & SPELL_ATTR_EX_UNK9) && target->HasInArc(M_PI, m_caster)
             && (GetSpellEntry()->SpellFamilyName != SPELLFAMILY_DRUID || GetSpellEntry()->SpellFamilyFlags != 0x0000000000020000LL))
         {
             SendInterrupted(2);
