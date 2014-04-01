@@ -8939,14 +8939,15 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
     if (!spellInfo)
         return false;
 
-    // If Spel has this flag cannot be resisted/immuned/etc
+    // If spell has this flag, it cannot be resisted/immuned/etc
     if (spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY)
         return false;
 
-    SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
-    for (SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
-        if (itr->type == spellInfo->Dispel)
-            return true;
+    SpellImmuneList const& stateList = m_spellImmune[IMMUNITY_STATE];
+    for (SpellImmuneList::const_iterator itr = stateList.begin(); itr != stateList.end(); ++itr)
+        for (uint32 i = 0; i < 3; ++i)
+            if (itr->type == spellInfo->EffectApplyAuraName[i])
+                return true;
 
     if (!(spellInfo->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE) &&         // unaffected by school immunity
         !(spellInfo->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)               // can remove immune (by dispell or immune it)
@@ -8959,23 +8960,20 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
                 return true;
     }
 
+    SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_DISPEL];
+    for (SpellImmuneList::const_iterator itr = dispelList.begin(); itr != dispelList.end(); ++itr)
+        if (itr->type == spellInfo->Dispel)
+            return true;
+
     SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
     for (SpellImmuneList::const_iterator itr = mechanicList.begin(); itr != mechanicList.end(); ++itr)
-    {
         if (itr->type == spellInfo->Mechanic)
-        {
             return true;
-        }
-    }
 
     SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
     for (SpellImmuneList::const_iterator itr = idList.begin(); itr != idList.end(); ++itr)
-    {
         if (itr->type == spellInfo->Id)
-        {
             return true;
-        }
-    }
 
     return false;
 }
