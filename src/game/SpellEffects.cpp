@@ -4396,28 +4396,43 @@ void Spell::EffectSummonGuardian(uint32 i)
     Player *caster = NULL;
     if (m_originalCaster)
     {
-        if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
-            caster = (Player*)m_originalCaster;
-        else if (((Creature*)m_originalCaster)->isTotem())
-        {
-            if (((Creature*)m_originalCaster)->GetEntry() == 15439 || ((Creature*)m_originalCaster)->GetEntry() == 15430)
-            {
-                float px, py, pz;
-                m_caster->GetNearPoint(px,py,pz,m_caster->GetObjectSize());
-                if (caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself())
+       if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
+          caster = (Player*)m_originalCaster;
+       else if (((Creature*)m_originalCaster)->isTotem())
+       {
+          if (((Creature*)m_originalCaster)->GetEntry() == 15439 || ((Creature*)m_originalCaster)->GetEntry() == 15430)
+          {
+             float px, py, pz;
+             m_caster->GetNearPoint(px,py,pz,m_caster->GetObjectSize());
+             if (caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself())
                 if (Pet *spawnCreature = caster->SummonPet(GetSpellEntry()->EffectMiscValue[i], px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration))
                 {
-                    spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP,0);
-                    spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellEntry()->Id);
-                    spawnCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
-                    spawnCreature->SetOwnerGUID(m_caster->GetGUID());
-                    spawnCreature->SetReactState(REACT_AGGRESSIVE);
-                    return;
+                   spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP,0);
+                   spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellEntry()->Id);
+                   spawnCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
+                   spawnCreature->SetOwnerGUID(m_caster->GetGUID());
+                   spawnCreature->SetReactState(REACT_DEFENSIVE);
+
+                   float healthfactor = (frand(0.15, 0.30));
+                   float manafactor = (frand(0.2, 0.8));
+                   spawnCreature->SetMaxHealth(spawnCreature->GetMaxHealth() + caster->GetHealthBonusFromStamina() * healthfactor);
+                   spawnCreature->SetHealth(spawnCreature->GetMaxHealth() + caster->GetHealthBonusFromStamina() * healthfactor);
+                   if(spawnCreature->GetEntry() == 15438)
+                   {
+                      spawnCreature->SetMaxPower(POWER_MANA, (spawnCreature->GetMaxPower(POWER_MANA) + caster->GetManaBonusFromIntellect() * manafactor));
+                      spawnCreature->SetPower(POWER_MANA,(spawnCreature->GetMaxPower(POWER_MANA) + caster->GetManaBonusFromIntellect() * manafactor));
+                   }
+                   //Precise values are impossible to find. This values (+ 10-30%) are the conclusion of all available proofs, lovered by 10%.
+                   //After checking the impact on the game if may be lowered to 10%.
+                   //Mana bonus must be much lover, due to conclusion of spells costs.
+                   //Bonus spell damage is not confirmed, so it's NOT implemented.
+
+                   return;
                 }
-            }
-            else
-                caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
-        }
+          }
+          else
+             caster = m_originalCaster->GetCharmerOrOwnerPlayerOrPlayerItself();
+       }
     }
 
     if (!caster)
