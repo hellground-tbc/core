@@ -427,7 +427,7 @@ SpellSpecific SpellMgr::GetSpellSpecific(uint32 spellId)
     if (!spellInfo)
         return SPELL_NORMAL;
 
-    if (spellInfo->AttributesCu & SPELL_ATTR_CU_TREAT_AS_WELL_FEED)
+    if (spellInfo->AttributesCu & SPELL_ATTR_CU_TREAT_AS_WELL_FED)
         return SPELL_WELL_FED;
 
     switch (spellInfo->SpellFamilyName)
@@ -2977,6 +2977,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 45055: // Shadow Bolt (Timbal's Focusing Crystal)
             case 37661: // The Lightning Capacitor, lightning bolt spell
             case 28733: // Arcane Torrent
+            case 43731: // Lightning Zap on critters (Stormchops)
+            case 43733: // Lightning Zap on others (Stormchops)
                 spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
                 break;
             /* WELL FEED */
@@ -2996,12 +2998,13 @@ void SpellMgr::LoadSpellCustomAttr()
             case 18193:
             case 18125:
             case 18192:
-            case 23697:
             case 18141:
             case 18194:
             case 18222:
             case 22730:
-                spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FEED;
+            case 23697:
+            case 25661: // Dirge's Kickin' Chimaerok Chops
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FED;
                 break;
             /* Scrolls - no stack */
             case 8112:  // Spirit I
@@ -3350,6 +3353,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->EffectTriggerSpell[1] = 43731;
                 spellInfo->EffectImplicitTargetA[1] = 1;
                 spellInfo->EffectImplicitTargetB[1] = 0;
+                spellInfo->AttributesCu |= SPELL_ATTR_CU_TREAT_AS_WELL_FED;
                 break;
             case 41470: //Judgement of Command should be reflectable
                 spellInfo->AttributesEx2 = 0;
