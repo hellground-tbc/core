@@ -112,6 +112,10 @@ struct boss_aranAI : public ScriptedAI
     {
         pInstance = (c->GetInstanceData());
         m_creature->GetPosition(wLoc);
+
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_CASTING_SPEED, true);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
+        me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_SILENCE, true);
     }
 
     ScriptedInstance* pInstance;
