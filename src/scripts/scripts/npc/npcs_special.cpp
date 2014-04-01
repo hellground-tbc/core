@@ -1699,15 +1699,17 @@ struct npc_fire_elemental_guardianAI : public ScriptedAI
                    attacker = NULL;
                    me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
                    Reset();
+                   return;
                 }
           }
           if (((pTotem->GetZoneId() == SHATTRATH_CITY_ZONE || pTotem->GetZoneId() == STAIRS_OF_DESTINY_ZONE) || (me->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
-             me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE) && (me->getVictim() &&me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
+             (me->getVictim() && (me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE))) && (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
           {
              victim = NULL;
              attacker = NULL;
              me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
              Reset();
+             return;
           }
 
           if ((victim || attacker))
@@ -1810,17 +1812,18 @@ struct npc_earth_elemental_guardianAI : public ScriptedAI
                    attacker = NULL;
                    me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
                    Reset();
+                   return;
                 }
           }
 
           if (((pTotem->GetZoneId() == SHATTRATH_CITY_ZONE || pTotem->GetZoneId() == STAIRS_OF_DESTINY_ZONE) || (me->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
-             me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE) && (me->getVictim() &&me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
+             (me->getVictim() && (me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE))) && (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
           {
              Reset();
              victim = NULL;
              attacker = NULL;
              me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
-
+             return;
           }
 
 
