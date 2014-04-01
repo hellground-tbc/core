@@ -504,10 +504,30 @@ bool ReputationMgr::SwitchReputation(uint32 faction1Id, uint32 faction2Id)
     if (!faction1Entry || !faction2Entry)
         return false;
 
-    int32 tempreputation =  GetReputation(faction1Entry);
-    if (!SetOneFactionReputation(faction1Entry,GetReputation(faction2Entry),false))
-        return false;
-    if (!SetOneFactionReputation(faction2Entry,tempreputation,false))
-        return false;
-    return true;
+    FactionStateList::iterator itr1 = m_factions.find(faction1Entry->reputationListID);
+    FactionStateList::iterator itr2 = m_factions.find(faction2Entry->reputationListID);
+    if (itr1 != m_factions.end() && itr2 != m_factions.end())
+    {
+        int32 temp = itr1->second.Standing;
+        itr1->second.Standing = itr2->second.Standing;
+        itr2->second.Standing = temp;
+
+        itr1->second.needSend = true;
+        itr1->second.needSave = true;
+        itr2->second.needSend = true;
+        itr2->second.needSave = true;
+
+        SetVisible(&itr1->second);
+        SetVisible(&itr2->second);
+
+        if (ReputationToRank(itr1->second.Standing) <= REP_HOSTILE)
+            SetAtWar(&itr1->second, true);
+        if (ReputationToRank(itr2->second.Standing) <= REP_HOSTILE)
+            SetAtWar(&itr2->second, true);
+
+        m_player->ReputationChanged(faction1Entry);
+        m_player->ReputationChanged(faction2Entry);
+        return true;
+    }
+    return false;
 }

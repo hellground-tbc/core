@@ -46,7 +46,8 @@ const char* logToStr[LOG_MAX_FILES][3] =
     { "CrashLogFile",       "a", NULL },                // LOG_CRASH
     { "DBDiffFile",         "a", NULL },                // LOG_DB_DIFF
     { "ExpLogFile",         "a", NULL },                // LOG_EXP
-    { "TradeLogFile",       "a", NULL }                 // LOG_TRADE
+    { "TradeLogFile",       "a", NULL },                // LOG_TRADE
+    { "RaceChangeLogFile"   "a", NULL }                 // LOG_RACE_CHANGE
 };
 
 Log::Log() : m_includeTime(false), m_gmlog_per_account(false)

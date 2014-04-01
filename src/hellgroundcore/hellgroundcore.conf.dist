@@ -175,7 +175,12 @@ BindIP = "0.0.0.0"
 #
 #    TradeLogFile
 #        Log file for trading items/money via trade/mail option
-#        Default: "exp.log"
+#        Default: "trade.log"
+#                 "" - Empty name for disable
+#
+#    RaceChangeLogFile
+#        Log file for changing race
+#        Default: "race_change.log"
 #                 "" - Empty name for disable
 #
 #    WhispLogDir
@@ -247,6 +252,7 @@ CrashLogFile = "crash.log"
 DBDiffFile = "querydiff.log"
 ExpLogFile = "exp.log"
 TradeLogFile = "trade.log"
+RaceChangeLogFile = "race_change.log"
 WhispLogDir = "whisps/"
 
 GmLogTimestamp = 0
