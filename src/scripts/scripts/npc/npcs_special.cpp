@@ -657,7 +657,7 @@ CreatureAI* GetAI_npc_doctor(Creature *_Creature)
 ######*/
 
 #define SPELL_DEATHTOUCH                5
-#define SAY_AGGRO                        "This area is closed!"
+#define SAY_AGGRO                       "This area is closed!"
 
 struct npc_guardianAI : public ScriptedAI
 {
@@ -670,7 +670,7 @@ struct npc_guardianAI : public ScriptedAI
 
     void EnterCombat(Unit *who)
     {
-        DoYell(SAY_AGGRO,LANG_UNIVERSAL,NULL);
+        DoYell(SAY_AGGRO, LANG_UNIVERSAL, NULL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -680,7 +680,7 @@ struct npc_guardianAI : public ScriptedAI
 
         if (me->isAttackReady())
         {
-            me->CastSpell(me->getVictim(),SPELL_DEATHTOUCH, true);
+            me->CastSpell(me->getVictim(), SPELL_DEATHTOUCH, true);
             me->resetAttackTimer();
         }
     }
@@ -1647,65 +1647,212 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
     return true;
 }
 
-/*########
-# npc_elemental_guardian
-#########*/
+/*######
+# npc_fire_elemental_guardian
+######*/
+#define SPELL_FIRENOVA          12470                   // wrong, spell disabled in code
+#define SPELL_FIRESHIELD        13376                   // this spell is not an aura, it's instant cast aoe
+#define SPELL_FIREBLAST         8413                    // we won't find the proper one fireblast, so we use the one with the best matching stats
+#define SHATTRATH_CITY_ZONE     3703                      //shattrath sanctuary
+#define STAIRS_OF_DESTINY_ZONE  3483                   // the dark portal sanctuary -- those two are the only sanctuaries in our expansion
 
-struct npc_elemental_guardianAI : public ScriptedAI
+struct npc_fire_elemental_guardianAI : public ScriptedAI
 {
-    npc_elemental_guardianAI(Creature *c) : ScriptedAI(c) { c->SetReactState(REACT_AGGRESSIVE); }
+    npc_fire_elemental_guardianAI(Creature* c) : ScriptedAI(c){}
 
-    uint32 m_checkTimer;
+    uint32 FireNova_Timer;
+    uint32 FireBlast_Timer;
+    uint32 FireShield_Timer;
 
     void Reset()
     {
-        m_checkTimer = 2000;
+//        FireNova_Timer = 5000 + rand() % 15000; // 5-20 sec cd
+        FireBlast_Timer = 10000 +rand() % 5000; // 10-15 sec cd
+        FireShield_Timer = 2000; // 1 tick/ 2sec
+        me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
+        me->SetReactState(REACT_DEFENSIVE);
+        me->SetAggroRange(0);
+        me->CombatStopWithPets();
+        me->ClearInCombat();
+        me->AttackStop();
     }
-
-    void MoveInLineOfSight(Unit *pWho) {}
 
     void UpdateAI(const uint32 diff)
     {
-        if (m_checkTimer < diff)
-        {
-            Creature *pTotem = me->GetCreature(me->GetOwnerGUID());
-            if (!me->getVictim() && pTotem)
-            {
-                if (!me->hasUnitState(UNIT_STAT_FOLLOW))
-                    me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+       Creature *pTotem = me->GetCreature(me->GetOwnerGUID());
+       Unit *victim = pTotem->SelectNearestTarget(5.0f);
+       Unit *attacker = pTotem->getAttackerForHelper();
 
-                if (Unit *pTemp = pTotem->SelectNearestTarget(30.0f))
-                    AttackStart(pTemp);
-            }
-
-            if (pTotem)
-            {
-                if (!pTotem->isAlive())
+       if (pTotem)
+       {
+          if (!pTotem->isAlive())
+          {
+             me->ForcedDespawn();
+             return;
+          }
+          if (!me->IsWithinDistInMap(pTotem, 30.0f) || (!victim || !attacker))
+          {
+             if (!me->getVictim()|| !me->IsWithinDistInMap(pTotem, 30.0f))
+                if (!me->hasUnitState(UNIT_STAT_FOLLOW)) 
                 {
-                    me->ForcedDespawn();
-                    return;
+                   victim = NULL;
+                   attacker = NULL;
+                   me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                   Reset();
+                   return;
                 }
+          }
+          if (((pTotem->GetZoneId() == SHATTRATH_CITY_ZONE || pTotem->GetZoneId() == STAIRS_OF_DESTINY_ZONE) || (me->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
+             (me->getVictim() && (me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE))) && (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
+          {
+             victim = NULL;
+             attacker = NULL;
+             me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+             Reset();
+             return;
+          }
 
-                if (!me->IsWithinDistInMap(pTotem, 30.0f))
-                {
-                    EnterEvadeMode();
-                    me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
-                }
-            }
+          if ((victim || attacker))
+          {
+             if (attacker)
+             {
+                me->SetInCombatWith(attacker);
+                AttackStart(attacker);
+             }
+             else
+             {
+                me->SetInCombatWith(victim);
+                AttackStart(victim);
+             }
+             if (me->hasUnitState(UNIT_STAT_CASTING))
+                return;
 
-            m_checkTimer = 2000;
-        }
-        else
-            m_checkTimer -= diff;
+             if (FireShield_Timer <= diff)
+             {
+                DoCast(me->getVictim(), SPELL_FIRESHIELD);
+                FireShield_Timer = 2000;
+             }
+             else
+                FireShield_Timer -= diff;
 
-        DoMeleeAttackIfReady();
+
+
+             if (FireBlast_Timer <= diff)
+             {
+                DoCast(me->getVictim(), SPELL_FIREBLAST);
+                FireBlast_Timer = 10000 + rand() % 5000; // 10-15 sec cd
+             }
+             else
+                FireBlast_Timer -= diff;
+
+
+/*
+             if (FireNova_Timer <= diff)
+             {
+                DoCast(me->getVictim(), SPELL_FIRENOVA);
+                FireNova_Timer = 5000 + rand() % 15000; // 5-20 sec cd
+             }
+             else
+                FireNova_Timer -= diff;
+*/
+
+             DoMeleeAttackIfReady();
+          }
+       }
     }
 };
 
-CreatureAI* GetAI_npc_elemental_guardian(Creature* pCreature)
+CreatureAI *GetAI_npc_fire_elemental_guardian(Creature* c)
 {
-    return new npc_elemental_guardianAI(pCreature);
-}
+     return new npc_fire_elemental_guardianAI(c);
+};
+
+/*######
+# npc_earth_elemental_guardian
+######*/
+#define SPELL_ANGEREDEARTH        36213
+
+struct npc_earth_elemental_guardianAI : public ScriptedAI
+{
+    npc_earth_elemental_guardianAI(Creature* c) : ScriptedAI(c) {}
+
+    uint32 AngeredEarth_Timer;
+
+    void Reset()
+    {
+        AngeredEarth_Timer = 1000;
+        me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_NATURE, true);
+        me->SetReactState(REACT_DEFENSIVE);
+        me->SetAggroRange(0);
+        me->CombatStopWithPets();
+        me->ClearInCombat();
+        me->AttackStop();
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+       Creature *pTotem = me->GetCreature(me->GetOwnerGUID());
+       Unit *victim = pTotem->SelectNearestTarget(5.0f);
+       Unit *attacker = pTotem->getAttackerForHelper();
+
+       if (pTotem)
+       {
+          if (!pTotem->isAlive())
+          {
+             me->ForcedDespawn();
+             return;
+          }
+
+          if (!me->IsWithinDistInMap(pTotem, 30.0f) || (!victim || !attacker))
+          {
+             if (!me->getVictim() || !me->IsWithinDistInMap(pTotem, 30.0f))
+                if (!me->hasUnitState(UNIT_STAT_FOLLOW)) 
+                {
+                   victim = NULL;
+                   attacker = NULL;
+                   me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+                   Reset();
+                   return;
+                }
+          }
+
+          if (((pTotem->GetZoneId() == SHATTRATH_CITY_ZONE || pTotem->GetZoneId() == STAIRS_OF_DESTINY_ZONE) || (me->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
+             (me->getVictim() && (me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE))) && (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
+          {
+             Reset();
+             victim = NULL;
+             attacker = NULL;
+             me->GetMotionMaster()->MoveFollow(pTotem, 2.0f, M_PI);
+             return;
+          }
+
+
+          if ((victim || attacker))
+          {
+
+             if (attacker)
+                AttackStart(attacker);
+             else
+                AttackStart(victim);
+
+             if (AngeredEarth_Timer <= diff)
+             {
+                DoCast(me->getVictim(), SPELL_ANGEREDEARTH);
+                AngeredEarth_Timer = 5000 + rand() % 15000; // 5-20 sec cd
+             }
+             else
+                AngeredEarth_Timer -= diff;
+
+             DoMeleeAttackIfReady();
+          }
+       }
+    }
+};
+
+CreatureAI *GetAI_npc_earth_elemental_guardian(Creature* c)
+{
+    return new npc_earth_elemental_guardianAI(c);
+};
 
 /*########
 # npc_master_omarion
@@ -3225,8 +3372,13 @@ void AddSC_npcs_special()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "npc_elemental_guardian";
-    newscript->GetAI = &GetAI_npc_elemental_guardian;
+    newscript->Name = "npc_fire_elemental_guardian";
+    newscript->GetAI = &GetAI_npc_fire_elemental_guardian;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_earth_elemental_guardian";
+    newscript->GetAI = &GetAI_npc_earth_elemental_guardian;
     newscript->RegisterSelf();
 
     newscript = new Script;
