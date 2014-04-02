@@ -861,7 +861,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 
         //target dependent checks
         uint32 GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiusEntry);
-
+        
         virtual void Update(uint32 update_diff, uint32 p_time);
 
         void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
@@ -881,6 +881,8 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
+
+        bool isInSanctuary();
 
         void _addAttacker(Unit *pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {

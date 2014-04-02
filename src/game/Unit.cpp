@@ -832,12 +832,9 @@ uint32 Unit::DealDamage(DamageLog *damageInfo, DamageEffectType damagetype, cons
         return 0;
 
     //You don't lose health from damage taken from another player while in a sanctuary
-    if (pVictim != this && isCharmedOwnedByPlayerOrPlayer() && pVictim->isCharmedOwnedByPlayerOrPlayer() && pVictim->GetOwner() != this)
-    {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
-        if (area && area->flags & AREA_FLAG_SANCTUARY)       //sanctuary
-            return 0;
-    }
+    if (pVictim != this && isCharmedOwnedByPlayerOrPlayer() && pVictim->isCharmedOwnedByPlayerOrPlayer() &&
+        pVictim->GetOwner() != this && pVictim->isInSanctuary())
+        return 0;
 
     // Do not deal damage from AoE spells when target is immune to it
     if (!pVictim->isAttackableByAOE() && spellProto && SpellMgr::IsAreaOfEffectSpell(spellProto))
@@ -1515,17 +1512,9 @@ void Unit::DealSpellDamage(SpellDamageLog *damageInfo, bool durabilityLoss)
 
     //You don't lose health from damage taken from another player while in a sanctuary
     //You still see it in the combat log though
-    if (pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
-    {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(((Player*)pVictim)->GetCachedArea());
-        if (area && area->flags & 0x800)                     //sanctuary
-            return;
-
-        // prevent cross-zone attack: caster in sanctuary, victim not
-        area = GetAreaEntryByAreaID(((Player*)this)->GetCachedArea());
-        if (area && area->flags & 0x800)
-            return;
-    }
+    if (pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER &&
+        (pVictim->isInSanctuary() || isInSanctuary()))
+        return;
 
     // update at damage Judgement aura duration that applied by attacker at victim
     if (damageInfo->damage && spellProto->Id == 35395)
@@ -1642,12 +1631,8 @@ void Unit::DealMeleeDamage(MeleeDamageLog *damageInfo, bool durabilityLoss)
 
     //You don't lose health from damage taken from another player while in a sanctuary
     //You still see it in the combat log though
-    if (pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
-    {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(((Player*)pVictim)->GetCachedArea());
-        if (area && area->flags & 0x800)                     //sanctuary
-            return;
-    }
+    if (pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER && pVictim->isInSanctuary())
+        return;
 
     // Hmmmm dont like this emotes cloent must by self do all animations
     if (damageInfo->hitInfo & HITINFO_CRITICALHIT)
@@ -13323,4 +13308,13 @@ void Unit::SetRooted(bool apply)
         GetUnitStateMgr().PushAction(UNIT_ACTION_ROOT);
     else
         GetUnitStateMgr().DropAction(UNIT_ACTION_ROOT);
+}
+
+bool Unit::isInSanctuary()
+{
+    const AreaTableEntry *area = GetAreaEntryByAreaID(GetAreaId());
+    if (area && area->flags & AREA_FLAG_SANCTUARY)
+        return true;
+
+    return false;
 }

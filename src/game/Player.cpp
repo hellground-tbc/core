@@ -21339,3 +21339,8 @@ void Player::SetCanWhisperToGM(bool on)
         sSocialMgr.canWhisperToGMList.remove(GetGUID());
     }
 }
+
+bool Player::isInSanctuary()
+{
+    return HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_SANCTUARY);
+}

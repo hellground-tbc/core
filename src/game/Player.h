@@ -2103,6 +2103,7 @@ class HELLGROUND_EXPORT Player : public Unit
 
         void BuildTeleportAckMsg(WorldPacket & data, float x, float y, float z, float ang) const;
 
+        bool isInSanctuary();
         bool isMoving() const { return HasUnitMovementFlag(MOVEFLAG_MOVING); }
         bool isTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING); }
         bool isMovingOrTurning() const { return HasUnitMovementFlag(MOVEFLAG_TURNING | MOVEFLAG_MOVING); }

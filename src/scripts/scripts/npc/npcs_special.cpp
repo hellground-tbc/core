@@ -1653,8 +1653,6 @@ bool GossipSelect_npc_ring_specialist(Player* player, Creature* _Creature, uint3
 #define SPELL_FIRENOVA          12470                   // wrong, spell disabled in code
 #define SPELL_FIRESHIELD        13376                   // this spell is not an aura, it's instant cast aoe
 #define SPELL_FIREBLAST         8413                    // we won't find the proper one fireblast, so we use the one with the best matching stats
-#define SHATTRATH_CITY_ZONE     3703                      //shattrath sanctuary
-#define STAIRS_OF_DESTINY_ZONE  3483                   // the dark portal sanctuary -- those two are the only sanctuaries in our expansion
 
 struct npc_fire_elemental_guardianAI : public ScriptedAI
 {
@@ -1702,8 +1700,8 @@ struct npc_fire_elemental_guardianAI : public ScriptedAI
                    return;
                 }
           }
-          if (((pTotem->GetZoneId() == SHATTRATH_CITY_ZONE || pTotem->GetZoneId() == STAIRS_OF_DESTINY_ZONE) || (me->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
-             (me->getVictim() && (me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE))) && (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
+          if (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself() &&
+              (pTotem->isInSanctuary() || me->isInSanctuary() || me->getVictim()->isInSanctuary()))
           {
              victim = NULL;
              attacker = NULL;
@@ -1816,8 +1814,8 @@ struct npc_earth_elemental_guardianAI : public ScriptedAI
                 }
           }
 
-          if (((pTotem->GetZoneId() == SHATTRATH_CITY_ZONE || pTotem->GetZoneId() == STAIRS_OF_DESTINY_ZONE) || (me->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetZoneId() == STAIRS_OF_DESTINY_ZONE) ||
-             (me->getVictim() && (me->getVictim()->GetZoneId() == SHATTRATH_CITY_ZONE || me->getVictim()->GetZoneId() == STAIRS_OF_DESTINY_ZONE))) && (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
+          if (me->getVictim() && me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself() &&
+              (pTotem->isInSanctuary() || me->isInSanctuary() || me->getVictim()->isInSanctuary()))
           {
              Reset();
              victim = NULL;

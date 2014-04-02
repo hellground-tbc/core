@@ -30,9 +30,6 @@
 #include "Creature.h"
 #include "Util.h"
 
-#define SHATTRATH_CITY_ZONE 3703 //shattrath sanctuary
-#define STAIRS_OF_DESTINY_ZONE 3483 // the dark portal sanctuary -- those two are the only sanctuaries in our expansion
-
 int PetAI::Permissible(const Creature *creature)
 {
     if (creature->isPet())
@@ -75,8 +72,7 @@ bool PetAI::_needToStop() const
     // This is needed for charmed creatures, as once their target was reset other effects can trigger threat
     // also pet should stop attacking if his target of his owner is in sanctuary (applies only to player and player-pets targets)
     if ((me->isCharmed() && me->getVictim() == me->GetCharmer()) ||
-        ((me->GetOwner()->GetZoneId() == SHATTRATH_CITY_ZONE || me->GetOwner()->GetZoneId() == STAIRS_OF_DESTINY_ZONE) && 
-        (me->getVictim()->GetObjectGuid().IsPlayer() || (me->getVictim()->GetObjectGuid().IsPet() && me->getVictim()->GetCharmerOrOwner()->GetObjectGuid().IsPlayer()))))
+        (me->GetOwner() && me->GetOwner()->isInSanctuary() &&  me->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself()))
         return true;
 
     return targetHasInterruptableAura(me->getVictim()) || !me->canAttack(me->getVictim());
