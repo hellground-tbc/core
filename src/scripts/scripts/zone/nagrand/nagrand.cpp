@@ -1323,14 +1323,14 @@ struct npc_warmaul_pyreAI : public ScriptedAI
     {
         Event = false;
         PlayerGUID = 0;
-        StepsTimer =0;
+        StepsTimer = 0;
         Steps = 0;
         CorpseCount = 0;
         MoveCount = 1;
         me->SetVisibility(VISIBILITY_OFF);
     }
 
-    void EnterCombat(Unit *who){}
+    void EnterCombat(Unit *who) {}
 
     void DoSpawn()
     {
@@ -1376,17 +1376,12 @@ struct npc_warmaul_pyreAI : public ScriptedAI
 
     void MoveInLineOfSight(Unit *who)
     {
-        if (who->GetTypeId() == TYPEID_PLAYER)
-        {
-            if (((Player*)who)->GetQuestStatus(9932) == QUEST_STATUS_INCOMPLETE)
+        if (Player* plr = who->ToPlayer())
+            if (plr->GetQuestStatus(9932) == QUEST_STATUS_INCOMPLETE && me->IsWithinDistInMap(plr, 3.0f))
             {
-                if (me->IsWithinDistInMap(((Player *)who), 3.0f))
-                {
-                    PlayerGUID = who->GetObjectGuid();
-                    Event = true;                     // this is not the best way to start the event :)
-                }
+                PlayerGUID = who->GetObjectGuid();
+                Event = true;                     // this is not the best way to start the event :)
             }
-        }
     }
 
     void Started()
@@ -1400,21 +1395,21 @@ struct npc_warmaul_pyreAI : public ScriptedAI
 
     Creature* GetSaboteur(uint8 ListNum)
     {
-        if (!SaboteurList.empty())
+        if (SaboteurList.empty())
+            return NULL;
+
+        uint8 Num = 1;
+
+        for (std::list<Creature*>::iterator itr = SaboteurList.begin(); itr != SaboteurList.end(); ++itr)
         {
-            uint8 Num = 1;
-
-            for (std::list<Creature*>::iterator itr = SaboteurList.begin(); itr != SaboteurList.end(); ++itr)
+            if (ListNum && ListNum != Num)
             {
-                if (ListNum && ListNum != Num)
-                {
-                    ++Num;
-                    continue;
-                }
-
-                if ((*itr)->isAlive() && (*itr)->IsWithinDistInMap(me, 25.0f))
-                    return (*itr);
+                ++Num;
+                continue;
             }
+
+            if ((*itr)->isAlive() && (*itr)->IsWithinDistInMap(me, 25.0f))
+                return (*itr);
         }
 
         return NULL;
@@ -1422,80 +1417,128 @@ struct npc_warmaul_pyreAI : public ScriptedAI
 
     uint32 NextStep(uint32 Steps)
     {
-        switch(Steps)
+        switch (Steps)
         {
-            case 1:DoSpawn();
+            case 1:
+                DoSpawn();
                 return 4000;
-            case 2:Started();
+
+            case 2:
+                Started();
                 return 2900;
-            case 3:if (Creature* Saboteur = GetSaboteur(2))
-                       DoScriptText(SAY_SABOTEUR1, Saboteur);
+
+            case 3:
+                if (Creature* Saboteur = GetSaboteur(2))
+                    DoScriptText(SAY_SABOTEUR1, Saboteur);
                 return 5000;
-            case 4:if (Creature* Saboteur = GetSaboteur(1))
-                       DoScriptText(SAY_SABOTEUR2, Saboteur);
+
+            case 4:
+                if (Creature* Saboteur = GetSaboteur(1))
+                    DoScriptText(SAY_SABOTEUR2, Saboteur);
                 return 5000;
-            case 5:if (Creature* Saboteur = GetSaboteur(2))
-                       DoScriptText(SAY_SABOTEUR3, Saboteur);
+
+            case 5:
+                if (Creature* Saboteur = GetSaboteur(2))
+                    DoScriptText(SAY_SABOTEUR3, Saboteur);
                 return 5000;
-            case 6:if (Creature* Saboteur = GetSaboteur(1))
-                       DoScriptText(SAY_SABOTEUR4, Saboteur);
+
+            case 6:
+                if (Creature* Saboteur = GetSaboteur(1))
+                    DoScriptText(SAY_SABOTEUR4, Saboteur);
                 return 4000;
-            case 7:Move();
+
+            case 7:
+                Move();
                 return 6000;
-            case 8:DoSummon();
+
+            case 8:
+                DoSummon();
                 return 2000;
-            case 9:if (Creature* Saboteur = GetSaboteur(2))
-                       DoScriptText(SAY_SABOTEUR5, Saboteur);
+
+            case 9:
+                if (Creature* Saboteur = GetSaboteur(2))
+                    DoScriptText(SAY_SABOTEUR5, Saboteur);
                 return 2000;
-            case 10:Move();
+
+            case 10:
+                Move();
                 return 7000;
-            case 11:DoSummon();
+
+            case 11:
+                DoSummon();
                 return 2000;
-            case 12:if (Creature* Saboteur = GetSaboteur(1))
-                        DoScriptText(SAY_SABOTEUR6, Saboteur);
+
+            case 12:
+                if (Creature* Saboteur = GetSaboteur(1))
+                    DoScriptText(SAY_SABOTEUR6, Saboteur);
                 return 2000;
-            case 13:Move();
+
+            case 13:
+                Move();
                 return 7000;
-            case 14:DoSummon();
+
+            case 14:
+                DoSummon();
                 return 2000;
-            case 15:if (Creature* Saboteur = GetSaboteur(2))
-                        DoScriptText(SAY_SABOTEUR7, Saboteur);
+
+            case 15:
+                if (Creature* Saboteur = GetSaboteur(2))
+                    DoScriptText(SAY_SABOTEUR7, Saboteur);
                 return 3000;
-            case 16:if (Creature* Saboteur = GetSaboteur(1))
-                        DoScriptText(SAY_SABOTEUR7, Saboteur);
+
+            case 16:
+                if (Creature* Saboteur = GetSaboteur(1))
+                    DoScriptText(SAY_SABOTEUR7, Saboteur);
                 return 2000;
-            case 17:Move();
+
+            case 17:
+                Move();
                 return 7000;
-            case 18:DoSummon();
+
+            case 18:
+                DoSummon();
                 return 2000;     
-            case 19:if (Creature* Saboteur = GetSaboteur(2))
-                        DoScriptText(SAY_SABOTEUR8, Saboteur);
+
+            case 19:
+                if (Creature* Saboteur = GetSaboteur(2))
+                    DoScriptText(SAY_SABOTEUR8, Saboteur);
                 return 3000;           
-            case 21:if (Creature* Saboteur = GetSaboteur(1))
-                        DoScriptText(SAY_SABOTEUR9, Saboteur);
+
+            case 21:
+                if (Creature* Saboteur = GetSaboteur(1))
+                    DoScriptText(SAY_SABOTEUR9, Saboteur);
                 return 2000; 
-            case 22:Move();
+
+            case 22:
+                Move();
                 return 7000;
-            case 23:DoSummon();
+
+            case 23:
+                DoSummon();
                 return 2000;
-            case 24:if (Creature* Saboteur = GetSaboteur(2))
-                        DoScriptText(SAY_SABOTEUR10, Saboteur);
+
+            case 24:
+                if (Creature* Saboteur = GetSaboteur(2))
+                    DoScriptText(SAY_SABOTEUR10, Saboteur);
                 return 2000; 
-            case 25:Move();
+
+            case 25:
+                Move();
                 return 7000;
-            case 26:if (Player* player = me->GetPlayer(PlayerGUID))
-                    {
-                        float Radius = 15.0f;
-                        if (me->IsWithinDistInMap(player, Radius))
-                            ((Player*)player)->KilledMonster(18395, me->GetObjectGuid());
-                    }
+
+            case 26:
+                if (Player* player = me->GetPlayer(PlayerGUID))
+                    if (me->IsWithinDistInMap(player, 15.0f))
+                        ((Player*) player)->KilledMonster(18395, me->GetObjectGuid());
                 return 2000;
-            case 27:for (std::list<Creature*>::iterator itr = SaboteurList.begin(); itr != SaboteurList.end(); ++itr)
-                    {
-                        (*itr)->ForcedDespawn();
-                    }
-                    Reset();
-        default: return 0;
+
+            case 27:
+                for (std::list<Creature*>::iterator itr = SaboteurList.begin(); itr != SaboteurList.end(); ++itr)
+                    (*itr)->ForcedDespawn();
+                Reset();
+
+            default:
+                return 0;
         }
     }
 
@@ -1507,7 +1550,8 @@ struct npc_warmaul_pyreAI : public ScriptedAI
             if (Event)
                 StepsTimer = NextStep(++Steps);
         }
-        else StepsTimer -= diff;
+        else
+            StepsTimer -= diff;
     }
 };
 

@@ -258,11 +258,11 @@ struct boss_reliquary_of_soulsAI : public Scripted_NoMovementAI
 
     bool FindPlayers()
     {
-        std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+        std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
         if(m_threatlist.empty())
             return false;
 
-        for(std::list<HostilReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
+        for(std::list<HostileReference*>::iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
         {
             Unit* pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
             if(pUnit && pUnit->isAlive() && pUnit->isInCombat() && me->canAttack(pUnit) && pUnit->IsWithinDistInMap(me, 100.0f))

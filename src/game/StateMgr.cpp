@@ -222,7 +222,7 @@ public:
 
         target->InterruptNonMeleeSpells(true);
         target->CombatStop();
-        target->getHostilRefManager().deleteReferences();
+        target->getHostileRefManager().deleteReferences();
         target->addUnitState(UNIT_STAT_DIED);
         //target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
@@ -277,7 +277,7 @@ public:
                 m_previewDisplayId = u.GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID);
             u.Mount(m_displayId);
         }
-        u.getHostilRefManager().setOnlineOfflineState(false);
+        u.getHostileRefManager().setOnlineOfflineState(false);
         u.addUnitState(UNIT_STAT_TAXI_FLIGHT);
         u.SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
         _Initialize(u);
@@ -290,7 +290,7 @@ public:
             u.Unmount();
         u.clearUnitState(UNIT_STAT_TAXI_FLIGHT);
         u.RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
-        u.getHostilRefManager().setOnlineOfflineState(true);
+        u.getHostileRefManager().setOnlineOfflineState(true);
         if(u.pvpInfo.inHostileArea)
             u.CastSpell(&u, 2479, true);
 

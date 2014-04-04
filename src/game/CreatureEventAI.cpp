@@ -628,8 +628,8 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         case ACTION_T_THREAT_ALL_PCT:
         {
-            std::list<HostilReference*>& threatList = m_creature->getThreatManager().getThreatList();
-            for (std::list<HostilReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
+            std::list<HostileReference*>& threatList = m_creature->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
                 if (Unit* Temp = Unit::GetUnit(*m_creature,(*i)->getUnitGuid()))
                     m_creature->getThreatManager().modifyThreatPercent(Temp, action.threat_all_pct.percent);
             break;
@@ -739,8 +739,8 @@ void CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
             break;
         case ACTION_T_CAST_EVENT_ALL:
         {
-            std::list<HostilReference*>& threatList = m_creature->getThreatManager().getThreatList();
-            for (std::list<HostilReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
+            std::list<HostileReference*>& threatList = m_creature->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
                 if (Unit* Temp = Unit::GetUnit(*m_creature,(*i)->getUnitGuid()))
                     if (Temp->GetTypeId() == TYPEID_PLAYER)
                         ((Player*)Temp)->CastedCreatureOrGO(action.cast_event_all.creatureId, m_creature->GetGUID(), action.cast_event_all.spellId);

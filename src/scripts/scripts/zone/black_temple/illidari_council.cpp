@@ -649,8 +649,8 @@ struct boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
 
         if (m_aexpTimer < diff)
         {
-            std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-            for (std::list<HostilReference*>::iterator i = m_threatlist.begin(); i!= m_threatlist.end();++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator i = m_threatlist.begin(); i!= m_threatlist.end();++i)
             {
                 if (Unit* pUnit = Unit::GetUnit((*me), (*i)->getUnitGuid()))
                 {

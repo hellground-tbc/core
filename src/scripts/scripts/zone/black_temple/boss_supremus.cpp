@@ -175,8 +175,8 @@ struct boss_supremusAI : public ScriptedAI
         uint32 health = 0;
         Unit* target = NULL;
 
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-        std::list<HostilReference*>::iterator i = m_threatlist.begin();
+        std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+        std::list<HostileReference*>::iterator i = m_threatlist.begin();
         for (i = m_threatlist.begin(); i!= m_threatlist.end();++i)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
@@ -258,7 +258,7 @@ struct boss_supremusAI : public ScriptedAI
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true, m_creature->getVictimGUID()))
                 {
                     DoResetThreat();
-                    m_creature->getThreatManager().setCurrentVictim((HostilReference*)target);
+                    m_creature->getThreatManager().setCurrentVictim((HostileReference*)target);
                     m_creature->AI()->AttackStart(target);
                     m_creature->AddThreat(target, 5000000.0f);
                     DoScriptText(EMOTE_NEW_TARGET, m_creature, 0, true);

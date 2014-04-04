@@ -541,7 +541,7 @@
     <ClCompile Include="..\..\src\game\Tools.cpp" />
     <ClCompile Include="..\..\src\game\FollowerReference.cpp" />
     <ClCompile Include="..\..\src\game\GroupReference.cpp" />
-    <ClCompile Include="..\..\src\game\HostilRefManager.cpp" />
+    <ClCompile Include="..\..\src\game\HostileRefManager.cpp" />
     <ClCompile Include="..\..\src\game\ThreatManager.cpp" />
     <ClCompile Include="..\..\src\game\BattleGround.cpp" />
     <ClCompile Include="..\..\src\game\BattleGroundAA.cpp" />
@@ -750,7 +750,7 @@
     <ClInclude Include="..\..\src\game\FollowerRefManager.h" />
     <ClInclude Include="..\..\src\game\GroupReference.h" />
     <ClInclude Include="..\..\src\game\GroupRefManager.h" />
-    <ClInclude Include="..\..\src\game\HostilRefManager.h" />
+    <ClInclude Include="..\..\src\game\HostileRefManager.h" />
     <ClInclude Include="..\..\src\game\ThreatManager.h" />
     <ClInclude Include="..\..\src\game\BattleGround.h" />
     <ClInclude Include="..\..\src\game\BattleGroundAA.h" />

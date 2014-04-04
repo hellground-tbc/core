@@ -536,10 +536,10 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
             //Summon Inner Demon
             if(InnerDemons_Timer < diff)
             {
-                std::list<HostilReference *>& ThreatList = m_creature->getThreatManager().getThreatList();
+                std::list<HostileReference *>& ThreatList = m_creature->getThreatManager().getThreatList();
                 std::vector<Unit *> TargetList;
 
-                for(std::list<HostilReference *>::iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
+                for(std::list<HostileReference *>::iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                 {
                     Unit *tempTarget = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
                     if(tempTarget && !tempTarget->HasAura(SPELL_CONSUMING_MADNESS,0) && tempTarget->GetGUID() != m_creature->getVictimGUID() && std::find(TargetList.begin(), TargetList.end(), tempTarget) == TargetList.end() && TargetList.size() < 5)

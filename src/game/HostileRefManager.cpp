@@ -18,13 +18,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "HostilRefManager.h"
+#include "HostileRefManager.h"
 #include "ThreatManager.h"
 #include "Unit.h"
 #include "DBCStructure.h"
 #include "SpellMgr.h"
 
-HostilRefManager::~HostilRefManager()
+HostileRefManager::~HostileRefManager()
 {
     deleteReferences();
 }
@@ -34,12 +34,12 @@ HostilRefManager::~HostilRefManager()
 // The pVictim is hated than by them as well
 // use for buffs and healing threat functionality
 
-void HostilRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry const *pThreatSpell, bool pSingleTarget)
+void HostileRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry const *pThreatSpell, bool pSingleTarget)
 {
     if (iOwner->hasUnitState(UNIT_STAT_IGNORE_ATTACKERS))
         return;
 
-    HostilReference* ref;
+    HostileReference* ref;
 
     uint32 size = pSingleTarget ? 1 : getSize();            // if pSingleTarget do not divide threat
     ref = getFirst();
@@ -56,27 +56,27 @@ void HostilRefManager::threatAssist(Unit *pVictim, float pThreat, SpellEntry con
 
 //=================================================
 
-void HostilRefManager::addThreatPercent(int32 pValue)
+void HostileRefManager::addThreatPercent(int32 pValue)
 {
-    for (HostilReference* ref = getFirst(); ref != NULL; ref = ref->next())
+    for (HostileReference* ref = getFirst(); ref != NULL; ref = ref->next())
         ref->addThreatPercent(pValue);
 }
 
 //=================================================
 // The online / offline status is given to the method. The calculation has to be done before
 
-void HostilRefManager::setOnlineOfflineState(bool pIsOnline)
+void HostileRefManager::setOnlineOfflineState(bool pIsOnline)
 {
-    for (HostilReference* ref = getFirst(); ref != NULL; ref = ref->next())
+    for (HostileReference* ref = getFirst(); ref != NULL; ref = ref->next())
         ref->setOnlineOfflineState(pIsOnline);
 }
 
 //=================================================
 // The online / offline status is calculated and set
 
-void HostilRefManager::updateThreatTables()
+void HostileRefManager::updateThreatTables()
 {
-    for (HostilReference* ref = getFirst(); ref != NULL; ref = ref->next())
+    for (HostileReference* ref = getFirst(); ref != NULL; ref = ref->next())
         ref->updateOnlineStatus();
 }
 
@@ -84,12 +84,12 @@ void HostilRefManager::updateThreatTables()
 // The references are not needed anymore
 // tell the source to remove them from the list and free the mem
 
-void HostilRefManager::deleteReferences()
+void HostileRefManager::deleteReferences()
 {
-    HostilReference* ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostilReference* nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         ref->removeReference();
         delete ref;
         ref = nextRef;
@@ -99,12 +99,12 @@ void HostilRefManager::deleteReferences()
 //=================================================
 // delete one reference, defined by Unit
 
-void HostilRefManager::deleteReference(Unit *pCreature)
+void HostileRefManager::deleteReference(Unit *pCreature)
 {
-    HostilReference* ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostilReference* nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         if (ref->getSource()->getOwner() == pCreature)
         {
             ref->removeReference();
@@ -118,12 +118,12 @@ void HostilRefManager::deleteReference(Unit *pCreature)
 //=================================================
 // set state for one reference, defined by Unit
 
-void HostilRefManager::setOnlineOfflineState(Unit *pCreature,bool pIsOnline)
+void HostileRefManager::setOnlineOfflineState(Unit *pCreature,bool pIsOnline)
 {
-    HostilReference* ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostilReference* nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         if (ref->getSource()->getOwner() == pCreature)
         {
             ref->setOnlineOfflineState(pIsOnline);

@@ -942,8 +942,8 @@ void ScriptedAI::DoResetThreat()
         return;
     }
 
-    std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-    std::list<HostilReference*>::iterator itr;
+    std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator itr;
 
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
     {

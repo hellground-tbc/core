@@ -75,8 +75,8 @@ struct boss_murmurAI : public Scripted_NoMovementAI
     {
         if (target && target->isAlive() && spell && spell->Id == 38794)
         {
-            std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-            for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for(std::list<HostileReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 if (Unit* targets = Unit::GetUnit((*me),(*i)->getUnitGuid()))
                 {
@@ -124,8 +124,8 @@ struct boss_murmurAI : public Scripted_NoMovementAI
             // Thundering Storm cast to all which are too far away
             if (ThunderingStorm_Timer < diff)
             {
-                std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-                for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+                std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+                for(std::list<HostileReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
                 {
                     if (Unit* target = Unit::GetUnit((*me),(*i)->getUnitGuid()))
                     {
@@ -142,8 +142,8 @@ struct boss_murmurAI : public Scripted_NoMovementAI
             // Sonic Shock cast to tank if someone is too far away
             if (SonicShock_Timer < diff)
             {
-                std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-                for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+                std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+                for(std::list<HostileReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
                 {
                     if (Unit* target = Unit::GetUnit((*me),(*i)->getUnitGuid()))
                     {
@@ -196,8 +196,8 @@ struct boss_murmurAI : public Scripted_NoMovementAI
 
         if (!me->IsWithinMeleeRange(me->getVictim()))
         {
-            std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-            for(std::list<HostilReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            for(std::list<HostileReference*>::iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 if (Unit* target = Unit::GetUnit((*me),(*i)->getUnitGuid()))
                 {

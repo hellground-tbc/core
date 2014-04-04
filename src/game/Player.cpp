@@ -2297,7 +2297,7 @@ void Player::SetInWater(bool apply)
     // remove auras that need water/land
     RemoveAurasWithInterruptFlags(apply ? AURA_INTERRUPT_FLAG_NOT_ABOVEWATER : AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
 
-    getHostilRefManager().updateThreatTables();
+    getHostileRefManager().updateThreatTables();
 }
 
 void Player::SetGameMaster(bool on)
@@ -2327,7 +2327,7 @@ void Player::SetGameMaster(bool on)
         UpdateArea(m_areaUpdateId);
     }
 
-    getHostilRefManager().setOnlineOfflineState(!on);
+    getHostileRefManager().setOnlineOfflineState(!on);
     UpdateVisibilityAndView();
 }
 
@@ -18074,7 +18074,7 @@ void Player::CleanupAfterTaxiFlight()
     m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
     Unmount();
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
-    getHostilRefManager().setOnlineOfflineState(true);
+    getHostileRefManager().setOnlineOfflineState(true);
 }
 
 void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)

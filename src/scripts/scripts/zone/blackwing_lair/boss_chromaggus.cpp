@@ -262,7 +262,7 @@ struct boss_chromaggusAI : public ScriptedAI
 
             SpellAfflict = RAND(SPELL_BROODAF_BLUE, SPELL_BROODAF_BLACK, SPELL_BROODAF_RED, SPELL_BROODAF_BRONZE, SPELL_BROODAF_GREEN);
 
-            std::list<HostilReference*>::iterator i;
+            std::list<HostileReference*>::iterator i;
 
             for (i = m_creature->getThreatManager().getThreatList().begin();i != m_creature->getThreatManager().getThreatList().end();)
             {

@@ -261,7 +261,7 @@ bool CastSpellEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 Unit::Unit() :
     WorldObject(), i_motionMaster(this), movespline(new Movement::MoveSpline()),
-    _threatManager(this), _hostilRefManager(this), m_stateMgr(this),
+    _threatManager(this), _hostileRefManager(this), m_stateMgr(this),
     IsAIEnabled(false), NeedChangeAI(false), i_AI(NULL), i_disabledAI(NULL),
     m_procDeep(0), m_AI_locked(false), m_removedAurasCount(0)
 {
@@ -450,7 +450,7 @@ void Unit::Update(uint32 update_diff, uint32 p_time)
     // update combat timer only for players and pets
     if (isInCombat() && isCharmedOwnedByPlayerOrPlayer())
     {
-        if (getHostilRefManager().isEmpty())
+        if (getHostileRefManager().isEmpty())
         {
             // m_CombatTimer set at aura start and it will be freeze until aura removing
             if (m_CombatTimer <= update_diff)
@@ -9971,7 +9971,7 @@ void Unit::setDeathState(DeathState s)
     {
         CombatStop();
         DeleteThreatList();
-        getHostilRefManager().deleteReferences();
+        getHostileRefManager().deleteReferences();
         ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
 
         if (IsNonMeleeSpellCasted(false))
@@ -10901,7 +10901,7 @@ void Unit::RemoveFromWorld()
     // cleanup
     if (IsInWorld())
     {
-        getHostilRefManager().deleteReferences();
+        getHostileRefManager().deleteReferences();
 
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
@@ -10929,7 +10929,7 @@ void Unit::CleanupsBeforeDelete()
         CombatStop();
         ClearComboPointHolders();
         DeleteThreatList();
-        getHostilRefManager().setOnlineOfflineState(false);
+        getHostileRefManager().setOnlineOfflineState(false);
         RemoveAllGameObjects();
         RemoveAllDynObjects();
 
@@ -12761,7 +12761,7 @@ void Unit::RemoveCharmedOrPossessedBy(Unit *charmer)
 
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
-    getHostilRefManager().deleteReferences();
+    getHostileRefManager().deleteReferences();
     DeleteThreatList();
     SetCharmerGUID(0);
     RestoreFaction();

@@ -28,7 +28,7 @@
 #include "UpdateFields.h"
 #include "SharedDefines.h"
 #include "ThreatManager.h"
-#include "HostilRefManager.h"
+#include "HostileRefManager.h"
 #include "FollowerReference.h"
 #include "FollowerRefManager.h"
 #include "Utilities/EventProcessor.h"
@@ -861,7 +861,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
 
         //target dependent checks
         uint32 GetSpellRadiusForTarget(Unit* target,const SpellRadiusEntry * radiusEntry);
-        
+
         virtual void Update(uint32 update_diff, uint32 p_time);
 
         void SetSelection(uint64 guid){ SetUInt64Value(UNIT_FIELD_TARGET, guid); }
@@ -1424,11 +1424,11 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
 
-        HostilRefManager& getHostilRefManager() { return _hostilRefManager; }
+        HostileRefManager& getHostileRefManager() { return _hostileRefManager; }
         ThreatManager& getThreatManager() { return _threatManager; }
 
-        void addHatedBy(HostilReference* pHostilReference) { getHostilRefManager().insertFirst(pHostilReference); };
-        void removeHatedBy(HostilReference* /*pHostilReference*/) { /* nothing to do yet */ }
+        void addHatedBy(HostileReference* pHostileReference) { getHostileRefManager().insertFirst(pHostileReference); };
+        void removeHatedBy(HostileReference* /*pHostileReference*/) { /* nothing to do yet */ }
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
         AuraMap      & GetAuras()       { return m_Auras; }
@@ -1702,7 +1702,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         Diminishing m_Diminishing;
 
         // Manage all Units that are threatened by us
-        HostilRefManager _hostilRefManager;
+        HostileRefManager _hostileRefManager;
         ThreatManager _threatManager;
 
         FollowerRefManager m_FollowingRefManager;

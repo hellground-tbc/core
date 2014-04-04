@@ -2047,7 +2047,7 @@ void Aura::TriggerSpell()
                         if (!m_duration)
                             m_target->CastSpell(m_target, 32612, true, NULL, this);
                         else if (m_tickNumber < 5)
-                            m_target->getHostilRefManager().addThreatPercent(-(int32)(100/(6-m_tickNumber)));
+                            m_target->getHostileRefManager().addThreatPercent(-(int32)(100/(6-m_tickNumber)));
                         return;
                     }
                     default:
@@ -2321,8 +2321,8 @@ void Aura::TriggerSpell()
             {
                 if (caster->CanHaveThreatList())
                 {
-                    std::list<HostilReference*>& m_threatlist = caster->getThreatManager().getThreatList();
-                    std::list<HostilReference*>::iterator i = m_threatlist.begin();
+                    std::list<HostileReference*>& m_threatlist = caster->getThreatManager().getThreatList();
+                    std::list<HostileReference*>::iterator i = m_threatlist.begin();
                     while (m_threatlist.size())
                     {
                         i = m_threatlist.begin();
@@ -2347,10 +2347,10 @@ void Aura::TriggerSpell()
                 if (caster->CanHaveThreatList())
                 {
                     target = NULL;
-                    std::list<HostilReference*> targets(caster->getThreatManager().getThreatList());
+                    std::list<HostileReference*> targets(caster->getThreatManager().getThreatList());
                     while (!targets.empty())
                     {
-                        std::list<HostilReference*>::iterator i = targets.begin();
+                        std::list<HostileReference*>::iterator i = targets.begin();
                         advance(i, rand()%targets.size());
                         Unit *unit = caster->GetUnit((*i)->getUnitGuid());
                         if (unit && unit->GetTypeId() == TYPEID_PLAYER && !unit->IsWithinDistInMap(caster, 18))
@@ -4062,7 +4062,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
         // feign death in pve
         bool resisted = false;
-        HostilReference *ref = m_target->getHostilRefManager().getFirst();
+        HostileReference *ref = m_target->getHostileRefManager().getFirst();
         while(ref)
         {
             Unit* target = ref->getSource()->getOwner();
@@ -4093,7 +4093,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
                         if (target->m_currentSpells[i] && target->m_currentSpells[i]->m_targets.getUnitTargetGUID() == m_target->GetGUID())
                             target->InterruptSpell(i, false);
 
-                m_target->getHostilRefManager().deleteReference(target);
+                m_target->getHostileRefManager().deleteReference(target);
                 if(target->getVictimGUID() == m_target->GetGUID())
                     target->AttackStop();
             }
@@ -4426,7 +4426,7 @@ void Aura::HandleAuraModTotalThreat(bool apply, bool Real)
     else
         threatMod =  float(-GetModifierValue());
 
-    m_target->getHostilRefManager().threatAssist(caster, threatMod);
+    m_target->getHostileRefManager().threatAssist(caster, threatMod);
 }
 
 void Aura::HandleModTaunt(bool apply, bool Real)
@@ -5802,7 +5802,7 @@ void Aura::HandleModRegen(bool apply, bool Real)            // eating
             {
                 SpellEntry const *spellProto = GetSpellProto();
                 if (spellProto)
-                    m_target->getHostilRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
+                    m_target->getHostileRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
             }
         }
     }
@@ -6843,7 +6843,7 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
 
             // apply threat equal to 1/2 healing threat for absorb value
             if (caster->GetTypeId() == TYPEID_PLAYER)
-                m_target->getHostilRefManager().threatAssist(caster, float(m_modifier.m_amount) * 0.25f, GetSpellProto());
+                m_target->getHostileRefManager().threatAssist(caster, float(m_modifier.m_amount) * 0.25f, GetSpellProto());
         }
     }
 }
@@ -7238,7 +7238,7 @@ void Aura::PeriodicTick()
             uint32 heal = pCaster->SpellHealingBonus(spellProto, uint32(new_damage * multiplier), DOT, pCaster);
 
             int32 gain = pCaster->ModifyHealth(heal);
-            pCaster->getHostilRefManager().threatAssist(pCaster, gain * 0.5f, spellProto);
+            pCaster->getHostileRefManager().threatAssist(pCaster, gain * 0.5f, spellProto);
 
             // change it
             pCaster->SendHealSpellLog(pCaster, spellProto->Id, heal);
@@ -7294,7 +7294,7 @@ void Aura::PeriodicTick()
             //Do check before because m_modifier.auraName can be invalidate by DealDamage.
             bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL); // && m_target != pCaster);
 
-            m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
+            m_target->getHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
@@ -7442,7 +7442,7 @@ void Aura::PeriodicTick()
             int32 gain = m_target->ModifyPower(power,pdamage);
 
             if (Unit* pCaster = GetCaster())
-                m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
+                m_target->getHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
             break;
         }
         case SPELL_AURA_OBS_MOD_MANA:
@@ -7471,7 +7471,7 @@ void Aura::PeriodicTick()
             int32 gain = m_target->ModifyPower(POWER_MANA, pdamage);
 
             if (Unit* pCaster = GetCaster())
-                m_target->getHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
+                m_target->getHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
             break;
         }
         case SPELL_AURA_POWER_BURN_MANA:

@@ -186,7 +186,7 @@
     <ClCompile Include="..\..\src\game\GroupReference.cpp">
       <Filter>References</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\game\HostilRefManager.cpp">
+    <ClCompile Include="..\..\src\game\HostileRefManager.cpp">
       <Filter>References</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\game\ThreatManager.cpp">
@@ -710,7 +710,7 @@
     <ClInclude Include="..\..\src\game\GroupRefManager.h">
       <Filter>References</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\HostilRefManager.h">
+    <ClInclude Include="..\..\src\game\HostileRefManager.h">
       <Filter>References</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\ThreatManager.h">

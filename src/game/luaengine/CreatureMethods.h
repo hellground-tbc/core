@@ -418,7 +418,7 @@ namespace LuaCreature
         float dist = sEluna->CHECKVAL<float>(L, 5, 0.0f);
         int32 aura = sEluna->CHECKVAL<int32>(L, 6, 0);
 
-        const std::list<HostilReference*> & threatList = creature->getThreatManager().getThreatList();
+        const std::list<HostileReference*> & threatList = creature->getThreatManager().getThreatList();
         if (position >= threatList.size())
         {
             sEluna->Push(L);
@@ -426,7 +426,7 @@ namespace LuaCreature
         }
 
         std::list<Unit*> targetList;
-        for (std::list<HostilReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+        for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
         {
             Unit* target = (*itr)->getTarget();
             if (!target)
@@ -490,8 +490,8 @@ namespace LuaCreature
         int tbl = lua_gettop(L);
         uint32 i = 0;
 
-        std::list<HostilReference*> const& threatList = creature->getThreatManager().getThreatList();
-        std::list<HostilReference*>::const_iterator itr;
+        std::list<HostileReference*> const& threatList = creature->getThreatManager().getThreatList();
+        std::list<HostileReference*>::const_iterator itr;
         for (itr = threatList.begin(); itr != threatList.end(); ++itr)
         {
             Unit* target = (*itr)->getTarget();

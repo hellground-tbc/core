@@ -211,8 +211,8 @@ Unit* UnitAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float ma
 
 void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget targetType, float max_dist, bool playerOnly, uint64 excludeGUID, float min_dist)
 {
-    const std::list<HostilReference*> &threatlist = me->getThreatManager().getThreatList();
-    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+    const std::list<HostileReference*> &threatlist = me->getThreatManager().getThreatList();
+    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         targetList.push_back((*itr)->getTarget());
 
     if (playerOnly)

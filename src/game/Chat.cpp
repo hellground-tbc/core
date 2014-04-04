@@ -273,7 +273,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "getinstdata",    PERM_ADM,       PERM_CONSOLE, false,  &ChatHandler::HandleDebugGetInstanceDataCommand,    "", NULL },
         { "getinstdata64",  PERM_ADM,       PERM_CONSOLE, false,  &ChatHandler::HandleDebugGetInstanceData64Command,  "", NULL },
         { "getvalue",       PERM_ADM,       PERM_CONSOLE, false,  &ChatHandler::HandleDebugGetValue,                  "", NULL },
-        { "hostilelist",    PERM_GMT_DEV,   PERM_CONSOLE, false,  &ChatHandler::HandleDebugHostilRefList,             "", NULL },
+        { "hostilelist",    PERM_GMT_DEV,   PERM_CONSOLE, false,  &ChatHandler::HandleDebugHostileRefList,            "", NULL },
         { "lootrecipient",  PERM_GMT_DEV,   PERM_CONSOLE, false,  &ChatHandler::HandleDebugGetLootRecipient,          "", NULL },
         { "Mod32Value",     PERM_ADM,       PERM_CONSOLE, false,  &ChatHandler::HandleDebugMod32Value,                "", NULL },
         { "play",           PERM_DEVELOPER, PERM_CONSOLE, false,  NULL,                                               "", debugPlayCommandTable },

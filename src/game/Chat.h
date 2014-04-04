@@ -577,7 +577,7 @@ class ChatHandler
 
         //! Development Commands
         bool HandleSet32Bit(const char* args);
-        bool HandleDebugHostilRefList(const char * args);
+        bool HandleDebugHostileRefList(const char * args);
         bool HandlePossessCommand(const char* args);
         bool HandleUnPossessCommand(const char* args);
         bool HandleBindSightCommand(const char* args);

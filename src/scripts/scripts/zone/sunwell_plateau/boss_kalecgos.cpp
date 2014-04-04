@@ -750,13 +750,13 @@ struct boss_kalecAI : public ScriptedAI
     Unit* SelectUnitToRevitalize()
     {
         std::list<Unit*> RealmUnitList;
-        std::list<HostilReference*>& ThreatList = me->getThreatManager().getThreatList();
+        std::list<HostileReference*>& ThreatList = me->getThreatManager().getThreatList();
         RealmUnitList.clear();
 
         if (ThreatList.empty())
             return NULL;
 
-        for(std::list<HostilReference*>::iterator i = ThreatList.begin() ; i!=ThreatList.end() ; ++i)
+        for(std::list<HostileReference*>::iterator i = ThreatList.begin() ; i!=ThreatList.end() ; ++i)
         {
             Unit* target = Unit::GetUnit(*me, (*i)->getUnitGuid());
             // only castable on players in spectral realm that have mana pool and are not revitalized yet
