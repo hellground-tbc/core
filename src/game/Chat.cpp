@@ -989,7 +989,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, st
 
         SetSentErrorMessage(false);
         // table[i].Name == "" is special case: send original command to handler
-        std::string args = strlen(table[i].Name )!=0 ? std::string(" ") + text : oldtext;
+        std::string args = strle(table[i].Name )!=0 ? std::string(" ") + text : oldtext;
         if ((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
         
