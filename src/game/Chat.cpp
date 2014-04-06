@@ -992,9 +992,8 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, st
         std::string args = strlen(table[i].Name )!=0 ? std::string(" ") + text : oldtext;
         if ((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-        if ((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
-        {
-            if (m_session && (m_session->GetPermissions() & sWorld.getConfig(CONFIG_COMMAND_LOG_PERMISSION)) && table[i].Name != "password")
+        
+        if (m_session && (m_session->GetPermissions() & sWorld.getConfig(CONFIG_COMMAND_LOG_PERMISSION)) && table[i].Name != "password")
             {
                 Player* p = m_session->GetPlayer();
                 uint64 sel_guid = p->GetSelection();
