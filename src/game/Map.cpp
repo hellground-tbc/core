@@ -434,7 +434,11 @@ void Map::BroadcastPacketExcept(WorldObject* sender, WorldPacket* msg, Player* e
 
 bool Map::loaded(const GridPair &p) const
 {
-    return (getNGrid(p.x_coord, p.y_coord) && isGridObjectDataLoaded(p.x_coord, p.y_coord));
+    if (NGridType* grid_type = getNGrid(p.x_coord, p.y_coord))
+    {
+        return grid_type->isGridObjectDataLoaded();
+    }
+    return false;
 }
 
 void Map::Update(const uint32 &t_diff)
