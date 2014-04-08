@@ -2542,6 +2542,9 @@ class HELLGROUND_EXPORT Player : public Unit
 
         // Current teleport data
         WorldLocation m_teleport_dest;
+        void StartTeleportTimer() {m_teleportStartTime = time(NULL);}
+        bool HasTeleportTimerPassed(uint64 diff) {return m_teleportStartTime + diff < time(NULL);}
+        uint64 m_teleportStartTime;
 
         // Temporary removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;

@@ -305,6 +305,12 @@ void WorldSession::ProcessPacket(WorldPacket* packet)
                 }
                 else if (_player->IsInWorld())
                     (this->*opHandle.handler)(*packet);
+                else if (_player->HasTeleportTimerPassed(_player->GetSession()->HasPermissions(PERM_GMT_DEV)?10000 : 60000))
+                    //player should not be in game yet but sends opcodes, 60 sec lag is hard to belive, unstuck him
+                {
+                    HandleMoveWorldportAckOpcode();
+                    (this->*opHandle.handler)(*packet);
+                }
 
                 // lag can cause STATUS_LOGGEDIN opcodes to arrive after the player started a transfer
                 break;

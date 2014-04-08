@@ -462,6 +462,8 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
     positionStatus.Reset(0);
 
     m_GrantableLevelsCount = 0;
+
+    StartTeleportTimer();
 }
 
 Player::~Player ()
@@ -1862,6 +1864,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             SetSelection(0);
             CombatStop();
             ResetContestedPvP();
+            StartTeleportTimer();
 
             // remove player from battleground on far teleport (when changing maps)
             if (BattleGround const* bg = GetBattleGround())
