@@ -474,10 +474,10 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
                     {
                         if (Unit* caster = Unit::GetUnit(*this, uint64(*i)))
                         {
-                            if (caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                            if (Spell* spell = caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
                             {
-                                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                                caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+                                spell->SendChannelUpdate(0);
+                                spell->finish();
                             }
                         }
                     }
