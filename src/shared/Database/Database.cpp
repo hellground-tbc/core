@@ -88,6 +88,8 @@ bool SqlConnection::ExecuteStmt(int nIndex, const SqlStmtParameters& id )
 
     //get prepared statement object
     SqlPreparedStatement * pStmt = GetStmt(nIndex);
+    if (!pStmt)
+        return false;
     //bind parameters
     pStmt->bind(id);
     //execute statement
