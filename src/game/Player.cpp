@@ -21246,13 +21246,16 @@ void Player::ChangeRace(uint8 new_race)
     SetUInt32Value(UNIT_FIELD_BYTES_0, unitbytes0);
 
     //spells
-    const PlayerInfo* old_info = sObjectMgr.GetPlayerInfo(old_race,getClass());
-    std::list<CreateSpellPair>::const_iterator spell_itr;
-    for (spell_itr = old_info->spell.begin(); spell_itr!=old_info->spell.end(); ++spell_itr)
+    result = GameDataDatabase.PQuery("SELECT spell FROM race_change_spells WHERE race = %u AND class = %u",old_race,getClass());
+    Field* fields;
+    if (result)
     {
-        uint16 tspell = spell_itr->first;
-        if (tspell)
-            removeSpell(tspell);
+        do
+        {
+            fields = result->Fetch();
+            removeSpell(fields[0].GetUInt32());
+        }
+        while (result->NextRow());
     }
 
     if (getClass() == CLASS_PRIEST)
@@ -21270,11 +21273,15 @@ void Player::ChangeRace(uint8 new_race)
         removeSpell(44041);
     }
 
-    for (spell_itr = new_info->spell.begin(); spell_itr!=new_info->spell.end(); ++spell_itr)
+    result = GameDataDatabase.PQuery("SELECT spell FROM race_change_spells WHERE race = %u AND class = %u",new_race,getClass());
+    if (result)
     {
-        uint16 tspell = spell_itr->first;
-        if (tspell)
-            learnSpell(tspell);
+        do
+        {
+            fields = result->Fetch();
+            learnSpell(fields[0].GetUInt32());
+        }
+        while (result->NextRow());
     }
 
     //reps
