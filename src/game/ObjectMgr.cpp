@@ -1696,6 +1696,10 @@ void ObjectMgr::LoadItemPrototypes()
                         sLog.outLog(LOG_DB_ERR, "Item (Entry: %u) has broken spell in spellid_%d (%u)",i,j+1,proto->Spells[j].SpellId);
                         const_cast<ItemPrototype*>(proto)->Spells[j].SpellId = 0;
                     }
+                    else if (proto->Spells[j].SpellCategory)
+                    {
+                        sSpellCategoryStore[proto->Spells[j].SpellCategory].insert(proto->Spells[j].SpellId);
+                    }
                 }
             }
         }
