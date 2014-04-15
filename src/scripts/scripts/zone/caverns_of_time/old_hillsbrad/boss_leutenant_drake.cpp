@@ -103,7 +103,7 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
 
     ScriptedInstance * pInstance;
 
-    bool CanPatrol;
+    bool WaypointReached;
     uint32 wpId;
 
     uint32 Whirlwind_Timer;
@@ -113,7 +113,7 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
 
     void Reset()
     {
-        CanPatrol = true;
+        WaypointReached = false;
         wpId = 0;
         me->SetWalk(true);
         me->GetMotionMaster()->MovePoint(DrakeWP[wpId].wpId, DrakeWP[wpId].x, DrakeWP[wpId].y, DrakeWP[wpId].z);
@@ -127,10 +127,10 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
     {
         if (type == POINT_MOTION_TYPE)
         {
-            if (CanPatrol)
+            if (!me->isInCombat())
             {
                 ++wpId;
-                me->GetMotionMaster()->MovePoint(DrakeWP[wpId].wpId, DrakeWP[wpId].x, DrakeWP[wpId].y, DrakeWP[wpId].z);
+                WaypointReached = true;
             
                 if (wpId == 16)
                     wpId = 2;
@@ -141,7 +141,7 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
     void EnterCombat(Unit *who)
     {
         DoScriptText(SAY_AGGRO, me);
-        CanPatrol = false;
+        me->StopMoving();
         me->SetWalk(false);
     }
 
@@ -151,7 +151,6 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
         me->RemoveAllAuras();
         me->DeleteThreatList();
         me->CombatStop(true);
-        CanPatrol = true;
         me->SetWalk(true);
         me->GetMotionMaster()->MovePoint(0, me->GetPositionX()-1.0f, me->GetPositionY()+1.0f, me->GetPositionZ());
     }
@@ -176,7 +175,14 @@ struct boss_lieutenant_drakeAI : public ScriptedAI
     {
         //Return since we have no target
         if (!UpdateVictim())
+        {
+            if (WaypointReached)
+            {
+                me->GetMotionMaster()->MovePoint(DrakeWP[wpId].wpId, DrakeWP[wpId].x, DrakeWP[wpId].y, DrakeWP[wpId].z);
+                WaypointReached = false;
+            }
             return;
+        }
 
         //Whirlwind
         if (Whirlwind_Timer < diff)
