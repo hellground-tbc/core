@@ -1845,11 +1845,15 @@ VMSS.MapFreezeDetectTime = 1000
 #        Default: 1 (Enabled)
 #                 0 (Disabled)
 #
+#    AntiCheat.CumulativeDelay
+#        Minimum time delay between anticheat reports for one player (in milliseconds)
+#        Default: 5000
+#
 #    Npc.InstaKillGuardianRange
 #        Distance from which guardian npc kills players (to be placed in zones that should not be entered)
 #
 ###################################################################################################################
-AntiCheat.Enable = 1
+
 Warden.Enabled = 1
 Warden.Kick = 0
 Warden.Ban = 0
@@ -1858,7 +1862,8 @@ Warden.CheckIntervalMin = 25000
 Warden.CheckIntervalMax = 35000
 Warden.MemCheckMax = 3
 Warden.RandomCheckMax = 5
-Npc.InstaKillGuardianRange = 100
+AntiCheat.Enable = 1
+AntiCheat.CumulativeDelay = 5000
 
 ###################################################################################################################
 #    Refer-A-Friend system by Mas0n

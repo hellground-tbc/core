@@ -21354,3 +21354,30 @@ bool Player::isInSanctuary()
 {
     return HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_SANCTUARY);
 }
+
+void Player::CumulativeACReport(AnticheatChecks check)
+{
+    if(check >= ANTICHEAT_CHECK_MAX)
+        return;
+
+    ++m_AC_cumulative_count[check];
+    if (m_AC_cumulative_timer[check] > time(NULL))
+    {
+        m_AC_cumulative_timer[check] = time(NULL) + sWorld.getConfig(CONFIG_ANTICHEAT_CUMULATIVE_DELAY);
+        uint32 report = 0;
+        switch (check)
+        {
+        case ANTICHEAT_CHECK_FLYHACK:
+            report = LANG_ANTICHEAT_FLY; break;
+        case ANTICHEAT_CHECK_WATERWALKHACK:
+            report = LANG_ANTICHEAT_WATERWALK; break;
+        default:
+            break;
+        }
+        if (report)
+            sWorld.SendGMText(report,GetName(),GetName(),m_AC_cumulative_count[check]);
+
+        m_AC_cumulative_count[check] = 0;
+    }
+
+}

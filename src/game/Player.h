@@ -62,6 +62,14 @@ typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS       127
 
+enum AnticheatChecks
+{
+    ANTICHEAT_CHECK_FLYHACK,
+    ANTICHEAT_CHECK_WATERWALKHACK,
+
+    ANTICHEAT_CHECK_MAX
+};
+
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
 {
@@ -1848,8 +1856,11 @@ class HELLGROUND_EXPORT Player : public Unit
         /*********************************************************/
         /***                 ANTICHEAT SYSTEM                  ***/
         /*********************************************************/
+        void CumulativeACReport(AnticheatChecks check);
         uint32 m_AC_timer;
         uint32 m_AC_NoFall_count;
+        time_t m_AC_cumulative_timer[ANTICHEAT_CHECK_MAX];
+        uint32 m_AC_cumulative_count[ANTICHEAT_CHECK_MAX];
 
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/

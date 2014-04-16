@@ -850,6 +850,7 @@ void World::LoadConfigSettings(bool reload)
     loadConfig(CONFIG_WARDEN_MEM_CHECK_MAX, "Warden.MemCheckMax",3);
     loadConfig(CONFIG_WARDEN_RANDOM_CHECK_MAX, "Warden.RandomCheckMax",5);
     loadConfig(CONFIG_ENABLE_PASSIVE_ANTICHEAT, "AntiCheat.Enable", 1); 
+    loadConfig(CONFIG_ANTICHEAT_CUMULATIVE_DELAY, "AntiCheat.CumulativeDelay",5* IN_MILISECONDS);
 
     // RaF
     loadConfig(CONFIG_UINT32_RAF_MAXGRANTLEVEL, "RAF.MaxGrantLevel", 60);

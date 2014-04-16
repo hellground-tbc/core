@@ -901,7 +901,7 @@ enum HellgroundStrings
 
     // Use for custom patches             11000-11999
     LANG_BG_START_ANNOUNCE              = 11000,
-    LANG_ANTICHEAT                      = 11001,
+    LANG_ANTICHEAT_SPEEDHACK            = 11001,
     LANG_SET_WEATHER                    = 11002,
     LANG_BANINFO_NOEMAIL                = 11003,
     LANG_BANINFO_EMAILENTRY             = 11004,
