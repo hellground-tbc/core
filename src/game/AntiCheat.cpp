@@ -46,10 +46,10 @@ int ACRequest::call()
         pPlayer->SetFlying(false);
         return -1;
     }
-
+    /*
     if (DetectSpeedHack(pPlayer))
         return -1;
-
+        */
     if (DetectWaterWalkHack(pPlayer))
     {
         sLog.outLog(LOG_CHEAT, "Player %s (GUID: %u / ACCOUNT_ID: %u) - possible water walk Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
