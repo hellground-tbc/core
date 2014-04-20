@@ -46,10 +46,10 @@ int ACRequest::call()
         pPlayer->SetFlying(false);
         return -1;
     }
-    /*
+    
     if (DetectSpeedHack(pPlayer))
         return -1;
-        */
+        
     if (DetectWaterWalkHack(pPlayer))
     {
         sLog.outLog(LOG_CHEAT, "Player %s (GUID: %u / ACCOUNT_ID: %u) - possible water walk Cheat. MapId: %u, coords: %f %f %f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s",
@@ -144,26 +144,30 @@ bool ACRequest::DetectSpeedHack(Player *pPlayer)
     n.x = n.x - o.x;
     n.y = n.y - o.y;
 
-    uint32 exact2dDist = sqrt(n.x*n.x + n.y*n.y);
+    float exact2dDist = sqrt(n.x*n.x + n.y*n.y);
 
-    // how many yards the player can do in one sec.
-    uint32 speedRate = uint32(pPlayer->GetSpeed(UnitMoveType(moveType)) + GetNewMovementInfo().j_xyspeed);
+    // how many yards the player should do in one sec. (server-side speed)
+    float speedRate = pPlayer->GetSpeed(UnitMoveType(moveType)) + GetNewMovementInfo().j_xyspeed;
 
     // how long the player took to move to here.
     uint32 timeDiff = WorldTimer::getMSTimeDiff(GetLastMovementInfo().time, GetNewMovementInfo().time);
     if (!timeDiff)
         timeDiff = 1;
 
-    // this is the distance doable by the player in 1 sec, using the time done to move to this point.
-    uint32 clientSpeedRate = exact2dDist * 1000 / timeDiff;
+    //client-side speed, traveled distance div by movement time.
+    float clientSpeedRate = exact2dDist * 1000 / timeDiff;
 
-    // we did the (uint32) cast to accept a margin of tolerance
-    if (clientSpeedRate > speedRate)
+    if (clientSpeedRate <= speedRate * sWorld.getConfig(CONFIG_ANTICHEAT_SPEEDHACK_TOLERANCE))
         return false;
 
     pPlayer->m_AC_timer = IN_MILISECONDS;   // 1 sek
 
     sWorld.SendGMText(LANG_ANTICHEAT_SPEEDHACK, pPlayer->GetName(), pPlayer->GetName(), 0, speedRate, clientSpeedRate);
-    sLog.outLog(LOG_CHEAT, "Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s", pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), exact2dDist, speedRate, clientSpeedRate, pPlayer->GetMapId(), GetLastMovementInfo().pos.x, GetLastMovementInfo().pos.y, GetLastMovementInfo().pos.z, GetNewMovementInfo().pos.x, GetNewMovementInfo().pos.y, GetNewMovementInfo().pos.z, GetNewMovementInfo().GetMovementFlags(), pPlayer->GetSession()->GetLatency(), pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
+    sLog.outLog(LOG_CHEAT, "Player %s (GUID: %u / ACCOUNT_ID: %u) moved for distance %f with server speed : %f (client speed: %f). MapID: %u, player's coord before X:%f Y:%f Z:%f. Player's coord now X:%f Y:%f Z:%f. MOVEMENTFLAGS: %u LATENCY: %u. BG/Arena: %s\n",
+        pPlayer->GetName(), pPlayer->GetGUIDLow(), pPlayer->GetSession()->GetAccountId(), exact2dDist, speedRate,
+        clientSpeedRate, pPlayer->GetMapId(), GetLastMovementInfo().pos.x, GetLastMovementInfo().pos.y, GetLastMovementInfo().pos.z,
+        GetNewMovementInfo().pos.x, GetNewMovementInfo().pos.y, GetNewMovementInfo().pos.z,
+        GetNewMovementInfo().GetMovementFlags(), pPlayer->GetSession()->GetLatency(),
+        pPlayer->GetMap() ? (pPlayer->GetMap()->IsBattleGroundOrArena() ? "Yes" : "No") : "No");
     return true;
 }

@@ -1849,8 +1849,9 @@ VMSS.MapFreezeDetectTime = 1000
 #        Minimum time delay between anticheat reports for one player (in milliseconds)
 #        Default: 5000
 #
-#    Npc.InstaKillGuardianRange
-#        Distance from which guardian npc kills players (to be placed in zones that should not be entered)
+#    AntiCheat.SpeedhackTolerance
+#        Float value describing tolerance of speedhack check (eg 1.05 : 5% over limit is acceptable)
+#        Default: 1.00 (no tolerance!)
 #
 ###################################################################################################################
 
@@ -1864,6 +1865,7 @@ Warden.MemCheckMax = 3
 Warden.RandomCheckMax = 5
 AntiCheat.Enable = 1
 AntiCheat.CumulativeDelay = 5000
+AntiCheat.SpeedhackTolerance = 1.00
 
 ###################################################################################################################
 #    Refer-A-Friend system by Mas0n
