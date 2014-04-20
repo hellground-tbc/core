@@ -272,6 +272,11 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
 
     m_AC_timer = 0;
     m_AC_NoFall_count = 0;
+    for (uint8 i = 0 ; i< ANTICHEAT_CHECK_MAX;i++)
+    {
+        m_AC_cumulative_count[i] = 0;
+        m_AC_cumulative_timer[i] = time(NULL);
+    }
 
     m_speakTime = 0;
     m_speakCount = 0;
