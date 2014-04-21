@@ -55,7 +55,6 @@ struct boss_pyroguard_emberseerAI : public BossAI
     uint32 FireNova_Timer;
     uint32 FlameBuffet_Timer;
     uint32 PyroBlast_Timer;
-
     void Reset()
     {
         FireNova_Timer = 6000;
@@ -86,6 +85,8 @@ struct boss_pyroguard_emberseerAI : public BossAI
     {
         events.Reset();
         pInstance->SetData(DATA_EMBERSEER, DONE);
+        Creature *warden = GetClosestCreatureWithEntry(me, 99999, 60.0); //warden npc
+        warden->setDeathState(JUST_DIED);
     }
 
     void EnterEvadeMode()
