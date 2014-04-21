@@ -54,6 +54,7 @@ EndScriptData */
 #define MODEL_NIGHTELF          20514
 #define DEMON_FORM              21875
 #define MOB_SPELLBINDER         21806
+#define NETHER_PROTECTION       30300
 
 #define SAY_AGGRO               -1548009
 #define SAY_SWITCH_TO_DEMON     -1548010
@@ -670,7 +671,7 @@ struct boss_leotheras_the_blind_demonformAI : public ScriptedAI
         if (!UpdateVictim() )
             return;
 
-        if(m_creature->getVictim()->HasAura(30300,0))
+        if(m_creature->getVictim()->HasAura(NETHER_PROTECTION,0))
             DoResetThreat();
 
         if (checkTimer <= diff)
@@ -704,7 +705,7 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
 {
     mob_greyheart_spellbinderAI(Creature *c) : ScriptedAI(c)
     {
-        pInstance = ((ScriptedInstance *)c->GetInstanceData());;
+        pInstance = ((ScriptedInstance *)c->GetInstanceData());
         leotherasGUID = 0;
     }
 
@@ -782,7 +783,7 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
 
         if(pInstance && !pInstance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
         {
-            EnterEvadeMode();
+            Reset();
             return;
         }
 
