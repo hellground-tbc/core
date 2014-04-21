@@ -1859,8 +1859,6 @@ class HELLGROUND_EXPORT Player : public Unit
         void CumulativeACReport(AnticheatChecks check);
         uint32 m_AC_timer;
         uint32 m_AC_NoFall_count;
-        time_t m_AC_cumulative_timer[ANTICHEAT_CHECK_MAX];
-        uint32 m_AC_cumulative_count[ANTICHEAT_CHECK_MAX];
 
         /*********************************************************/
         /***                  PVP SYSTEM                       ***/
@@ -2546,10 +2544,11 @@ class HELLGROUND_EXPORT Player : public Unit
         
         void AddConsecutiveKill(uint64 guid);
         uint32 GetConsecutiveKillsCount(uint64 guid);
-
         void UpdateConsecutiveKills();
-
         ConsecutiveKillsMap m_consecutiveKills;
+
+        time_t m_AC_cumulative_timer[ANTICHEAT_CHECK_MAX];
+        uint32 m_AC_cumulative_count[ANTICHEAT_CHECK_MAX];
 
         // Current teleport data
         WorldLocation m_teleport_dest;
