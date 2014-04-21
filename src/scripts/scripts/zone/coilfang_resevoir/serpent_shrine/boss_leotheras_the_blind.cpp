@@ -54,7 +54,6 @@ EndScriptData */
 #define MODEL_NIGHTELF          20514
 #define DEMON_FORM              21875
 #define MOB_SPELLBINDER         21806
-#define NETHER_PROTECTION       30300
 
 #define SAY_AGGRO               -1548009
 #define SAY_SWITCH_TO_DEMON     -1548010
@@ -609,6 +608,7 @@ struct boss_leotheras_the_blindAI : public ScriptedAI
             if(Copy)
              {
                  Demon = Copy->GetGUID();
+                 Copy->SetMeleeDamageSchool(SPELL_SCHOOL_FIRE);
                 if (m_creature->getVictim())
                     Copy->AI()->AttackStart(m_creature->getVictim());
             }
@@ -670,10 +670,6 @@ struct boss_leotheras_the_blind_demonformAI : public ScriptedAI
         //Return since we have no target
         if (!UpdateVictim() )
             return;
-
-        if(m_creature->getVictim()->HasAura(NETHER_PROTECTION,0))
-            DoResetThreat();
-
         if (checkTimer <= diff)
         {
             checkTimer = 2000;
@@ -744,7 +740,7 @@ struct mob_greyheart_spellbinderAI : public ScriptedAI
 
     void JustRespawned()
     {
-        Reset();
+        EnterEvadeMode();
     }
 
     void CastChanneling()
