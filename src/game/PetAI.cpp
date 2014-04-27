@@ -219,6 +219,20 @@ void PetAI::AutocastPreparedSpells()
     }
 }
 
+void PetAI::MovementInform(uint32 type, uint32 data)
+{
+    if (type != CHASE_MOTION_TYPE || data != 2) // target reached only
+        return;
+
+    if (Unit *target = me->getVictim())
+        if (target->getVictim() && target->getVictim() != me && target->isInFront(me, 7.0f, M_PI))
+        {
+            float x, y, z;
+            target->GetGroundPointAroundUnit(x, y, z, target->GetObjectSize(), M_PI);
+            me->GetMotionMaster()->MovePoint(0, x, y, z);
+        }
+}
+
 void PetAI::UpdateAI(const uint32 diff)
 {
     m_owner = me->GetCharmerOrOwner();

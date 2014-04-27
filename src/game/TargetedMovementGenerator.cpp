@@ -194,6 +194,10 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(T &owner, const uint32 & time_
 template<class T>
 void ChaseMovementGenerator<T>::_reachTarget(T &owner)
 {
+    if (Creature *creature = owner.ToCreature())
+        if (creature->IsAIEnabled)
+            creature->AI()->MovementInform(CHASE_MOTION_TYPE, 2);
+
     if (owner.IsWithinMeleeRange(this->_target.getTarget()))
         owner.Attack(this->_target.getTarget(),true);
 }
@@ -213,6 +217,9 @@ void ChaseMovementGenerator<Creature>::Initialize(Creature &owner)
     owner.SetWalk(false);
     owner.addUnitState(UNIT_STAT_CHASE);
     _setTargetLocation(owner);
+
+    if (owner.IsAIEnabled)
+        owner.AI()->MovementInform(CHASE_MOTION_TYPE, 1);
 }
 
 template<class T>
@@ -222,6 +229,9 @@ void ChaseMovementGenerator<T>::Finalize(T &owner)
 
     if (Creature* creature = owner.ToCreature())
     {
+        if (creature->IsAIEnabled)
+            creature->AI()->MovementInform(CHASE_MOTION_TYPE, 0);
+
         if (creature->isPet())
             return;
 
