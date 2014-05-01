@@ -229,7 +229,9 @@ void PetAI::MovementInform(uint32 type, uint32 data)
         {
             float x, y, z;
             target->GetGroundPointAroundUnit(x, y, z, target->GetObjectSize(), M_PI);
-            me->GetMotionMaster()->MovePoint(0, x, y, z);
+
+            if (abs(z - me->GetPositionZ()) <= NOMINAL_MELEE_RANGE) // height difference check
+                me->GetMotionMaster()->MovePoint(0, x, y, z);
         }
 }
 
