@@ -7294,7 +7294,8 @@ void Aura::PeriodicTick()
             //Do check before because m_modifier.auraName can be invalidate by DealDamage.
             bool procSpell = (m_modifier.m_auraname == SPELL_AURA_PERIODIC_HEAL); // && m_target != pCaster);
 
-            m_target->getHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
+            if (pCaster->isInCombat())
+                m_target->getHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellProto());
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellEntry const* spellProto = GetSpellProto();
