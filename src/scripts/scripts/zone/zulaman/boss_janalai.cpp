@@ -415,7 +415,7 @@ struct boss_janalaiAI : public ScriptedAI
             for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
             {
                 if (Player* i_pl = i->getSource())
-                    if(i_pl->isAlive())
+                    if(i_pl->isAlive() && !i_pl->IsInRange(m_creature, 0.0f, 20.0f))
                         DoTeleportPlayer(i_pl, JanalainPos[0][0]-5+rand()%10, JanalainPos[0][1]-5+rand()%10, JanalainPos[0][2], 0);
             }
             //m_creature->CastSpell(Temp, SPELL_SUMMON_PLAYERS, true); // core bug, spell does not work if too far
