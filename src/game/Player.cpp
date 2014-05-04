@@ -21086,9 +21086,8 @@ void Player::ChangeGrantableLevels(uint8 increase)
 {
     if (increase)
     {
-        while (increase-- > 0)
-            if (m_GrantableLevelsCount < uint32(sWorld.getConfig(CONFIG_UINT32_RAF_MAXGRANTLEVEL) * sWorld.getConfig(CONFIG_FLOAT_RATE_RAF_LEVELPERLEVEL)))
-                m_GrantableLevelsCount += 1;
+        if (m_GrantableLevelsCount <= uint32(sWorld.getConfig(CONFIG_UINT32_RAF_MAXGRANTLEVEL) * sWorld.getConfig(CONFIG_FLOAT_RATE_RAF_LEVELPERLEVEL)))
+            m_GrantableLevelsCount = increase;
     }
     else
     {
