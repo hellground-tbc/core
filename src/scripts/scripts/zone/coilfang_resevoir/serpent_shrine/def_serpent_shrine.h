@@ -58,6 +58,7 @@ enum WaterEventState
 #define DATA_WATER 23
 #define DATA_SHARKKIS_PET 24
 
-#define WATER_Z -19.9f
+#define WATER_Z -21.57f
+#define VASHJ_WATER_Z 20.27f
 #endif
 

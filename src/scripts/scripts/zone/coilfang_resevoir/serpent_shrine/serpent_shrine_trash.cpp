@@ -424,19 +424,28 @@ struct mob_coilfang_frenzyAI : public ScriptedAI
         me->GetPosition(x, y, z);
 
         if(z > WATER_Z)
-            me->Relocate(x, y, WATER_Z, me->GetOrientation());
+        {
+           if ((z+10.0) < VASHJ_WATER_Z)
+              me->Relocate(x, y, (WATER_Z-0.2f), me->GetOrientation()); // this keeps them under water, 
+                                                                        // but sometimes they are visually
+                                                                        // over the water surface, no idea why (coords are underwater)
+           if (z > VASHJ_WATER_Z)
+              me->Relocate(x, y, (VASHJ_WATER_Z-0.2f), me->GetOrientation());;
+
+        }
+
+        if (!me->getVictim())
+        {
+           Unit *victim = me->SelectNearestTarget();
+           if(victim && victim->IsInWater())
+           {
+              me->AI()->AttackStart(victim);
+              victim = NULL;
+           }
+        }
 
         if(!UpdateVictim())
-            return;
-
-        Unit *victim = me->getVictim();
-
-        victim->GetPosition(x, y, z);
-        if(z - 0.5 > WATER_Z)
-        {
-            EnterEvadeMode();
-            return;
-        }
+           return;
 
         DoMeleeAttackIfReady();
     }

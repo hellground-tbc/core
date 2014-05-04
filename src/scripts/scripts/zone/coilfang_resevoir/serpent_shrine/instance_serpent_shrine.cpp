@@ -444,12 +444,9 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                             //spawn frenzy
                             if (DoSpawnFrenzy && !pPlayer->isGameMaster())
                             {
-                                if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
-                                {
-                                    frenzy->AddUnitMovementFlag(MOVEFLAG_SWIMMING);
-                                    frenzy->SetLevitate(true);
-                                    frenzy->AI()->AttackStart(pPlayer);
-                                }
+                               if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
+                                  frenzy->AI()->AttackStart(pPlayer);
+
                                 DoSpawnFrenzy = false;
                             }
                         }
