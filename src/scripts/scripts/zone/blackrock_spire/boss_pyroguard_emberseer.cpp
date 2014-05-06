@@ -85,8 +85,9 @@ struct boss_pyroguard_emberseerAI : public BossAI
     {
         events.Reset();
         pInstance->SetData(DATA_EMBERSEER, DONE);
-        Creature *warden = GetClosestCreatureWithEntry(me, 99999, 60.0); //warden npc
-        warden->setDeathState(JUST_DIED);
+
+        if (Creature *warden = GetClosestCreatureWithEntry(me, 99999, 60.0))
+           warden->Kill(warden);
     }
 
     void EnterEvadeMode()
