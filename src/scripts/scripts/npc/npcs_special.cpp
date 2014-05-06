@@ -3242,7 +3242,7 @@ struct npc_instakill_guardianAI : public Scripted_NoMovementAI
     void MoveInLineOfSight(Unit* who)
     {
         Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself();
-        if (!player || player->isGameMaster())
+        if (!player || player->isGameMaster() || !me->isAlive())
             return;
 
         WorldLocation loc;
