@@ -80,6 +80,7 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
     uint32 PlayerInWaterTimer;
     uint32 Water;
     uint32 trashCheckTimer;
+    uint32 ScaldingWaterDelayer;
 
     bool ShieldGeneratorDeactivated[4];
     uint32 Encounters[ENCOUNTERS];
@@ -116,6 +117,7 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
         PlayerInWaterTimer = 0;
         DoSpawnFrenzy = false;
         trashCheckTimer = 10000;
+        ScaldingWaterDelayer = 500;
 
         for(uint8 i = 0; i < ENCOUNTERS; i++)
             Encounters[i] = NOT_STARTED;
@@ -435,8 +437,15 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                         {
                             if (!pPlayer->HasAura(SPELL_SCALDINGWATER))
                             {
-                                pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER, true);
-                                break;
+                               if (ScaldingWaterDelayer < diff) // this timer (delayer) prevents multiple application of this buff when player jumps in water (sometimes >3k damage)
+                               {
+                                  pPlayer->CastSpell(pPlayer, SPELL_SCALDINGWATER, true);
+                                  ScaldingWaterDelayer = 500;
+                                  break;
+                               }
+                               else
+                                  ScaldingWaterDelayer -= diff;
+                               break;
                             }
                         }
                         else if (Water == WATERSTATE_FRENZY)
@@ -471,7 +480,7 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
             if (PlayerInWaterTimer)
                 WaterCheckTimer = 1;
             else
-                WaterCheckTimer = 500; //remove stress from core
+                WaterCheckTimer = 1000; //remove stress from core
         }
         else
             WaterCheckTimer -= diff;
