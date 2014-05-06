@@ -31,8 +31,7 @@ EndScriptData */
 
 #define SPELL_SCALDINGWATER 37284
 #define MOB_COILFANG_FRENZY 21508
-#define TRASHMOB_COILFANG_PRIESTESS 21220  //6*2
-#define TRASHMOB_COILFANG_SHATTERER 21301  //6*3
+#define TRASHMOB_GRAYHEART_TECHICIAN 21263
 
 
 /* Serpentshrine cavern encounters:
@@ -401,9 +400,8 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
         {
             if (Encounters[2] == NOT_STARTED)   // check and change water state only if lurker event is not started
             {
-                uint64 tmpPriestessGuid = instance->GetCreatureGUID(TRASHMOB_COILFANG_PRIESTESS, GET_ALIVE_CREATURE_GUID);
-                uint64 tmpShattererGuid = instance->GetCreatureGUID(TRASHMOB_COILFANG_SHATTERER, GET_ALIVE_CREATURE_GUID);
-                if (!tmpPriestessGuid && !tmpShattererGuid)
+                uint64 tmpTechnicianGuid = instance->GetCreatureGUID(TRASHMOB_GRAYHEART_TECHICIAN, GET_ALIVE_CREATURE_GUID);
+                if (!tmpTechnicianGuid)
                     Water = WATERSTATE_SCALDING;
                 else
                     Water = WATERSTATE_FRENZY;
@@ -446,12 +444,9 @@ struct instance_serpentshrine_cavern : public ScriptedInstance
                             //spawn frenzy
                             if (DoSpawnFrenzy && !pPlayer->isGameMaster())
                             {
-                                if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
-                                {
-                                    frenzy->AddUnitMovementFlag(MOVEFLAG_SWIMMING);
-                                    frenzy->SetLevitate(true);
-                                    frenzy->AI()->AttackStart(pPlayer);
-                                }
+                               if (Creature* frenzy = pPlayer->SummonCreature(MOB_COILFANG_FRENZY,pPlayer->GetPositionX(),pPlayer->GetPositionY(),pPlayer->GetPositionZ(),pPlayer->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000))
+                                  frenzy->AI()->AttackStart(pPlayer);
+
                                 DoSpawnFrenzy = false;
                             }
                         }
