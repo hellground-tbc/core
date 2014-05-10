@@ -862,7 +862,23 @@ void GameObject::Despawn()
     if (GetOwnerGUID())
     {
         if (Unit* owner = GetOwner())
+        {
             owner->RemoveGameObject(this, false);
+
+            if (this->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE && owner->GetTypeId() == TYPEID_PLAYER) 
+            {
+                Player *player = (Player *)owner;
+
+                if (player && player->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                {
+                    player->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
+                    player->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+
+                    WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
+                    player->SendPacketToSelf(&data);
+                }
+            }
+        }
 
         m_respawnTime = 0;
         Delete();
