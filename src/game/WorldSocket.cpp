@@ -1100,7 +1100,7 @@ uint32 WorldSocket::IPToLocation(const std::string& IP)
     if (!result)
     {
         ret << "Unknown Location for Ip " << IP << " (" << addressAsNumber << ")";
-        printf("%s", ret.str().c_str());
+        sLog.outString("%s", ret.str().c_str());
         return 0;
     }
 

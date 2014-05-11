@@ -52,12 +52,11 @@ void WorldEventProcessor::ExecuteEvents()
 
         // get and remove event from queue
         WorldEvent* event = curr->second;
-        _events.erase(curr);
 
-        Player* player = ObjectAccessor::GetPlayer(curr->first);
-        if (player)
+        if (Player* player = ObjectAccessor::GetPlayer(curr->first))
             event->Execute();
 
+        _events.erase(curr);
         delete event;
     }
 }
