@@ -317,8 +317,13 @@ void WorldSession::DoLootRelease(uint64 lguid)
                 else
                     go->SetLootState(GO_READY);
             }
-            else if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE)
-                go->SetLootState(GO_JUST_DEACTIVATED);
+
+            loot->clear();
+        }
+
+        if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE)
+        {
+            go->SetLootState(GO_JUST_DEACTIVATED);
 
             loot->clear();
         }

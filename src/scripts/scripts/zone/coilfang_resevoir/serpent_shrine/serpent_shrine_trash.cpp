@@ -401,60 +401,6 @@ CreatureAI* GetAI_mob_serpentshrine_parasite(Creature *_Creature)
 }
 
 
-struct mob_coilfang_frenzyAI : public ScriptedAI
-{
-    mob_coilfang_frenzyAI(Creature *c) : ScriptedAI(c) {}
-
-    void Reset()
-    {
-
-    }
-
-    void EnterEvadeMode()
-    {
-        float x, y, z;
-        me->GetPosition(x, y, z);
-        me->SetHomePosition(x, y, z, me->GetOrientation());
-        ScriptedAI::EnterEvadeMode();
-    }
-
-    void UpdateAI(const uint32 diff)
-    {
-        float x, y, z;
-        me->GetPosition(x, y, z);
-
-        if(z > WATER_Z)
-        {
-           if ((z+10.0) < VASHJ_WATER_Z)
-              me->Relocate(x, y, (WATER_Z-0.2f), me->GetOrientation()); // this keeps them under water, 
-                                                                        // but sometimes they are visually
-                                                                        // over the water surface, no idea why (coords are underwater)
-           if (z > VASHJ_WATER_Z)
-              me->Relocate(x, y, (VASHJ_WATER_Z-0.2f), me->GetOrientation());;
-
-        }
-
-        if (!me->getVictim())
-        {
-           Unit *victim = me->SelectNearestTarget();
-           if(victim && victim->IsInWater())
-           {
-              me->AI()->AttackStart(victim);
-              victim = NULL;
-           }
-        }
-
-        if(!UpdateVictim())
-           return;
-
-        DoMeleeAttackIfReady();
-    }
-};
-
-CreatureAI* GetAI_mob_coilfang_frenzy(Creature *_Creature)
-{
-    return new mob_coilfang_frenzyAI(_Creature);
-}
 
 void AddSC_serpent_shrine_trash()
 {
@@ -474,10 +420,4 @@ void AddSC_serpent_shrine_trash()
     newscript->Name = "mob_serpentshrine_parasite";
     newscript->GetAI = &GetAI_mob_serpentshrine_parasite;
     newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "mob_coilfang_frenzy";
-    newscript->GetAI = &GetAI_mob_coilfang_frenzy;
-    newscript->RegisterSelf();
-
 }

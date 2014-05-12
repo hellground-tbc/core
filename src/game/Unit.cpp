@@ -9358,11 +9358,11 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         // used by eluna
         sHookMgr->OnPlayerEnterCombat(ToPlayer(), enemy);
 
-        if (GetCurrentSpell(CURRENT_GENERIC_SPELL) && GetCurrentSpell(CURRENT_GENERIC_SPELL)->getState() != SPELL_STATE_FINISHED)
-        {
-            if (GetCurrentSpellProto(CURRENT_GENERIC_SPELL)->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT)
+        if (Spell *spell = GetCurrentSpell(CURRENT_GENERIC_SPELL))
+            if (spell->getState() != SPELL_STATE_FINISHED &&
+                spell->GetSpellEntry()->Attributes & SPELL_ATTR_CANT_USED_IN_COMBAT &&
+                spell->GetSpellEntry()->SpellFamilyName != SPELLFAMILY_WARRIOR)
                 InterruptSpell(CURRENT_GENERIC_SPELL);
-        }
 
         if (Pet* pet = GetPet())
             pet->SetInCombatState(PvP, enemy);
