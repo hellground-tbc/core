@@ -286,7 +286,7 @@ Spell::Spell(Unit* Caster, SpellEntry const *info, bool triggered, uint64 origin
     m_destroyed = false;
 
     m_applyMultiplierMask = 0;
-
+    m_procCastEnd = 0;
     m_spellSchoolMask = SpellMgr::GetSpellSchoolMask(info);           // Can be override for some spell (wand shoot for example)
 
     // Get data for type of attack
