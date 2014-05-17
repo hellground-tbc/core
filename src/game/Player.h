@@ -2565,6 +2565,7 @@ class HELLGROUND_EXPORT Player : public Unit
         ReputationMgr  m_reputationMgr;
 
         Camera m_camera;
+        bool m_outdoors;
 };
 
 typedef std::set<Player*> PlayerSet;

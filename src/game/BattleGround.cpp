@@ -1139,10 +1139,17 @@ void BattleGround::AddPlayer(Player *plr)
                 (plr)->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
                 (plr)->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
             }
+            pet->RemoveArenaAuras();
             plr->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT);
         }
         else
+        {
+            // Remove auras off unsummoned pet
+            if (plr->GetTemporaryUnsummonedPetNumber())
+                RealmDataDatabase.PExecute("DELETE FROM pet_aura WHERE guid = '%u'", plr->GetTemporaryUnsummonedPetNumber());
+
             plr->SetTemporaryUnsummonedPetNumber(0);
+        }
 
         if (GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
         {
