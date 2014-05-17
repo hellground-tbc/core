@@ -467,6 +467,7 @@ Player::Player (WorldSession *session): Unit(), m_reputationMgr(this), m_camera(
     positionStatus.Reset(0);
 
     m_GrantableLevelsCount = 0;
+    m_outdoors = GetTerrain()->IsOutdoors(GetPositionX(), GetPositionY(), GetPositionZ());
 
     StartTeleportTimer();
 }
@@ -5823,6 +5824,15 @@ void Player::CheckAreaExploreAndOutdoor()
 
     bool isOutdoor;
     uint16 areaFlag = GetTerrain()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ(), &isOutdoor);
+
+    if (m_outdoors != isOutdoor)
+    {
+        UpdateSpeed(MOVE_RUN, true);
+        UpdateSpeed(MOVE_SWIM, true);
+        UpdateSpeed(MOVE_FLIGHT, true);
+
+        m_outdoors = isOutdoor;
+    }
 
     if (!isOutdoor && sWorld.getConfig(CONFIG_VMAP_INDOOR_CHECK) && !isGameMaster())
         RemoveAurasWithAttribute(SPELL_ATTR_OUTDOORS_ONLY, true);
