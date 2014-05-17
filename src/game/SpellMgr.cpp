@@ -2783,7 +2783,7 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 case SPELL_EFFECT_CHARGE:
                 case SPELL_EFFECT_CHARGE2:
-                    if (!spellInfo->speed)
+                    if (!spellInfo->speed && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
                         spellInfo->speed = SPEED_CHARGE;
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_CHARGE;
                     break;
