@@ -315,32 +315,6 @@ bool ItemUse_item_tame_beast_rods(Player *player, Item* _Item, SpellCastTargets 
 }
 
 /*#####
-# item_yehkinyas_bramble
-#####*/
-
-bool ItemUse_item_yehkinyas_bramble(Player *player, Item* _Item, SpellCastTargets const& targets)
-{
-    if (player->GetQuestStatus(3520) == QUEST_STATUS_INCOMPLETE)
-    {
-        Unit * unit_target = targets.getUnitTarget();
-        if( unit_target &&
-            unit_target->GetTypeId()==TYPEID_UNIT &&
-            unit_target->isDead() &&
-                                                            // cast only on corpse 5307 or 5308
-            (unit_target->GetEntry()==5307 || unit_target->GetEntry()==5308) )
-        {
-            ((Creature*)unit_target)->RemoveCorpse();       // remove corpse for cancelling second use
-            return false;                                   // all ok
-        }
-    }
-    WorldPacket data(SMSG_CAST_FAILED, (4+2));              // prepare packet error message
-    data << uint32(10699);                                  // itemId
-    data << uint8(SPELL_FAILED_BAD_TARGETS);                // reason
-    player->GetSession()->SendPacket(&data);                // send message: Bad target
-    player->SendEquipError(EQUIP_ERR_NONE,_Item,NULL);      // break spell
-    return true;
-}
-/*#####
 # item_specific_target
 #####*/
 
@@ -373,20 +347,21 @@ bool ItemUse_item_specific_target(Player *player, Item* _Item, SpellCastTargets 
         case 32321: cEntry[0] = 22979; break; // Sparrowhawk Net
         case 32825: cEntry[0] = 22357; break; // Soul Cannon
         case 34255: cEntry[0] = 24922; break; // Razorthorn Flayer Gland
-        case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; break; // Warmaul Ogre Banner
-        case 22473: cEntry[0] = 15941; cEntry[1] = 15945; break; // Disciplinary Rod
-        case 34368: cEntry[0] = 24972; targetState = T_DEAD; break; // Attuned Crystal Cores
-        case 29513: cEntry[0] = 19354; break; // Staff of the Dreghood Elders
-        case 32680: cEntry[0] = 23311; targetState = T_ALIVE; break; // Booterang
         case 30251: cEntry[0] = 20058; break; // Rina's Diminution Powder
         case 23417: cEntry[0] = 16975; break; // Sanctified Crystal
         case 32698: cEntry[0] = 22181; break; // Wrangling Rope
-        case 34257: cEntry[0] = 24918; targetState = T_ALIVE; break; // Fel Siphon
-        case 28547: cEntry[0] = 18881; cEntry[1] = 18865; break; //Elemental power extractor
-        case 12284: cEntry[0] = 7047; cEntry[1] = 7048; cEntry[2] = 7049; break; // Draco-Incarcinatrix 900
-        case 23337: cEntry[0] = 16880; targetState = T_ALIVE; break;    // Cenarion Antidote
-        case 29818: cEntry[0] = 20774; targetState = T_ALIVE; break;    // Energy Field Modulator
-        case 13289: cEntry[0] = 10384; cEntry[1] = 10385; targetState = T_ALIVE; break;    // Egan's Blaster
+        case 29513: cEntry[0] = 19354; break; // Staff of the Dreghood Elders
+        case 22473: cEntry[0] = 15941; cEntry[1] = 15945; break;                        // Disciplinary Rod
+        case 34368: cEntry[0] = 24972; targetState = T_DEAD; break;                     // Attuned Crystal Cores
+        case 32680: cEntry[0] = 23311; targetState = T_ALIVE; break;                    // Booterang
+        case 34257: cEntry[0] = 24918; targetState = T_ALIVE; break;                    // Fel Siphon
+        case 28547: cEntry[0] = 18881; cEntry[1] = 18865; break;                        // Elemental power extractor
+        case 12284: cEntry[0] = 7047;  cEntry[1] = 7048;  cEntry[2] = 7049; break;      // Draco-Incarcinatrix 900
+        case 23337: cEntry[0] = 16880; targetState = T_ALIVE; break;                    // Cenarion Antidote
+        case 29818: cEntry[0] = 20774; targetState = T_ALIVE; break;                    // Energy Field Modulator
+        case 13289: cEntry[0] = 10384; cEntry[1] = 10385; targetState = T_ALIVE; break; // Egan's Blaster
+        case 10699: cEntry[0] = 5307;  cEntry[1] = 5308;  targetState = T_DEAD; break;  // Yehkinyas Bramble
+        case 25552: cEntry[0] = 17148; cEntry[1] = 17147; cEntry[2] = 17146; targetState = T_DEAD; break; // Warmaul Ogre Banner
     }
 
     if(uTarget && uTarget->GetTypeId() == TYPEID_UNIT)
@@ -545,15 +520,9 @@ void AddSC_item_scripts()
     newscript->pItemUse = &ItemUse_item_muiseks_vessel;
     newscript->RegisterSelf();
 
-
     newscript = new Script;
     newscript->Name="item_tame_beast_rods";
     newscript->pItemUse = &ItemUse_item_tame_beast_rods;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name="item_yehkinyas_bramble";
-    newscript->pItemUse = &ItemUse_item_yehkinyas_bramble;
     newscript->RegisterSelf();
 
     newscript = new Script;
