@@ -616,10 +616,10 @@ bool GossipSelect_npc_wildlord_antelarion(Player* player, Creature* creature, ui
     if (entry != 0)
     {
         ItemPosCountVec dest;
-        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 31366, 1);
+        uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, entry, 1);
         if (msg == EQUIP_ERR_OK)
         {
-            Item* item = player->StoreNewItem(dest, 31366, true);
+            Item* item = player->StoreNewItem(dest, entry, true);
             player->SendNewItem(item,1,true,false,true);
         }
         player->CLOSE_GOSSIP_MENU();
