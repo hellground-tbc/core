@@ -12498,31 +12498,30 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
             if (m->IsDungeon() && creditedPlayer)
             {
+                // log boss kills
+                if (creatureVictim->GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS)
+                {
+                    std::stringstream ss;
+                    ss << "BossEntry: " << creatureVictim->GetEntry() << " InstanceId: " << creatureVictim->GetInstanceId()
+                        << " MapId: " << m->GetId() << " Players: ";
+                    if (Group *group = creditedPlayer->GetGroup())
+                    {
+                        for (GroupReference *i = group->GetFirstMember(); true; i = i->next())
+                        {
+                            if (Player *member = i->getSource())
+                                ss << member->GetName() << ":(" << member->GetGUIDLow() << ") ";
+
+                            if (!i->hasNext())
+                                break;
+                        }
+                    }
+                    sLog.outLog(LOG_BOSS, ss.str().c_str());
+                }
+
                 if (m->IsRaid() || m->IsHeroic())
                 {
                     if (creatureVictim->GetCreatureInfo()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND)
                         ((InstanceMap *)m)->PermBindAllPlayers(creditedPlayer);
-
-                    // Killer == Player
-                    if (creditedPlayer && creatureVictim->GetCreatureInfo()->rank == CREATURE_ELITE_WORLDBOSS)
-                    {
-                        Player *killer = creditedPlayer;
-                        std::stringstream ss;
-                        ss << "BossEntry: " << creatureVictim->GetEntry() << " InstanceId: " << creatureVictim->GetInstanceId()
-                           << " MapId: " << m->GetId() << " Players: ";
-                        if (Group *group = killer->GetGroup())
-                        {
-                            for (GroupReference *i = group->GetFirstMember(); true; i = i->next())
-                            {
-                                if (Player *member = i->getSource())
-                                    ss << member->GetName() << ":(" << member->GetGUIDLow() << ") ";
-
-                                if (!i->hasNext())
-                                    break;
-                            }
-                        }
-                        sLog.outLog(LOG_BOSS, ss.str().c_str());
-                    }
                 }
                 else
                 {
