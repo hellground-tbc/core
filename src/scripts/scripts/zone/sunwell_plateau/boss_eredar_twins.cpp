@@ -629,7 +629,7 @@ struct mob_shadow_imageAI : public ScriptedAI
 
         if (DarkstrikeTimer < diff)
         {
-            if (!me->IsNonMeleeSpellCasted(false))
+            if (!me->IsNonMeleeSpellCast(false))
             {
                 //If we are within range melee the target
                 if (me->IsWithinMeleeRange(me->getVictim()))

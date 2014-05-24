@@ -36,7 +36,7 @@ EndScriptData */
 #define SAY_SLAY_2                      -1554026
 #define SAY_DEATH                       -1554027
 
-// Spells to be casted
+// Spells to be cast
 #define SPELL_MANA_TAP                36021
 #define SPELL_ARCANE_TORRENT          36022
 #define SPELL_DOMINATION              35280

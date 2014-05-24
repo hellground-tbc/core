@@ -944,7 +944,7 @@ void hyjalAI::UpdateAI(const uint32 diff)
         {
             if(SpellTimer[i] < diff)
             {
-                //if(m_creature->IsNonMeleeSpellCasted(false))
+                //if(m_creature->IsNonMeleeSpellCast(false))
                     //m_creature->InterruptNonMeleeSpells(false);
 
                 Unit* target = NULL;

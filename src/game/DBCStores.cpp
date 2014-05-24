@@ -354,6 +354,20 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellDurationStore,       dbcPath,"SpellDuration.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellFocusObjectStore,    dbcPath,"SpellFocusObject.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellItemEnchantmentStore,dbcPath,"SpellItemEnchantment.dbc");
+    {//HACK for +12spirit +12hit rating gems, those have wrong values in dbc
+    SpellItemEnchantmentEntry* entry;
+    for(uint32 i = 0; i < sSpellItemEnchantmentStore.GetNumRows(); ++i)
+    {
+        entry = (SpellItemEnchantmentEntry*)sSpellItemEnchantmentStore.LookupEntry(i);
+        if(!entry)
+            continue;
+
+        if (entry->GemID == 33137)
+            entry->amount[0] = 12;
+        else if (entry->GemID == 33142)
+            entry->amount[1] = 12;
+    }}
+
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellItemEnchantmentConditionStore,dbcPath,"SpellItemEnchantmentCondition.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellRadiusStore,         dbcPath,"SpellRadius.dbc");
     LoadDBC(availableDbcLocales,bar,bad_dbc_files,sSpellRangeStore,          dbcPath,"SpellRange.dbc");

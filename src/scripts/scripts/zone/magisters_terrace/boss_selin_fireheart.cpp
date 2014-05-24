@@ -267,7 +267,7 @@ struct boss_selin_fireheartAI : public ScriptedAI
 
                 if(DrainCrystalTimer < diff)
                 {
-                    if(me->IsNonMeleeSpellCasted(false))
+                    if(me->IsNonMeleeSpellCast(false))
                         return;
                     SelectNearestCrystal();
                     DrainCrystalTimer = HeroicMode? 13000 : 18000;
@@ -323,7 +323,7 @@ struct mob_fel_crystalAI : public ScriptedAI
                 uint32 data = pInstance->GetData(DATA_SELIN_EVENT);
                 if(data == IN_PROGRESS)
                     me->InterruptNonMeleeSpells(true, SPELL_FEL_CRYSTAL_VISUAL);
-                else if(data == NOT_STARTED && !me->IsNonMeleeSpellCasted(true))
+                else if(data == NOT_STARTED && !me->IsNonMeleeSpellCast(true))
                     me->CastSpell((Unit*)NULL, SPELL_FEL_CRYSTAL_VISUAL, false);
             }
             Check_Timer = 2000;

@@ -305,7 +305,7 @@ void Spell::EffectEnvirinmentalDMG(uint32 i)
 
     // Note: this hack with damage replace required until GO casting not implemented
     // environment damage spells already have around enemies targeting but this not help in case not existed GO casting support
-    // currently each enemy selected explicitly and self cast damage, we prevent apply self casted spell bonuses/etc
+    // currently each enemy selected explicitly and self cast damage, we prevent apply self cast spell bonuses/etc
     damage = GetSpellEntry()->CalculateSimpleValue(i);
 
     m_caster->CalcAbsorbResist(m_caster,SpellMgr::GetSpellSchoolMask(GetSpellEntry()), SPELL_DIRECT_DAMAGE, damage, &absorb, &resist);
@@ -484,7 +484,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // T5 bonus - increase immolate damage on incinerate hit
                     if (m_caster->HasAura(37384, 0))
                     {
-                        // look for immolate casted by m_caster
+                        // look for immolate cast by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for (Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
                         {
@@ -511,7 +511,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                     // T5 bonus - increase corruption on shadow bolt hit
                     if (m_caster->HasAura(37384, 0))
                     {
-                        // look for corruption casted by m_caster
+                        // look for corruption cast by m_caster
                         Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                         for (Unit::AuraList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
                         {
@@ -946,7 +946,7 @@ void Spell::EffectDummy(uint32 i)
                             unitTarget->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         }
                         // Add q objecive + 1
-                        ((Player*)m_caster)->CastedCreatureOrGO(20982, unitTarget->GetGUID(), 35771);
+                        ((Player*)m_caster)->CastCreatureOrGO(20982, unitTarget->GetGUID(), 35771);
                     }
                 return;
                 }
@@ -2485,7 +2485,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
     targets.setUnitTarget(unitTarget);
     spell->prepare(&targets);
 
-    m_caster->SetCurrentCastedSpell(spell);
+    m_caster->SetCurrentCastSpell(spell);
     spell->m_selfContainer = &(m_caster->m_currentSpells[spell->GetCurrentContainer()]);
 
 }
@@ -2730,7 +2730,7 @@ void Spell::EffectTriggerSpell(uint32 i)
         }
     }
 
-    // some triggered spells must be casted instantly (for example, if next effect case instant kill caster)
+    // some triggered spells must be cast instantly (for example, if next effect case instant kill caster)
     /*bool instant = false;
     for (uint32 j = i+1; j < 3; ++j)
     {
@@ -3150,7 +3150,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
                 pBelmara->setFaction(35);
                 pBelmara->MonsterSay("I can't sleep without a good bedtime story. Now I'm cerain to rest well.", LANG_UNIVERSAL, 0);
 
-                ((Player*)m_caster)->CastedCreatureOrGO(19547, pBelmara->GetGUID(), GetSpellEntry()->Id);
+                ((Player*)m_caster)->CastCreatureOrGO(19547, pBelmara->GetGUID(), GetSpellEntry()->Id);
             }
             break;
         }
@@ -3165,7 +3165,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
                 pLuminrath->setFaction(35);
                 pLuminrath->MonsterSay("I can't possibly go out without my cloak. I hope it's in here...", LANG_UNIVERSAL, 0);
 
-                ((Player*)m_caster)->CastedCreatureOrGO(19548, pLuminrath->GetGUID(), GetSpellEntry()->Id);
+                ((Player*)m_caster)->CastCreatureOrGO(19548, pLuminrath->GetGUID(), GetSpellEntry()->Id);
             }
             break;
         }
@@ -3180,7 +3180,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
                 pCohlien->setFaction(35);
                 pCohlien->MonsterSay("Phew! There's my lucky hat. I've been looking for it everywhere.", LANG_UNIVERSAL, 0);
 
-                ((Player*)m_caster)->CastedCreatureOrGO(19550, pCohlien->GetGUID(), GetSpellEntry()->Id);
+                ((Player*)m_caster)->CastCreatureOrGO(19550, pCohlien->GetGUID(), GetSpellEntry()->Id);
             }
             break;
         }
@@ -3195,7 +3195,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
                 pDathric->setFaction(35);
                 pDathric->MonsterSay("I don't know what I was thinking, going out without my sword. I would've put it on if I'd seen it here...", LANG_UNIVERSAL, 0);
 
-                ((Player*)m_caster)->CastedCreatureOrGO(19549, pDathric->GetGUID(), GetSpellEntry()->Id);
+                ((Player*)m_caster)->CastCreatureOrGO(19549, pDathric->GetGUID(), GetSpellEntry()->Id);
             }
             break;
         }
@@ -4441,7 +4441,7 @@ void Spell::EffectSummonGuardian(uint32 i)
         return;
     }
     
-    // Search old Guardian only for players (if casted spell not have duration or cooldown)
+    // Search old Guardian only for players (if cast spell not have duration or cooldown)
     // FIXME: some guardians have control spell applied and controlled by player and anyway player can't summon in this time
     //        so this code hack in fact
     if (duration <= 0 || SpellMgr::GetSpellRecoveryTime(GetSpellEntry())==0)
@@ -5674,7 +5674,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             uint32 GravityLapseSpellId = 44219; // Id for first teleport spell
             uint32 GravityLapseDOT = (m_caster->GetMap()->IsHeroic()?44226:49887); // knocback + damage
-            uint32 GravityLapseChannel = 44251; // visual self-casted, triggers AoE beams
+            uint32 GravityLapseChannel = 44251; // visual self-cast, triggers AoE beams
             uint8 counter = 0;
 
             std::list<HostileReference*> PlayerList = m_caster->getThreatManager().getThreatList();
@@ -6321,7 +6321,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             switch(unitTarget->GetEntry())
             {
             case 24108:
-                //((Player*)m_caster)->CastedCreatureOrGO(unitTarget->GetEntry(), unitTarget->GetGUID(), 0);
+                //((Player*)m_caster)->CastCreatureOrGO(unitTarget->GetEntry(), unitTarget->GetGUID(), 0);
                 m_caster->CastSpell(m_caster, 47173, true);
                 break;
             case 23709:

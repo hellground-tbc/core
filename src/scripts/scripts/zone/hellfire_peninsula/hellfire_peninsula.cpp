@@ -917,7 +917,7 @@ struct npc_felblood_initiateAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
@@ -936,7 +936,7 @@ struct npc_felblood_initiateAI : public ScriptedAI
       {
           if(OOCTimer < diff)
           {
-              if(!me->IsNonMeleeSpellCasted(false))
+              if(!me->IsNonMeleeSpellCast(false))
                   HandleOffCombatEffects();
               if(roll_chance_i(3))
                   me->Yell(YellSiphon[urand(0,3)], 0, 0);

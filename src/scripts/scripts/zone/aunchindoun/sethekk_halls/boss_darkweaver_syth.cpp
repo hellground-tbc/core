@@ -137,7 +137,7 @@ struct boss_darkweaver_sythAI : public ScriptedAI
     {
         DoScriptText(SAY_SUMMON, m_creature);
 
-        if (m_creature->IsNonMeleeSpellCasted(false))
+        if (m_creature->IsNonMeleeSpellCast(false))
             m_creature->InterruptNonMeleeSpells(false);
 
         float px, py, pz;

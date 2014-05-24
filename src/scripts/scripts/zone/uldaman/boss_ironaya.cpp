@@ -38,14 +38,14 @@ struct boss_ironayaAI : public ScriptedAI
     boss_ironayaAI(Creature *c) : ScriptedAI(c) {}
 
     uint32 Arcing_Timer;
-    bool hasCastedWstomp;
-    bool hasCastedKnockaway;
+    bool hasCastWstomp;
+    bool hasCastKnockaway;
 
     void Reset()
     {
         Arcing_Timer = 3000;
-        hasCastedKnockaway = false;
-        hasCastedWstomp = false;
+        hasCastKnockaway = false;
+        hasCastWstomp = false;
     }
 
     void EnterCombat(Unit *who)
@@ -61,7 +61,7 @@ struct boss_ironayaAI : public ScriptedAI
             return;
 
         //If we are <50% hp do knockaway ONCE
-        if (!hasCastedKnockaway && m_creature->GetHealth()*2 < m_creature->GetMaxHealth())
+        if (!hasCastKnockaway && m_creature->GetHealth()*2 < m_creature->GetMaxHealth())
         {
             m_creature->CastSpell(m_creature->getVictim(),SPELL_KNOCKAWAY, true);
 
@@ -75,7 +75,7 @@ struct boss_ironayaAI : public ScriptedAI
                 m_creature->TauntApply(Target);
 
             //Shouldn't cast this agian
-            hasCastedKnockaway = true;
+            hasCastKnockaway = true;
         }
 
         //Arcing_Timer
@@ -85,10 +85,10 @@ struct boss_ironayaAI : public ScriptedAI
             Arcing_Timer = 13000;
         }else Arcing_Timer -= diff;
 
-        if (!hasCastedWstomp && m_creature->GetHealth()*4 < m_creature->GetMaxHealth())
+        if (!hasCastWstomp && m_creature->GetHealth()*4 < m_creature->GetMaxHealth())
         {
             DoCast(m_creature,SPELL_WSTOMP);
-            hasCastedWstomp = true;
+            hasCastWstomp = true;
         }
 
         DoMeleeAttackIfReady();

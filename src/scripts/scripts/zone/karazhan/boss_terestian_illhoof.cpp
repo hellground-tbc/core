@@ -131,7 +131,7 @@ struct mob_kilrekAI : public ScriptedAI
         }else AmplifyTimer -= diff;
 
         //Chain cast
-        if (!m_creature->IsNonMeleeSpellCasted(false) && m_creature->IsWithinDistInMap(m_creature->getVictim(), 30))
+        if (!m_creature->IsNonMeleeSpellCast(false) && m_creature->IsWithinDistInMap(m_creature->getVictim(), 30))
             DoCast(m_creature->getVictim(),SPELL_FIREBOLT);
         else DoMeleeAttackIfReady();
     }

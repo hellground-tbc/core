@@ -173,7 +173,7 @@ struct boss_anetheronAI : public hyjal_trashAI
         if(CheckTimer < diff)
         {
             DoZoneInCombat();
-            if(!m_creature->IsNonMeleeSpellCasted(true))
+            if(!m_creature->IsNonMeleeSpellCast(true))
             {
                 if(m_creature->GetSelection() != m_creature->getVictimGUID())
                     m_creature->SetSelection(m_creature->getVictimGUID());

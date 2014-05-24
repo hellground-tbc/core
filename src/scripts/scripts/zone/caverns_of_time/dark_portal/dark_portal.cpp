@@ -400,7 +400,7 @@ struct npc_time_riftAI : public ScriptedAI
             else TimeRiftWave_Timer -= diff;
         }
 
-        if (m_creature->IsNonMeleeSpellCasted(false))
+        if (m_creature->IsNonMeleeSpellCast(false))
             return;
 
         debug_log("TSCR: npc_time_rift: not casting anylonger, i need to die.");

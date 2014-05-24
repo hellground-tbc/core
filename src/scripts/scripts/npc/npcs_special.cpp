@@ -2416,7 +2416,7 @@ struct trigger_barkerAI : public ScriptedAI
 
         if (me->IsWithinDistInMap(who, 10.0f) && who->HasAura(43883, 0))
         {
-            ((Player*)who)->CastedCreatureOrGO(me->GetEntry(), me->GetGUID(), 0);
+            ((Player*)who)->CastCreatureOrGO(me->GetEntry(), me->GetGUID(), 0);
         }
     }
 };
@@ -2593,7 +2593,7 @@ struct npc_small_pet_handlerAI : public ScriptedAI
                 {
                     me->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
 
-                    if (me->IsNonMeleeSpellCasted(false))
+                    if (me->IsNonMeleeSpellCast(false))
                         me->InterruptNonMeleeSpells(false);
 
                     m_bIsIdle = false;
@@ -2630,7 +2630,7 @@ struct npc_small_pet_handlerAI : public ScriptedAI
             else
             {
                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
-                if (me->IsNonMeleeSpellCasted(false))
+                if (me->IsNonMeleeSpellCast(false))
                     me->InterruptNonMeleeSpells(false);
 
                 m_uiActionTimer = urand(10000, 30000);

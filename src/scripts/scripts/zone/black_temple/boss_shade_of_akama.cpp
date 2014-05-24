@@ -663,7 +663,7 @@ struct mob_ashtongue_sorcererAI : public ScriptedAI
 
         if (m_checkTimer < diff)
         {
-            if (!me->IsNonMeleeSpellCasted(true, false, true)) // that shouldn't happen
+            if (!me->IsNonMeleeSpellCast(true, false, true)) // that shouldn't happen
             {
                 if (Unit *pShade = me->GetUnit(*me, m_shadeGUID))
                 {

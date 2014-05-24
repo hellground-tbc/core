@@ -331,7 +331,7 @@ struct mob_mana_warpAI : public ScriptedAI
     
     void DamageTaken(Unit* pDone_by, uint32& uiDamage)
     {
-        if(me->IsNonMeleeSpellCasted(true) && uiDamage > me->GetHealth())
+        if(me->IsNonMeleeSpellCast(true) && uiDamage > me->GetHealth())
             uiDamage = me->GetHealth() - 1;
     }
 

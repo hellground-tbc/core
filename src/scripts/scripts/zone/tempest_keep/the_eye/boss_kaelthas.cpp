@@ -358,7 +358,7 @@ struct boss_kaelthasAI : public ScriptedAI
     uint32 Phase;
     uint32 PhaseSubphase;                                   //generic
     uint32 Phase_Timer;                                     //generic timer
-    uint32 PyrosCasted;
+    uint32 PyrosCast;
     uint32 Check_Timer2;
     uint32 Anim_Timer;
     uint32 Step;
@@ -416,7 +416,7 @@ struct boss_kaelthasAI : public ScriptedAI
         MindControl_Timer = 10000;
         Phoenix_Timer =50000;
         ShockPyroChain_Timer = 60000;
-        PyrosCasted = 0;
+        PyrosCast = 0;
         Pyro_Timer = 0;
         ShockBarrier_Timer = 60000;
         GravityLapse_Timer = 16000;
@@ -425,7 +425,7 @@ struct boss_kaelthasAI : public ScriptedAI
         Kick_Timer = 3000;
         Check_Timer = 4000;
         Check_Timer2 = 3000;
-        PyrosCasted = 0;
+        PyrosCast = 0;
         Phase = 0;
         Anim_Timer = 0;
         Step = 1;
@@ -1098,9 +1098,9 @@ struct boss_kaelthasAI : public ScriptedAI
                     // arcane disruption, shock, pyroblasts chain
                     if(ShockPyroChain_Timer < diff)
                     {
-                        if(PyrosCasted == 0)
+                        if(PyrosCast == 0)
                         {
-                            if(m_creature->IsNonMeleeSpellCasted(false))
+                            if(m_creature->IsNonMeleeSpellCast(false))
                             {
                                 m_creature->InterruptNonMeleeSpells(true);
                             }
@@ -1116,21 +1116,21 @@ struct boss_kaelthasAI : public ScriptedAI
 
                         if(Pyro_Timer < diff)
                         {
-                            if(PyrosCasted < 3)
+                            if(PyrosCast < 3)
                             {
                               m_creature->StopMoving();
                               m_creature->CastSpell(m_creature->getVictim(), SPELL_PYROBLAST, false);
-                              ++PyrosCasted;
+                              ++PyrosCast;
                               Pyro_Timer = 4000;
                             }
                         }
                         else
                             Pyro_Timer -= diff;
 
-                        if(PyrosCasted >= 3)
+                        if(PyrosCast >= 3)
                         {
                             ChainPyros = false;
-                            PyrosCasted = 0;
+                            PyrosCast = 0;
                             ShockPyroChain_Timer = 48000;
                             Pyro_Timer = 0;
                         }

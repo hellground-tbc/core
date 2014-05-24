@@ -549,7 +549,7 @@ inline bool CreatureAI::UpdateVictim()
 
     if (me->getVictim() && !outofthreat)
     {
-        if (me->IsNonMeleeSpellCasted(false))
+        if (me->IsNonMeleeSpellCast(false))
             return true;
         else
         {

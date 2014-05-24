@@ -157,7 +157,7 @@ struct boss_netherspiteAI : public ScriptedAI
         {
             if(Creature *portal = Unit::GetCreature(*m_creature, PortalGUID[j]))
             {
-                // the one who's been casted upon before
+                // the one who's been cast upon before
                 Unit *current = Unit::GetUnit(*portal, BeamTarget[j]);
                 // temporary store for the best suitable beam reciever
                 Unit *target = m_creature;
@@ -327,7 +327,7 @@ struct boss_netherspiteAI : public ScriptedAI
 
             if(PhaseTimer < diff)
             {
-                if(!m_creature->IsNonMeleeSpellCasted(false))
+                if(!m_creature->IsNonMeleeSpellCast(false))
                 {
                     SwitchToBanishPhase();
                     return;
@@ -359,7 +359,7 @@ struct boss_netherspiteAI : public ScriptedAI
 
             if(PhaseTimer < diff)
             {
-                if(!m_creature->IsNonMeleeSpellCasted(false))
+                if(!m_creature->IsNonMeleeSpellCast(false))
                 {
                     SwitchToPortalPhase();
                     return;

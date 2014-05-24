@@ -108,7 +108,7 @@ Params are always read from Param1, then Param2, then Param3.
 24   ACTION_T_EVADE                    No Params                       Forces the creature to evade. Wiping all threat and dropping combat.
 25   ACTION_T_FLEE                     No Params                       Causes the .creature to flee. Please use this action instead of directly casting this spell so we may change this when a more correct approach is found.
 26   ACTION_T_QUEST_EVENT_ALL          QuestId                         Calls GroupEventHappens with (param1). Only used if it's _expected_ event should complete for all players in current party
-27   ACTION_T_CASTCREATUREGO_ALL       QuestId, SpellId                Calls CastedCreatureOrGo for all players on the threat list with QuestID(Param1) and SpellId(Param2)
+27   ACTION_T_CASTCREATUREGO_ALL       QuestId, SpellId                Calls CastCreatureOrGO for all players on the threat list with QuestID(Param1) and SpellId(Param2)
 28   ACTION_T_REMOVEAURASFROMSPELL     Target, Spellid                 Removes all auras on Target caused by Spellid
 29   ACTION_T_RANGED_MOVEMENT          Distance, Angle                 Changes the movement generator type to a ranged type. Note: Default melee type can still be done with this. Specify 0 angle and 0 distance.
 30   ACTION_T_RANDOM_PHASE             PhaseId1, PhaseId2, PhaseId3    Sets the phase to the id between 3 params*
@@ -438,7 +438,7 @@ Parameter 1: CreatureID - The Creature Template ID to be Summoned. The value her
 Parameter 2: SpellId - The Spell ID to use to simulate the cast. The value used in this field needs to be a valid Spell ID.
 Parameter 3: Target - The Target Type defining whom the quest credit should be given to. The value in this field needs to be a valid target type as specified in the reference tables below. 
 
-This action will call CastedCreatureOrGO() function for the player. It can be used to give quest credit for casting a spell on the creature. 
+This action will call CastCreatureOrGO() function for the player. It can be used to give quest credit for casting a spell on the creature. 
 This is commonly used for NPC's who have a special requirement to have a Spell cast on them to complete a quest.
 
 -----------------------------

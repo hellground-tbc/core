@@ -732,7 +732,7 @@ struct boss_kagani_nightstrikeAI : public boss_priestess_guestAI
                 Kick_Cooldown -= diff;
         }
 
-        if(canKick && (me->getVictim()->IsNonMeleeSpellCasted(true) || roll_chance_f(15.0)))
+        if(canKick && (me->getVictim()->IsNonMeleeSpellCast(true) || roll_chance_f(15.0)))
         {
             if(me->IsWithinMeleeRange(me->getVictim()))
             {

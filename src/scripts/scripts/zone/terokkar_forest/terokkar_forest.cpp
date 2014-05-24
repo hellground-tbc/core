@@ -497,7 +497,7 @@ bool GossipHello_go_skull_pile(Player *player, GameObject* go)
 
 void SendActionMenu_go_skull_pile(Player *player, GameObject* go, uint32 action)
 {
-    // GO should be despawned by spell casted below, but it's not working :(
+    // GO should be despawned by spell cast below, but it's not working :(
     if(player->HasItemCount(32620, 10))
     {
         go->SetGoState(GO_STATE_ACTIVE);

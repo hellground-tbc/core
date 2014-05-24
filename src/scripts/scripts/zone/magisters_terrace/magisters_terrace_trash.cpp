@@ -121,13 +121,13 @@ struct mob_sunwell_mage_guardAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {
@@ -225,7 +225,7 @@ struct mob_sunblade_magisterAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
@@ -236,7 +236,7 @@ struct mob_sunblade_magisterAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {
@@ -342,7 +342,7 @@ struct mob_sunblade_warlockAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
@@ -377,7 +377,7 @@ struct mob_sunblade_warlockAI : public ScriptedAI
               SummonImp_Timer -= diff;
       }
 
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {
@@ -498,7 +498,7 @@ struct mob_sunblade_physicianAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
@@ -518,7 +518,7 @@ struct mob_sunblade_physicianAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {
@@ -619,13 +619,13 @@ struct mob_sunblade_blood_knightAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
         {
             if(OOCTimer < diff)
             {
@@ -711,7 +711,7 @@ struct mob_wretched_skulkerAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
         if(roll_chance_f(10.0))
             DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), 0, me->getVictim());
@@ -730,7 +730,7 @@ struct mob_wretched_skulkerAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
         {
             if(OOCTimer < diff)
             {
@@ -785,7 +785,7 @@ struct mob_wretched_bruiserAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
         if(roll_chance_f(10.0))
             DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), 0, me->getVictim());
@@ -804,7 +804,7 @@ struct mob_wretched_bruiserAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
         {
             if(OOCTimer < diff)
             {
@@ -865,7 +865,7 @@ struct mob_wretched_huskAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
         if(roll_chance_f(10.0))
             DoSay(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), 0, me->getVictim());
@@ -886,7 +886,7 @@ struct mob_wretched_huskAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+        if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
         {
             if(OOCTimer < diff)
             {
@@ -1005,13 +1005,13 @@ struct mob_sister_of_tormentAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {
@@ -1133,7 +1133,7 @@ struct mob_coilskar_witchAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
@@ -1144,7 +1144,7 @@ struct mob_coilskar_witchAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {
@@ -1263,13 +1263,13 @@ struct mob_ethereum_smugglerAI : public ScriptedAI
 
     void EnterCombat(Unit* who)
     {
-        if(me->IsNonMeleeSpellCasted(false))
+        if(me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
     void UpdateAI(const uint32 diff)
     {
-      if(!me->IsNonMeleeSpellCasted(false) && !me->isInCombat())
+      if(!me->IsNonMeleeSpellCast(false) && !me->isInCombat())
       {
           if(OOCTimer < diff)
           {

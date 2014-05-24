@@ -109,7 +109,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         if (pInstance)
             pInstance->SetData(DATA_KELIDANEVENT, IN_PROGRESS);
 
-        if (m_creature->IsNonMeleeSpellCasted(false))
+        if (m_creature->IsNonMeleeSpellCast(false))
             m_creature->InterruptNonMeleeSpells(true);
         DoStartMovement(who);
     }
@@ -205,7 +205,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
         {
             if(check_Timer < diff)
             {
-                if (!m_creature->IsNonMeleeSpellCasted(false))
+                if (!m_creature->IsNonMeleeSpellCast(false))
                 {
                     float x, y, z;
                     me->GetRespawnCoord(x, y, z);
@@ -252,7 +252,7 @@ struct boss_kelidan_the_breakerAI : public ScriptedAI
 
         if (BurningNova_Timer < diff)
         {
-            if (m_creature->IsNonMeleeSpellCasted(false))
+            if (m_creature->IsNonMeleeSpellCast(false))
                 m_creature->InterruptNonMeleeSpells(true);
 
             DoScriptText(SAY_NOVA, m_creature);
@@ -316,7 +316,7 @@ struct mob_shadowmoon_channelerAI : public ScriptedAI
         ShadowBolt_Timer = urand(1000, 2000);
         MarkOfShadow_Timer = urand(5000, 7000);
         check_Timer = 0;
-        if (m_creature->IsNonMeleeSpellCasted(false))
+        if (m_creature->IsNonMeleeSpellCast(false))
             m_creature->InterruptNonMeleeSpells(true);
     }
 
@@ -325,7 +325,7 @@ struct mob_shadowmoon_channelerAI : public ScriptedAI
         if(Creature *Kelidan = (Creature *)FindCreature(ENTRY_KELIDAN, 100, m_creature))
             ((boss_kelidan_the_breakerAI*)Kelidan->AI())->ChannelerEngaged(who);
 
-        if (m_creature->IsNonMeleeSpellCasted(false))
+        if (m_creature->IsNonMeleeSpellCast(false))
             m_creature->InterruptNonMeleeSpells(true);
 
         DoStartMovement(who);
@@ -343,7 +343,7 @@ struct mob_shadowmoon_channelerAI : public ScriptedAI
         {
             if(check_Timer < diff)
             {
-                if (!m_creature->IsNonMeleeSpellCasted(false))
+                if (!m_creature->IsNonMeleeSpellCast(false))
                     if(Creature *Kelidan = (Creature *)FindCreature(ENTRY_KELIDAN, 100, m_creature))
                     {
                         uint64 channeler = ((boss_kelidan_the_breakerAI*)Kelidan->AI())->GetChanneled(m_creature);

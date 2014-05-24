@@ -106,7 +106,7 @@ struct boss_instructormaliciaAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_FLASHHEAL);
 
-            //5 Flashheals will be casted
+            //5 Flashheals will be cast
             if (FlashCounter < 2)
             {
                 FlashHeal_Timer = 5000;
@@ -124,7 +124,7 @@ struct boss_instructormaliciaAI : public ScriptedAI
         {
             DoCast(m_creature,SPELL_HEALINGTOUCH);
 
-            //3 Healingtouchs will be casted
+            //3 Healingtouchs will be cast
             if (HealingTouch_Timer < 2)
             {
                 HealingTouch_Timer = 5500;

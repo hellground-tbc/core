@@ -34,7 +34,7 @@ struct mob_vashjir_honor_guardAI : public ScriptedAI
     uint32 Knockback_Timer;
     uint32 Execute_Timer;
     uint32 Cleave_Timer;
-    bool Frenzy_Casted;
+    bool Frenzy_Cast;
 
     uint32 Talk_Timer;
     uint32 Check_Timer;
@@ -47,7 +47,7 @@ struct mob_vashjir_honor_guardAI : public ScriptedAI
         Knockback_Timer = urand(10000, 30000);
         Execute_Timer = 0;
         Cleave_Timer = urand(3000, 6000);
-        Frenzy_Casted = false;
+        Frenzy_Cast = false;
         Talk_Timer = 10000;
         Check_Timer = 1000;
     }
@@ -95,10 +95,10 @@ struct mob_vashjir_honor_guardAI : public ScriptedAI
         else
             Cleave_Timer -= diff;
 
-        if(!Frenzy_Casted && HealthBelowPct(50))
+        if(!Frenzy_Cast && HealthBelowPct(50))
         {
             AddSpellToCast(SPELL_FRENZY, CAST_SELF);
-            Frenzy_Casted = true;
+            Frenzy_Cast = true;
         }
 
         CastNextSpellIfAnyAndReady();

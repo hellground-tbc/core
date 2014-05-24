@@ -242,7 +242,7 @@ struct boss_akilzonAI : public ScriptedAI
             }
             // throw player to air and cast electrical storm on (should be handled by proper script effect targeting?)
             DoScriptText(EMOTE_STORM, m_creature, 0, true);
-            // temporary test, normally used in spell_linked_spell, should be casted before players flying
+            // temporary test, normally used in spell_linked_spell, should be cast before players flying
             target->CastSpell(target, 44007, true);
             m_creature->CastSpell(target, SPELL_ELECTRICAL_STORM, false);
 

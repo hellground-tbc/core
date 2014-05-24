@@ -191,7 +191,7 @@ struct boss_talon_king_ikissAI : public ScriptedAI
 
             if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0, 60, true))
             {
-                if (m_creature->IsNonMeleeSpellCasted(false))
+                if (m_creature->IsNonMeleeSpellCast(false))
                     m_creature->InterruptNonMeleeSpells(false);
 
                 //Spell doesn't work, but we use for visual effect at least

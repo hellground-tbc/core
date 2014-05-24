@@ -1116,11 +1116,11 @@ struct mob_shield_generator_channelAI : public ScriptedAI
 
     ScriptedInstance *instance;
     uint32 Check_Timer;
-    bool Casted;
+    bool Cast;
     void Reset()
     {
         Check_Timer = 0;
-        Casted = false;
+        Cast = false;
         me->SetUInt32Value(UNIT_FIELD_DISPLAYID , 11686);  //invisible
 
         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -1143,10 +1143,10 @@ struct mob_shield_generator_channelAI : public ScriptedAI
             if(Vashj && Vashj->isAlive())
             {
                 //start visual channel
-                if (!Casted || !Vashj->HasAura(SPELL_MAGIC_BARRIER,0))
+                if (!Cast || !Vashj->HasAura(SPELL_MAGIC_BARRIER,0))
                 {
                     me->CastSpell(Vashj,SPELL_MAGIC_BARRIER,true);
-                    Casted = true;
+                    Cast = true;
                 }
             }
             Check_Timer = 1000;

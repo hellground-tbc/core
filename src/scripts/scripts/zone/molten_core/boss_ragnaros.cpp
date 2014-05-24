@@ -310,7 +310,7 @@ struct boss_ragnarosAI : public Scripted_NoMovementAI
         if( m_creature->IsWithinMeleeRange(m_creature->getVictim()))
         {
             //Make sure our attack is ready and we arn't currently casting
-            if( m_creature->isAttackReady() && !m_creature->IsNonMeleeSpellCasted(false))
+            if( m_creature->isAttackReady() && !m_creature->IsNonMeleeSpellCast(false))
             {
                 m_creature->AttackerStateUpdate(m_creature->getVictim());
                 m_creature->resetAttackTimer();

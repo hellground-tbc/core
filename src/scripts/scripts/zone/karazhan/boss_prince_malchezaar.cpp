@@ -658,7 +658,7 @@ struct boss_malchezaarAI : public ScriptedAI
 
     void DoMeleeAttacksIfReady()
     {
-        if( m_creature->IsWithinMeleeRange(m_creature->getVictim()) && !m_creature->IsNonMeleeSpellCasted(false))
+        if( m_creature->IsWithinMeleeRange(m_creature->getVictim()) && !m_creature->IsNonMeleeSpellCast(false))
         {
             //Check for base attack
             if( m_creature->isAttackReady() && m_creature->getVictim() )
