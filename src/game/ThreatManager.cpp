@@ -294,8 +294,8 @@ bool DropAggro(Creature* pAttacker, Unit * target)
     if (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false))
         return true;
 
-    // if target is immune to actually casted spell - i think it's not good check because we don't switch spell target to proper one
-    if (pAttacker->IsNonMeleeSpellCasted(false))
+    // if target is immune to actually cast spell - i think it's not good check because we don't switch spell target to proper one
+    if (pAttacker->IsNonMeleeSpellCast(false))
     {
         SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NONE;
         if (Spell* pSpell = pAttacker->m_currentSpells[CURRENT_GENERIC_SPELL])

@@ -495,7 +495,7 @@ void GameObject::Update(uint32 update_diff, uint32 p_time)
 
 void GameObject::Refresh()
 {
-    // not refresh despawned not casted GO (despawned casted GO destroyed in all cases anyway)
+    // not refresh despawned not cast GO (despawned cast GO destroyed in all cases anyway)
     if (m_respawnTime > 0 && m_spawnedByDefault)
         return;
 
@@ -1155,7 +1155,7 @@ void GameObject::Use(Unit* user)
                         break;
                 }
 
-                pPlayer->CastedCreatureOrGO(GetEntry(), GetGUID(), 0);
+                pPlayer->CastCreatureOrGO(GetEntry(), GetGUID(), 0);
 
                 if (info->goober.eventId)
                 {
@@ -1584,7 +1584,7 @@ void GameObject::HandleNonDbcSpell(uint32 spellId, Player* pUser)
         }
 
         default:
-            sLog.outDebug("Gameobject: %s, %u type: %u. casted non-handled and non-existing spell: %u", GetName(), GetEntry(), GetGoType(), spellId);
+            sLog.outDebug("Gameobject: %s, %u type: %u. cast non-handled and non-existing spell: %u", GetName(), GetEntry(), GetGoType(), spellId);
             break;
     }
 }

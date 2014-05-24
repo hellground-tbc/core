@@ -204,7 +204,7 @@ bool GOUse_go_princess_stillpine_cage(Player* pPlayer, GameObject* pGO)
     if (pGO->GetGoType() == GAMEOBJECT_TYPE_DOOR)
     {
         DoScriptText(-1230010-urand(0, 2), Prisoner, pPlayer);
-        pPlayer->CastedCreatureOrGO(17682, Prisoner->GetGUID(), 31003);
+        pPlayer->CastCreatureOrGO(17682, Prisoner->GetGUID(), 31003);
         ((Creature*)Prisoner)->GetMotionMaster()->MoveFleeing(pPlayer,4000);
         CAST_AI(npc_princess_stillpineAI, ((Creature*)Prisoner)->AI())->FleeTimer = 4000;
     }

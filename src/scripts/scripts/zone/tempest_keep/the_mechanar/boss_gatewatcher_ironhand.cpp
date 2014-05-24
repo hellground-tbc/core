@@ -35,7 +35,7 @@ EndScriptData */
 #define SAY_DEATH_1                     -1554011
 #define EMOTE_HAMMER                    -1554012
 
-// Spells to be casted
+// Spells to be cast
 #define SPELL_SHADOW_POWER              35322
 #define H_SPELL_SHADOW_POWER            39193
 #define SPELL_HAMMER_PUNCH              35326
@@ -117,7 +117,7 @@ struct boss_gatewatcher_iron_handAI : public ScriptedAI
             DoScriptText(EMOTE_HAMMER, me);
             DoCast(me->getVictim(),HeroicMode ? H_SPELL_JACKHAMMER : SPELL_JACKHAMMER);
 
-            //chance to yell, but not same time as emote (after spell in fact casted)
+            //chance to yell, but not same time as emote (after spell in fact cast)
             if (rand()%2)
                 return;
 

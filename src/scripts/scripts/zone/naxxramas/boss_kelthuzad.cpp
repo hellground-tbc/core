@@ -142,7 +142,7 @@ I also don't know the emotes
 #define WALKZ_RIGHT_NEAR            142.0141130
 #define WALKO_RIGHT_NEAR            2.121412
 
-//spells to be casted
+//spells to be cast
 #define SPELL_FROST_BOLT            28478
 #define H_SPELL_FROST_BOLT          55802
 #define SPELL_FROST_BOLT_NOVA       28479

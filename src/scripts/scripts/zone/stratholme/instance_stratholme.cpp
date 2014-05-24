@@ -339,7 +339,7 @@ struct instance_stratholme : public ScriptedInstance
                             
                             if (pGroupie->GetQuestStatus(QUEST_DEAD_MAN_PLEA) == QUEST_STATUS_INCOMPLETE)
                             {
-                                pGroupie->CastedCreatureOrGO(C_YSIDA, ysidaGUID,0);
+                                pGroupie->CastCreatureOrGO(C_YSIDA, ysidaGUID,0);
                                 pGroupie->AreaExploredOrEventHappens(QUEST_DEAD_MAN_PLEA);
                             }
                         }
@@ -348,7 +348,7 @@ struct instance_stratholme : public ScriptedInstance
 
                     if (Unit *temp = Unit::GetUnit(*player,GetData64(DATA_BARON)))
                     {
-                        player->CastedCreatureOrGO(C_YSIDA, ysidaGUID,0);
+                        player->CastCreatureOrGO(C_YSIDA, ysidaGUID,0);
                         player->AreaExploredOrEventHappens(QUEST_DEAD_MAN_PLEA);
                     }
                     SetData(TYPE_BARON_RUN,DONE);

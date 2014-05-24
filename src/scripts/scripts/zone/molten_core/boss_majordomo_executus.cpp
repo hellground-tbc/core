@@ -48,7 +48,7 @@ EndScriptData */
 #define SPELL_DAMAGE_REFLECTION     21075
 
 #define SPELL_BLASTWAVE             20229
-#define SPELL_AEGIS                 20620                   //This is self casted whenever we are below 50%
+#define SPELL_AEGIS                 20620                   //This is self cast whenever we are below 50%
 #define SPELL_TELEPORT              20618
 #define SPELL_SUMMON_RAGNAROS       19774
 #define SPELL_SHADOW_BOLT           21077

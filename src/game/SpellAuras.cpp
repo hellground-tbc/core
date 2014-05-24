@@ -2268,7 +2268,7 @@ void Aura::TriggerSpell()
             // Curse of Idiocy
             case 1010:
             {
-                // TODO: spell casted by result in correct way mostly
+                // TODO: spell cast by result in correct way mostly
                 // BUT:
                 // 1) target show casting at each triggered cast: target don't must show casting animation for any triggered spell
                 //      but must show affect apply like item casting
@@ -2716,7 +2716,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case 46308:        // Burning Winds
             {
-                m_target->CastSpell(m_target,47287,true,NULL,this); // casted only at creatures at spawn
+                m_target->CastSpell(m_target,47287,true,NULL,this); // cast only at creatures at spawn
                 return;
             }
             case 34477:        // Misdirection
@@ -7222,7 +7222,7 @@ void Aura::PeriodicTick()
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
             uint32 new_damage = pCaster->DealDamage(&damageInfo, DOT, spellProto, false);
 
-            if (!target->isAlive() && pCaster->IsNonMeleeSpellCasted(false))
+            if (!target->isAlive() && pCaster->IsNonMeleeSpellCast(false))
             {
                 for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
                 {

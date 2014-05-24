@@ -155,7 +155,7 @@ struct boss_sarturaAI : public ScriptedAI
             //If she is 20% enrage
             if (!Enraged)
             {
-                if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 20 && !m_creature->IsNonMeleeSpellCasted(false))
+                if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 20 && !m_creature->IsNonMeleeSpellCast(false))
                 {
                     DoCast(m_creature, SPELL_ENRAGE);
                     Enraged = true;

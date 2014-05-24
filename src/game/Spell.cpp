@@ -1069,14 +1069,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             caster->ProcDamageAndSpell(unit, procAttacker, procVictim, procEx, 0, m_attackType, GetSpellEntry(), m_canTrigger);
     }
 
-    // Call scripted function for AI if this spell is casted upon a creature (except pets)
+    // Call scripted function for AI if this spell is cast upon a creature (except pets)
     if (unit->GetTypeId() == TYPEID_UNIT)
     {
         // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
         // ignore pets or autorepeat/melee casts for speed (not exist quest for spells (hm... )
         if (!((Creature*)unit)->isPet() && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
             if (Player* p = GetPlayerForCastQuestCond())
-                p->CastedCreatureOrGO(unit->GetEntry(), unit->GetGUID(), GetSpellEntry()->Id);
+                p->CastCreatureOrGO(unit->GetEntry(), unit->GetGUID(), GetSpellEntry()->Id);
     }
 
     if (!m_caster->IsFriendlyTo(unit) && !SpellMgr::IsPositiveSpell(GetSpellEntry()->Id))
@@ -1192,7 +1192,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         DiminishingReturnsType type = SpellMgr::GetDiminishingReturnsGroupType(m_diminishGroup);
         // Increase Diminishing on unit, current informations for actually casts will use values above
         if ((type == DRTYPE_PLAYER && unit->isCharmedOwnedByPlayerOrPlayer()) || type == DRTYPE_ALL)
-        {                                                   // Freezing trap exception, since it is casted by GO ?
+        {                                                   // Freezing trap exception, since it is cast by GO ?
             if (m_caster->isCharmedOwnedByPlayerOrPlayer() || (GetSpellEntry()->SpellFamilyName == SPELLFAMILY_HUNTER && GetSpellEntry()->SpellFamilyFlags & 0x00000000008LL))
                 unit->IncrDiminishing(m_diminishGroup);
         }
@@ -1277,7 +1277,7 @@ void Spell::DoAllEffectOnTarget(GOTargetInfo *target)
     // ignore autorepeat/melee casts for speed (not exist quest for spells (hm...)
     if (!IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive())
         if (Player* p = GetPlayerForCastQuestCond())
-            p->CastedCreatureOrGO(go->GetEntry(), go->GetGUID(), GetSpellEntry()->Id);
+            p->CastCreatureOrGO(go->GetEntry(), go->GetGUID(), GetSpellEntry()->Id);
 }
 
 void Spell::DoAllEffectOnTarget(ItemTargetInfo *target)
@@ -2246,7 +2246,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_caster->m_Events.AddEvent(Event, m_caster->m_Events.CalculateTime(1));
 
     //Prevent casting at cast another spell (ServerSide check)
-    if (m_caster->IsNonMeleeSpellCasted(false, true) && m_cast_count)
+    if (m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count)
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false);
@@ -2333,7 +2333,7 @@ void Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
         if (SpellMgr::isSpellBreakStealth(GetSpellEntry()))
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
 
-        m_caster->SetCurrentCastedSpell(this);
+        m_caster->SetCurrentCastSpell(this);
         m_selfContainer = &(m_caster->m_currentSpells[GetCurrentContainer()]);
 
         SendSpellStart();
@@ -2969,7 +2969,7 @@ void Spell::update(uint32 difftime)
                             if (!unit)
                                 continue;
 
-                            p->CastedCreatureOrGO(unit->GetEntry(), unit->GetGUID(), GetSpellEntry()->Id);
+                            p->CastCreatureOrGO(unit->GetEntry(), unit->GetGUID(), GetSpellEntry()->Id);
                         }
 
                         for (std::list<GOTargetInfo>::iterator ihit= m_UniqueGOTargetInfo.begin();ihit != m_UniqueGOTargetInfo.end();++ihit)
@@ -2983,7 +2983,7 @@ void Spell::update(uint32 difftime)
                             if (!go)
                                 continue;
 
-                            p->CastedCreatureOrGO(go->GetEntry(), go->GetGUID(), GetSpellEntry()->Id);
+                            p->CastCreatureOrGO(go->GetEntry(), go->GetGUID(), GetSpellEntry()->Id);
                         }
                     }
                 }
@@ -3010,7 +3010,7 @@ void Spell::finish(bool ok)
     if (SpellMgr::IsChanneledSpell(GetSpellEntry()))
         m_caster->UpdateInterruptMask();
 
-    if (!m_caster->IsNonMeleeSpellCasted(false, false, true))
+    if (!m_caster->IsNonMeleeSpellCast(false, false, true))
     {
         if (m_caster->hasUnitState(UNIT_STAT_CASTING_NOT_MOVE))
             m_caster->GetUnitStateMgr().DropAction(UNIT_ACTION_CONTROLLED);
@@ -3725,7 +3725,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     // check cooldowns to prevent cheating
     if (!IsTriggeredSpell() && m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->HasSpellCooldown(GetSpellEntry()->Id))
     {
-       //triggered spells shouldn't be casted (cooldown check in handleproctriggerspell)
+       //triggered spells shouldn't be cast (cooldown check in handleproctriggerspell)
        // if (m_triggeredByAuraSpell)
        //     return SPELL_FAILED_DONT_REPORT;
        // else
@@ -3957,7 +3957,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
     }
 
-    // Spell casted only on battleground
+    // Spell cast only on battleground
     if ((GetSpellEntry()->AttributesEx3 & SPELL_ATTR_EX3_BATTLEGROUND) &&  m_caster->GetTypeId()==TYPEID_PLAYER)
         if (!((Player*)m_caster)->InBattleGround())
             return SPELL_FAILED_ONLY_BATTLEGROUNDS;
@@ -4007,7 +4007,7 @@ SpellCastResult Spell::CheckCast(bool strict)
              return castResult;
     }
 
-    if (!IsTriggeredSpell() || GetSpellEntry()->Id == 33395) // hack for water elemental freeze since it is casted as triggered spell
+    if (!IsTriggeredSpell() || GetSpellEntry()->Id == 33395) // hack for water elemental freeze since it is cast as triggered spell
     {
         SpellCastResult castResult = CheckRange(strict);
         if (castResult != SPELL_CAST_OK)
@@ -4546,7 +4546,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!m_targets.getUnitTarget())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
-                // can be casted at non-friendly unit or own pet/charm
+                // can be cast at non-friendly unit or own pet/charm
                 if (m_caster->IsFriendlyTo(m_targets.getUnitTarget()))
                     return SPELL_FAILED_TARGET_FRIENDLY;
 
@@ -4625,7 +4625,7 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
     if (!m_caster->isAlive())
         return SPELL_FAILED_CASTER_DEAD;
 
-    if (m_caster->IsNonMeleeSpellCasted(false) && !IsTriggeredSpell())  //prevent spellcast interruption by another spellcast
+    if (m_caster->IsNonMeleeSpellCast(false) && !IsTriggeredSpell())  //prevent spellcast interruption by another spellcast
         return SPELL_FAILED_SPELL_IN_PROGRESS;
     if (m_caster->isInCombat() && SpellMgr::IsNonCombatSpell(GetSpellEntry()))
         return SPELL_FAILED_AFFECTING_COMBAT;
@@ -4762,7 +4762,7 @@ SpellCastResult Spell::CheckCasterAuras() const
                 }
             }
         }
-        //You are prevented from casting and the spell casted does not grant immunity. Return a failed error.
+        //You are prevented from casting and the spell cast does not grant immunity. Return a failed error.
         else
             return prevented_reason;
     }
@@ -5703,11 +5703,11 @@ bool SpellEvent::Execute(uint64 e_time, uint32 p_time)
                 // check, if we have channeled spell on our hands
                 if (SpellMgr::IsChanneledSpell(m_Spell->GetSpellEntry()))
                 {
-                    // evented channeled spell is processed separately, casted once after delay, and not destroyed till finish
+                    // evented channeled spell is processed separately, cast once after delay, and not destroyed till finish
                     // check, if we have casting anything else except this channeled spell and autorepeat
-                    if (m_Spell->GetCaster()->IsNonMeleeSpellCasted(false, true, true))
+                    if (m_Spell->GetCaster()->IsNonMeleeSpellCast(false, true, true))
                     {
-                        // another non-melee non-delayed spell is casted now, abort
+                        // another non-melee non-delayed spell is cast now, abort
                         m_Spell->cancel();
                     }
                     // Check if target of channeled spell still in range
@@ -5806,7 +5806,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                 if (skillId != SKILL_NONE)
                 {
                     // skill bonus provided by casting spell (mostly item spells)
-                    // add the damage modifier from the spell casted (cheat lock / skeleton key etc.) (use m_currentBasePoints, CalculateDamage returns wrong value)
+                    // add the damage modifier from the spell cast (cheat lock / skeleton key etc.) (use m_currentBasePoints, CalculateDamage returns wrong value)
                     uint32 spellSkillBonus = uint32(m_currentBasePoints[effIndex]+1);
                     reqSkillValue = lockInfo->Skill[j];
 
@@ -6006,7 +6006,7 @@ void Spell::TriggerGlobalCooldown()
         return;
 
     // Global cooldown can't leave range 1..1.5 secs
-    // There are some spells (mostly not casted directly by player) that have < 1 sec and > 1.5 sec global cooldowns
+    // There are some spells (mostly not cast directly by player) that have < 1 sec and > 1.5 sec global cooldowns
     // but as tests show are not affected by any spell mods.
     if (GetSpellEntry()->StartRecoveryTime >= MIN_GCD && GetSpellEntry()->StartRecoveryTime <= MAX_GCD)
     {

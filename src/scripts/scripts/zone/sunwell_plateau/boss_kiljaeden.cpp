@@ -624,14 +624,14 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
                         }
                         break;
                     case TIMER_SOUL_FLAY:
-                        if(!m_creature->IsNonMeleeSpellCasted(false)){
+                        if(!m_creature->IsNonMeleeSpellCast(false)){
                         m_creature->CastSpell(m_creature->getVictim(), SPELL_SOUL_FLAY, false);
                         m_creature->getVictim()->CastSpell(m_creature->getVictim(), SPELL_SOUL_FLAY_SLOW, true);
                         Timer[TIMER_SOUL_FLAY] = 3500;
                         }
                         break;
                     case TIMER_LEGION_LIGHTNING:
-                        if(!m_creature->IsNonMeleeSpellCasted(false)){
+                        if(!m_creature->IsNonMeleeSpellCast(false)){
                             m_creature->RemoveAurasDueToSpell(SPELL_SOUL_FLAY);
                             for(uint8 z = 0; z < 6; ++z){
                                 randomPlayer = SelectUnit(SELECT_TARGET_RANDOM, 0, 100, true);
@@ -644,7 +644,7 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
                         }
                         break;
                     case TIMER_FIRE_BLOOM:
-                        if(!m_creature->IsNonMeleeSpellCasted(false)){
+                        if(!m_creature->IsNonMeleeSpellCast(false)){
                             m_creature->RemoveAurasDueToSpell(SPELL_SOUL_FLAY);
                             DoCastAOE(SPELL_FIRE_BLOOM, false);
                             Timer[TIMER_FIRE_BLOOM] = (Phase == PHASE_SACRIFICE) ? 25000 : 40000; // 25 seconds in PHASE_SACRIFICE
@@ -662,7 +662,7 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
                         Timer[TIMER_SOUL_FLAY] = 2000;
                         break;
                     case TIMER_SHADOW_SPIKE: //Phase 3
-                        if(!m_creature->IsNonMeleeSpellCasted(false)){
+                        if(!m_creature->IsNonMeleeSpellCast(false)){
                         DoCastAOE(SPELL_SHADOW_SPIKE, false);
                         Timer[TIMER_SHADOW_SPIKE] = 0;
                         TimerIsDeactiveted[TIMER_SHADOW_SPIKE] = true;
@@ -674,7 +674,7 @@ struct boss_kiljaedenAI : public Scripted_NoMovementAI
                         Timer[TIMER_FLAME_DART] = 3000; //TODO Timer
                         break;
                     case TIMER_DARKNESS: //Phase 3
-                        if(!m_creature->IsNonMeleeSpellCasted(false)){
+                        if(!m_creature->IsNonMeleeSpellCast(false)){
                         // Begins to channel for 8 seconds, then deals 50'000 damage to all raid members.
                         if(!IsInDarkness){
                             DoScriptText(EMOTE_KJ_DARKNESS, m_creature);

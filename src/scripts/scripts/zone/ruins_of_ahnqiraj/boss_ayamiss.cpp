@@ -106,7 +106,7 @@ struct boss_ayamissAI : public ScriptedAI
             return;
 
         //If he is 70% start phase 2
-        if (phase==1 && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 70 && !m_creature->IsNonMeleeSpellCasted(false))
+        if (phase==1 && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 70 && !m_creature->IsNonMeleeSpellCast(false))
         {
             phase=2;
         }

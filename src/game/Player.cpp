@@ -1900,7 +1900,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             // stop spellcasting
             // not attempt interrupt teleportation spell at caster teleport
             if (!(options & TELE_TO_SPELL))
-                if (IsNonMeleeSpellCasted(true))
+                if (IsNonMeleeSpellCast(true))
                     InterruptNonMeleeSpells(true);
 
             //remove auras before removing from map...
@@ -10128,7 +10128,7 @@ uint8 Player::CanEquipItem(uint8 slot, uint16 &dest, Item *pItem, bool swap, boo
                 if (isInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer != 0)
                     return EQUIP_ERR_CANT_DO_RIGHT_NOW;         // maybe exist better err
 
-                if (IsNonMeleeSpellCasted(false))
+                if (IsNonMeleeSpellCast(false))
                 {
                     // exclude spells with transform item effect
                     if (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
@@ -13929,7 +13929,7 @@ void Player::KilledMonster(uint32 entry, uint64 guid)
     }
 }
 
-void Player::CastedCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
+void Player::CastCreatureOrGO(uint32 entry, uint64 guid, uint32 spell_id)
 {
     bool isCreature = IS_CREATURE_GUID(guid);
 
@@ -14157,7 +14157,7 @@ bool Player::HasQuestForItem(uint32 itemid) const
                         q_status.m_itemcount[idx] * qinfo->ReqSourceCount[j] + GetItemCount(itemid,true) < qinfo->ReqItemCount[idx] * qinfo->ReqSourceCount[j])
                         return true;
 
-                    // total count of casted ReqCreatureOrGOs and SourceItems is less than ReqCreatureOrGOCount
+                    // total count of cast ReqCreatureOrGOs and SourceItems is less than ReqCreatureOrGOCount
                     if (qinfo->ReqCreatureOrGOId[idx] != 0)
                     {
                         if (q_status.m_creatureOrGOcount[idx] * qinfo->ReqSourceCount[j] + GetItemCount(itemid,true) < qinfo->ReqCreatureOrGOCount[idx] * qinfo->ReqSourceCount[j])
@@ -14166,7 +14166,7 @@ bool Player::HasQuestForItem(uint32 itemid) const
                     // spell with SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT (with script) case
                     else if (qinfo->ReqSpell[idx] != 0)
                     {
-                        // not casted and need more reagents/item for use.
+                        // not cast and need more reagents/item for use.
                         if (!q_status.m_explored && GetItemCount(itemid,true) < qinfo->ReqSourceCount[j])
                             return true;
                     }
@@ -17970,7 +17970,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, uint32 mount_i
     if (GetSession()->isLogingOut() ||
         (!m_currentSpells[CURRENT_GENERIC_SPELL] ||
         m_currentSpells[CURRENT_GENERIC_SPELL]->GetSpellEntry()->Effect[0] != SPELL_EFFECT_SEND_TAXI)&&
-        IsNonMeleeSpellCasted(false) ||
+        IsNonMeleeSpellCast(false) ||
         isInCombat())
     {
         WorldPacket data(SMSG_ACTIVATETAXIREPLY, 4);
@@ -19865,7 +19865,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item * pItem)
         itr = auras.begin();
     }
 
-    // currently casted spells can be dependent from item
+    // currently cast spells can be dependent from item
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
         if (m_currentSpells[i] && m_currentSpells[i]->getState()!=SPELL_STATE_DELAYED &&

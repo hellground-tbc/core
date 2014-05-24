@@ -30,7 +30,7 @@ EndScriptData */
 #define SPELL_CLEAVE        26350
 #define SPELL_TOXIC_VOLLEY  25812
 #define SPELL_POISON_CLOUD  38718                           //Only Spell with right dmg.
-#define SPELL_ENRAGE        34624                           //Changed cause 25790 is casted on gamers too. Same prob with old explosion of twin emperors.
+#define SPELL_ENRAGE        34624                           //Changed cause 25790 is cast on gamers too. Same prob with old explosion of twin emperors.
 
 #define SPELL_CHARGE        26561
 #define SPELL_KNOCKBACK     26027

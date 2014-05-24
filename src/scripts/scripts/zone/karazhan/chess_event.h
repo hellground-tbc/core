@@ -477,7 +477,7 @@ public:
     void EnterEvadeMode();
 
     void SetSpellsAndCooldowns();
-    bool IsOnSelfSpell(uint32 spell);       // check if spell can be only casted on self (like absorb)
+    bool IsOnSelfSpell(uint32 spell);       // check if spell can be only cast on self (like absorb)
     bool IsHealingSpell(uint32 spell);
     bool IsNullTargetSpell(uint32 spell);
 

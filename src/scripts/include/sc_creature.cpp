@@ -341,12 +341,12 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
         return;
     }
 
-    bool casted = false;
+    bool cast = false;
 
-    if (m_creature->hasUnitState(UNIT_STAT_CASTING) || me->IsNonMeleeSpellCasted(true))
-        casted = true;
+    if (m_creature->hasUnitState(UNIT_STAT_CASTING) || me->IsNonMeleeSpellCast(true))
+        cast = true;
 
-    if (!spellList.empty() && !casted)
+    if (!spellList.empty() && !cast)
     {
         SpellToCast temp(spellList.front());
         spellList.pop_front();
@@ -361,7 +361,7 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
         if (temp.isDestCast)
         {
             m_creature->CastSpell(temp.castDest[0], temp.castDest[1], temp.castDest[2], temp.spellId, temp.triggered);
-            casted = true;
+            cast = true;
             return;
         }
 
@@ -399,14 +399,14 @@ void ScriptedAI::CastNextSpellIfAnyAndReady(uint32 diff)
                 m_creature->CastSpell((Unit*)NULL, temp.spellId, temp.triggered);
         }
 
-        casted = true;
+        cast = true;
     }
 
     if (autocast)
     {
         if (autocastTimer < diff)
         {
-            if (!casted)
+            if (!cast)
             {
                 Unit * victim = NULL;
 
@@ -482,7 +482,7 @@ void ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
 
 void ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered)
 {
-    if (/*!who || */m_creature->IsNonMeleeSpellCasted(false))
+    if (/*!who || */m_creature->IsNonMeleeSpellCast(false))
         return;
 
     m_creature->CastSpell(who, spellInfo, triggered);

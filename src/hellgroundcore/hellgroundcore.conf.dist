@@ -715,7 +715,7 @@ RealmBans = 0
 #        1 - In battlegrounds AND FFA areas only
 #
 #    ShowKickInWorld
-#        determines wether a message is broadcasted to the entire server when a player gets kicked
+#        determines wether a message is broadcast to the entire server when a player gets kicked
 #        Default: 0
 #        1 = Enable
 #        0 = Disable

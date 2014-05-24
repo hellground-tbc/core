@@ -102,7 +102,7 @@ struct boss_scarlet_commander_mograineAI : public ScriptedAI
             return;
 
         //If we are <50% hp cast Arcane Bubble and start casting SPECIAL Arcane Explosion
-        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 50 && !m_creature->IsNonMeleeSpellCasted(false))
+        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 50 && !m_creature->IsNonMeleeSpellCast(false))
         {
             //heal_Timer
             if (Heal_Timer < diff)

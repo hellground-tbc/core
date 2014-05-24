@@ -3101,13 +3101,13 @@ void ObjectMgr::LoadQuests()
             if (!spellInfo)
             {
                 sLog.outLog(LOG_DB_ERR, "Quest %u has `RewSpellCast` = %u but spell %u does not exist, quest will not have a spell reward.", qinfo->GetQuestId(),qinfo->RewSpellCast,qinfo->RewSpellCast);
-                qinfo->RewSpellCast = 0;                    // no spell will be casted on player
+                qinfo->RewSpellCast = 0;                    // no spell will be cast on player
             }
 
             else if (!SpellMgr::IsSpellValid(spellInfo))
             {
                 sLog.outLog(LOG_DB_ERR, "Quest %u has `RewSpellCast` = %u but spell %u is broken, quest can't be done.", qinfo->GetQuestId(),qinfo->RewSpellCast,qinfo->RewSpellCast);
-                qinfo->RewSpellCast = 0;                    // no spell will be casted on player
+                qinfo->RewSpellCast = 0;                    // no spell will be cast on player
             }
 
         }

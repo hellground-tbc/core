@@ -161,7 +161,7 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
 
     void DoSplit(uint32 val)
     {
-        if( me->IsNonMeleeSpellCasted(false) )
+        if( me->IsNonMeleeSpellCast(false) )
             me->InterruptNonMeleeSpells(false);
 
         DoScriptText(SAY_IMAGE, me);
@@ -271,7 +271,7 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
 
         if( Fear_Timer < diff )
         {
-            if( me->IsNonMeleeSpellCasted(false) )
+            if( me->IsNonMeleeSpellCast(false) )
                 return;
 
             DoScriptText(RAND(SAY_FEAR_1, SAY_FEAR_2), me);
@@ -286,7 +286,7 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
 
         if( Domination_Timer < diff )
         {
-            if( me->IsNonMeleeSpellCasted(false) )
+            if( me->IsNonMeleeSpellCast(false) )
                 return;
 
             DoScriptText(RAND(SAY_MIND_1, SAY_MIND_2), me);
@@ -303,7 +303,7 @@ struct boss_harbinger_skyrissAI : public ScriptedAI
         {
             if( ManaBurn_Timer < diff )
             {
-                if( me->IsNonMeleeSpellCasted(false) )
+                if( me->IsNonMeleeSpellCast(false) )
                     return;
 
                 if( Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1, GetSpellMaxRange(H_SPELL_MANA_BURN), true, me->getVictimGUID()) )

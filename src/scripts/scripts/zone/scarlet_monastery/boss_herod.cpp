@@ -81,7 +81,7 @@ struct boss_herodAI : public ScriptedAI
             return;
 
         //If we are <30% hp goes Enraged
-        if (!Enrage && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 30 && !m_creature->IsNonMeleeSpellCasted(false))
+        if (!Enrage && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 30 && !m_creature->IsNonMeleeSpellCast(false))
         {
             DoScriptText(EMOTE_ENRAGE, m_creature);
             DoScriptText(SAY_ENRAGE, m_creature);

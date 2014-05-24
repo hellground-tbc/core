@@ -69,7 +69,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     uint32 AfterTeleportTimer;
     bool DontYellWhenDead;
     uint32 Abuse_Bug_Timer, BugsTimer;
-    bool tspellcasted;
+    bool tspellCast;
     uint32 EnrageTimer;
 
     virtual bool IAmVeklor() = 0;
@@ -86,7 +86,7 @@ struct boss_twinemperorsAI : public ScriptedAI
         Heal_Timer = 0;                                     // first heal immediately when they get close together
         Teleport_Timer = TELEPORTTIME;
         AfterTeleport = false;
-        tspellcasted = false;
+        tspellCast = false;
         AfterTeleportTimer = 0;
         Abuse_Bug_Timer = 10000 + rand()%7000;
         BugsTimer = 2000;
@@ -255,21 +255,21 @@ struct boss_twinemperorsAI : public ScriptedAI
         m_creature->addUnitState(UNIT_STAT_STUNNED);
         AfterTeleport = true;
         AfterTeleportTimer = 2000;
-        tspellcasted = false;
+        tspellCast = false;
     }
 
     bool TryActivateAfterTTelep(uint32 diff)
     {
         if (AfterTeleport)
         {
-            if (!tspellcasted)
+            if (!tspellCast)
             {
                 m_creature->clearUnitState(UNIT_STAT_STUNNED);
                 DoCast(m_creature, SPELL_TWIN_TELEPORT);
                 m_creature->addUnitState(UNIT_STAT_STUNNED);
             }
 
-            tspellcasted = true;
+            tspellCast = true;
 
             if (AfterTeleportTimer < diff)
             {
@@ -402,7 +402,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     {
         if (EnrageTimer < diff)
         {
-            if (!m_creature->IsNonMeleeSpellCasted(true))
+            if (!m_creature->IsNonMeleeSpellCast(true))
             {
                 DoCast(m_creature, SPELL_BERSERK);
                 EnrageTimer = 60*60000;

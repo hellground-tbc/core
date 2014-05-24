@@ -150,7 +150,7 @@ bool IsPassiveStackableSpell(uint32 spellId)
 
     for (int j = 0; j < 3; ++j)
     {
-		if(procAuraTypes.find(Unit::AuraTypeSet::value_type(spellProto->EffectApplyAuraName[j])) != procAuraTypes.end())
+        if (procAuraTypes.find(Unit::AuraTypeSet::value_type(spellProto->EffectApplyAuraName[j])) != procAuraTypes.end())
             return false;
     }
 
@@ -2181,7 +2181,7 @@ void Unit::AttackerStateUpdate (Unit *pVictim, WeaponAttackType attType, bool ex
     if (attType == RANGED_ATTACK)
         return;                                             // ignore ranged case
 
-    // melee attack spell casted at main hand attack only
+    // melee attack spell cast at main hand attack only
     if (attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL] && !extra)
     {
         m_currentSpells[CURRENT_MELEE_SPELL]->cast();
@@ -2761,7 +2761,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
 
     uint32 tmp = 0;
 
-    bool isCasting = pVictim->IsNonMeleeSpellCasted(false);
+    bool isCasting = pVictim->IsNonMeleeSpellCast(false);
     bool lostControl = pVictim->hasUnitState(UNIT_STAT_LOST_CONTROL);
 
     bool canDodge = !isCasting && !lostControl;
@@ -3076,7 +3076,7 @@ float Unit::GetUnitDodgeChance() const
 
 float Unit::GetUnitParryChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
+    if (IsNonMeleeSpellCast(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
         return 0.0f;
 
     float chance = 0.0f;
@@ -3112,7 +3112,7 @@ float Unit::GetUnitParryChance() const
 
 float Unit::GetUnitBlockChance() const
 {
-    if (IsNonMeleeSpellCasted(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
+    if (IsNonMeleeSpellCast(false) || hasUnitState(UNIT_STAT_LOST_CONTROL))
         return 0.0f;
 
     if (GetTypeId() == TYPEID_PLAYER)
@@ -3304,7 +3304,7 @@ void Unit::_UpdateSpells(uint32 time)
 void Unit::_UpdateAutoRepeatSpell()
 {
     //check "realtime" interrupts
-    if ((GetTypeId() == TYPEID_PLAYER && ((Player*)this)->isMoving()) || IsNonMeleeSpellCasted(false,false,true))
+    if ((GetTypeId() == TYPEID_PLAYER && ((Player*)this)->isMoving()) || IsNonMeleeSpellCast(false,false,true))
     {
         // cancel wand shoot
         if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->GetSpellEntry()->Category == 351)
@@ -3341,7 +3341,7 @@ void Unit::_UpdateAutoRepeatSpell()
     }
 }
 
-void Unit::SetCurrentCastedSpell(Spell* spell)
+void Unit::SetCurrentCastSpell(Spell* spell)
 {
     ASSERT(spell);                                         // NULL may be never passed here, use InterruptSpell or InterruptNonMeleeSpells
 
@@ -3458,18 +3458,18 @@ void Unit::FinishSpell(CurrentSpellTypes spellType, bool ok /*= true*/)
     spell->finish(ok);
 }
 
-bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skipAutorepeat) const
+bool Unit::IsNonMeleeSpellCast(bool withDelayed, bool skipChanneled, bool skipAutorepeat) const
 {
     // We don't do loop here to explicitly show that melee spell is excluded.
     // Maybe later some special spells will be excluded too.
 
-    // generic spells are casted when they are not finished and not delayed
+    // generic spells are cast when they are not finished and not delayed
     if (Spell* current = GetCurrentSpell(CURRENT_GENERIC_SPELL))
     {
         if (current->getState() != SPELL_STATE_FINISHED && (withDelayed || current->getState() != SPELL_STATE_DELAYED))
             return true;
     }
-    // channeled spells may be delayed, but they are still considered casted
+    // channeled spells may be delayed, but they are still considered cast
     else if (!skipChanneled)
     {
         if (Spell* current = GetCurrentSpell(CURRENT_CHANNELED_SPELL))
@@ -3479,7 +3479,7 @@ bool Unit::IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled, bool skip
         }
     }
 
-    // autorepeat spells may be finished or delayed, but they are still considered casted
+    // autorepeat spells may be finished or delayed, but they are still considered cast
     else if (!skipAutorepeat && GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
         return true;
 
@@ -3873,7 +3873,7 @@ bool Unit::AddAura(Aura *Aur)
                         if (Aur->GetStackAmount() < aurSpellEntry->StackAmount)
                             Aur->SetStackAmount(Aur->GetStackAmount()+1);
                     }
-                    // this will allow to stack dots and hots casted by different creatures
+                    // this will allow to stack dots and hots cast by different creatures
                     if(i2->second->GetCasterGUID() == Aur->GetCasterGUID() || Aur->StackNotByCaster() || aurSpellEntry->StackAmount)
                     {
                         RemoveAura(i2, AURA_REMOVE_BY_STACK);
@@ -5568,7 +5568,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             }
             else if (dummySpell->SpellIconID == 1697)  // Second Wind
             {
-                // only for spells and hit/crit (trigger start always) and not start from self casted spells (5530 Mace Stun Effect for example)
+                // only for spells and hit/crit (trigger start always) and not start from self cast spells (5530 Mace Stun Effect for example)
                 if (procSpell == 0 || !(procEx & (PROC_EX_NORMAL_HIT|PROC_EX_CRITICAL_HIT)) || this == pVictim)
                     return false;
                 // Need stun or root mechanic
@@ -6265,7 +6265,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 basepoints0 = triggeredByAura->GetModifier()->m_amount;
                 triggered_spell_id = 379;
 
-                // Adding cooldown to earth shield caster, so earth shield casted on creature still will have cooldown
+                // Adding cooldown to earth shield caster, so earth shield cast on creature still will have cooldown
                 if (Unit *caster = triggeredByAura->GetCaster())
                     if (caster->GetTypeId() == TYPEID_PLAYER && cooldown)
                     {
@@ -6781,7 +6781,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
          {
              if (!procSpell)
                  return false;
-             // procspell is triggered spell but we need mana cost of original casted spell
+             // procspell is triggered spell but we need mana cost of original cast spell
              uint32 originalSpellId = procSpell->Id;
              // Holy Shock
              if (procSpell->SpellFamilyFlags & 0x1000000000000LL) // Holy Shock heal
@@ -7723,7 +7723,7 @@ bool Unit::AttackStop()
 
 void Unit::CombatStop(bool cast)
 {
-    if (cast && IsNonMeleeSpellCasted(false))
+    if (cast && IsNonMeleeSpellCast(false))
         InterruptNonMeleeSpells(false);
 
     AttackStop();
@@ -9974,7 +9974,7 @@ void Unit::setDeathState(DeathState s)
         getHostileRefManager().deleteReferences();
         ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
 
-        if (IsNonMeleeSpellCasted(false))
+        if (IsNonMeleeSpellCast(false))
             InterruptNonMeleeSpells(false);
     }
 
@@ -10228,7 +10228,7 @@ int32 Unit::CalculateSpellDamage(SpellEntry const* spellProto, uint8 effect_inde
     int32 randomPoints = int32(spellProto->EffectDieSides[effect_index] + level * randomPointsPerLevel);
     float comboDamage = spellProto->EffectPointsPerComboPoint[effect_index];
 
-    // prevent random generator from getting confused by spells casted with Unit::CastCustomSpell
+    // prevent random generator from getting confused by spells cast with Unit::CastCustomSpell
     int32 randvalue = spellProto->EffectBaseDice[effect_index] >= randomPoints ? spellProto->EffectBaseDice[effect_index]:irand(spellProto->EffectBaseDice[effect_index], randomPoints);
     int32 value = basePoints + randvalue;
 
@@ -10321,7 +10321,7 @@ DiminishingLevels Unit::GetDiminishing(DiminishingGroup group)
         if(group == DIMINISHING_ENSLAVE)
             return DiminishingLevels(i->hitCount);
 
-        // If last spell was casted more than 15 seconds ago - reset the count.
+        // If last spell was cast more than 15 seconds ago - reset the count.
         if (i->stack==0 && WorldTimer::getMSTimeDiff(i->hitTime,WorldTimer::getMSTime()) > 15000)
         {
             i->hitCount = DIMINISHING_LEVEL_1;
@@ -10386,7 +10386,7 @@ void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Un
 
     float mod = 1.0f;
 
-    // Some diminishings applies to mobs too (for example, Stun)                                                                                                                                     // Freezing trap exception, since it is casted by GO ?
+    // Some diminishings applies to mobs too (for example, Stun)                                                                                                                                     // Freezing trap exception, since it is cast by GO ?
     if ((SpellMgr::GetDiminishingReturnsGroupType(group) == DRTYPE_PLAYER && (targetOwner ? targetOwner->GetTypeId() : GetTypeId())  == TYPEID_PLAYER) || SpellMgr::GetDiminishingReturnsGroupType(group) == DRTYPE_ALL || (spellInfo && spellInfo ->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo ->SpellFamilyFlags & 0x00000000008LL))
     {
         DiminishingLevels diminish = Level;
@@ -10925,7 +10925,7 @@ void Unit::CleanupsBeforeDelete()
 
         RemoveAllAuras();
         InterruptNonMeleeSpells(true);
-        KillAllEvents(false);                      // non-delatable (currently casted spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
+        KillAllEvents(false);                      // non-delatable (currently cast spells) will not deleted now but it will deleted at call in Map::RemoveAllObjectsInRemoveList
         CombatStop();
         ClearComboPointHolders();
         DeleteThreatList();
@@ -11731,7 +11731,7 @@ void Unit::ApplyCastTimePercentMod(float val, bool apply)
 
 uint32 Unit::GetCastingTimeForBonus(SpellEntry const *spellProto, DamageEffectType damagetype, uint32 CastingTime)
 {
-    // Not apply this to creature casted spells with casttime==0
+    // Not apply this to creature cast spells with casttime==0
     if (CastingTime==0 && GetTypeId()==TYPEID_UNIT && !((Creature*)this)->isPet())
         return 3500;
 
@@ -12063,7 +12063,7 @@ bool Unit::HandleMendingAuraProc(Aura* triggeredByAura)
 
             if (Unit* target = GetNextRandomRaidMember(radius))
             {
-                // aura will applied from caster, but spell casted from current aura holder
+                // aura will applied from caster, but spell cast from current aura holder
                 SpellModifier *mod = new SpellModifier;
                 mod->op = SPELLMOD_CHARGES;
                 mod->value = jumps-5;               // negative

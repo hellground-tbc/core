@@ -236,7 +236,7 @@ void SimpleAI::UpdateAI(const uint32 diff)
                 continue;
 
             //Check Current spell
-            if (!(Spell[i].InterruptPreviousCast && m_creature->IsNonMeleeSpellCasted(false)))
+            if (!(Spell[i].InterruptPreviousCast && m_creature->IsNonMeleeSpellCast(false)))
             {
                 Unit* target = NULL;
 
@@ -262,7 +262,7 @@ void SimpleAI::UpdateAI(const uint32 diff)
                 //Target is ok, cast a spell on it and then do our random yell
                 if (target)
                 {
-                    if (m_creature->IsNonMeleeSpellCasted(false))
+                    if (m_creature->IsNonMeleeSpellCast(false))
                         m_creature->InterruptNonMeleeSpells(false);
 
                     DoCast(target, Spell[i].Spell_Id);

@@ -295,7 +295,7 @@ struct boss_aranAI : public ScriptedAI
             //Normal casts
             if (NormalCastTimer < diff)
             {
-                if (!m_creature->IsNonMeleeSpellCasted(false))
+                if (!m_creature->IsNonMeleeSpellCast(false))
                 {
                     uint32 Spells[3];
                     uint8 AvailableSpells = 0;
@@ -454,10 +454,10 @@ struct boss_aranAI : public ScriptedAI
 
     void SpellHit(Unit* pAttacker, const SpellEntry* spellEntry)
     {
-        //We only care about inturrupt effects and only if they are durring a spell currently being casted
+        //We only care about inturrupt effects and only if they are durring a spell currently being cast
         if ((spellEntry->Effect[0] != SPELL_EFFECT_INTERRUPT_CAST &&
             spellEntry->Effect[1] != SPELL_EFFECT_INTERRUPT_CAST &&
-            spellEntry->Effect[2] != SPELL_EFFECT_INTERRUPT_CAST) || !m_creature->IsNonMeleeSpellCasted(false))
+            spellEntry->Effect[2] != SPELL_EFFECT_INTERRUPT_CAST) || !m_creature->IsNonMeleeSpellCast(false))
             return;
 
         //Normally we would set the cooldown equal to the spell duration

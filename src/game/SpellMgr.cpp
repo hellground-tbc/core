@@ -780,7 +780,7 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
             {
                 case SPELL_AURA_DUMMY:
                 {
-                    // dummy aura can be positive or negative dependent from casted spell
+                    // dummy aura can be positive or negative dependent from cast spell
                     switch (spellproto->Id)
                     {
                         case 13139:                         // net-o-matic special effect
@@ -845,15 +845,15 @@ bool SpellMgr::IsPositiveEffect(uint32 spellId, uint32 effIndex)
                 case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
                     return false;
                 case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
-                    // part of negative spell if casted at self (prevent cancel)
+                    // part of negative spell if cast at self (prevent cancel)
                     if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_TARGET_ANY)
                         return false;
-                    // part of negative spell if casted at self (prevent cancel)
+                    // part of negative spell if cast at self (prevent cancel)
                     else if (spellproto->EffectImplicitTargetA[effIndex] == TARGET_UNIT_CASTER)
                         return false;
                     break;
                 case SPELL_AURA_MOD_DECREASE_SPEED:         // used in positive spells also
-                    // part of positive spell if casted at self
+                    // part of positive spell if cast at self
                     if (spellproto->EffectImplicitTargetA[effIndex] != TARGET_UNIT_CASTER)
                         return false;
                     // but not this if this first effect (don't found batter check)
@@ -1023,10 +1023,10 @@ SpellCastResult SpellMgr::GetErrorAtShapeshiftedCast (SpellEntry const *spellInf
 
     uint32 stanceMask = (form ? 1 << (form - 1) : 0);
 
-    if (stanceMask & spellInfo->StancesNot)                 // can explicitly not be casted in this stance
+    if (stanceMask & spellInfo->StancesNot)                 // can explicitly not be cast in this stance
         return SPELL_FAILED_NOT_SHAPESHIFT;
 
-    if (stanceMask & spellInfo->Stances)                    // can explicitly be casted in this stance
+    if (stanceMask & spellInfo->Stances)                    // can explicitly be cast in this stance
         return SPELL_CAST_OK;
 
     bool actAsShifted = false;

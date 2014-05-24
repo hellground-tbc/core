@@ -273,7 +273,7 @@ struct boss_halazziAI : public ScriptedAI
             {
                 if(Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0,GetSpellMaxRange(SPELL_EARTHSHOCK), true))
                 {
-                    if(target->IsNonMeleeSpellCasted(false))
+                    if(target->IsNonMeleeSpellCast(false))
                         AddSpellToCast(target,SPELL_EARTHSHOCK);
                     else
                         AddSpellToCast(target,SPELL_FLAMESHOCK);

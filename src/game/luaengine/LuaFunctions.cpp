@@ -194,7 +194,7 @@ ElunaRegister<Unit> UnitMethods[] =
     {"GetAura", &LuaUnit::GetAura},                                     // :GetAura(spellID) - returns aura object
     {"GetCombatTime", &LuaUnit::GetCombatTime},                         // :GetCombatTime() - Returns how long the unit has been in combat
     {"GetFaction", &LuaUnit::GetFaction},                               // :GetFaction() - Returns the unit's factionId
-    {"GetCurrentSpell", &LuaUnit::GetCurrentSpell},                     // :GetCurrentSpell(type) - Returns the currently casted spell of given type if any
+    {"GetCurrentSpell", &LuaUnit::GetCurrentSpell},                     // :GetCurrentSpell(type) - Returns the currently cast spell of given type if any
     {"GetCreatureType", &LuaUnit::GetCreatureType},                     // :GetCreatureType() - Returns the unit's type
     {"GetMountId", &LuaUnit::GetMountId},                               // :GetMountId()
     {"GetOwnerGUID", &LuaUnit::GetOwnerGUID},                           // :GetOwnerGUID() - Returns the GUID of the owner

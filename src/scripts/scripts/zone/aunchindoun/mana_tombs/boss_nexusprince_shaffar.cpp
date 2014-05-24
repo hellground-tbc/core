@@ -196,7 +196,7 @@ struct boss_nexusprince_shaffarAI : public ScriptedAI
 
         if( FrostNova_Timer < diff )
         {
-            if( m_creature->IsNonMeleeSpellCasted(false) )
+            if( m_creature->IsNonMeleeSpellCast(false) )
                 m_creature->InterruptNonMeleeSpells(true);
 
             DoCast(m_creature,SPELL_FROSTNOVA);
@@ -226,7 +226,7 @@ struct boss_nexusprince_shaffarAI : public ScriptedAI
         {
             if( Blink_Timer < diff )
             {
-                if( m_creature->IsNonMeleeSpellCasted(false) )
+                if( m_creature->IsNonMeleeSpellCast(false) )
                     m_creature->InterruptNonMeleeSpells(true);
 
                 DoCast(m_creature,SPELL_BLINK);
@@ -239,7 +239,7 @@ struct boss_nexusprince_shaffarAI : public ScriptedAI
 
         if( Beacon_Timer < diff)
         {
-            if( m_creature->IsNonMeleeSpellCasted(false) )
+            if( m_creature->IsNonMeleeSpellCast(false) )
                 m_creature->InterruptNonMeleeSpells(true);
 
             if( !urand(0,3) )
@@ -342,7 +342,7 @@ struct mob_ethereal_beaconAI : public ScriptedAI
 
         if( Apprentice_Timer < diff )
         {
-            if( m_creature->IsNonMeleeSpellCasted(false) )
+            if( m_creature->IsNonMeleeSpellCast(false) )
                 m_creature->InterruptNonMeleeSpells(true);
 
             m_creature->CastSpell(m_creature,SPELL_ETHEREAL_APPRENTICE,true);

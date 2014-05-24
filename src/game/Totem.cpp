@@ -180,7 +180,7 @@ Unit *Totem::GetOwner()
 
 void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
 {
-    // Get spell casted by totem
+    // Get spell cast by totem
     SpellEntry const * totemSpell = sSpellStore.LookupEntry(GetSpell());
     if (totemSpell)
     {

@@ -251,7 +251,7 @@ struct boss_zuljinAI : public ScriptedAI
 
     void DoMeleeAttackIfReady()
     {
-        if( !m_creature->IsNonMeleeSpellCasted(false))
+        if( !m_creature->IsNonMeleeSpellCast(false))
         {
             if(m_creature->isAttackReady() && m_creature->IsWithinMeleeRange(m_creature->getVictim()))
             {

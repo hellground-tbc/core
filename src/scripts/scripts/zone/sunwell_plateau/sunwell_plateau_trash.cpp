@@ -2058,7 +2058,7 @@ struct mob_oblivion_mageAI : public ScriptedAI
     void EnterCombat(Unit*)
     {
         DoZoneInCombat(80.0f);
-        if (me->IsNonMeleeSpellCasted(false))
+        if (me->IsNonMeleeSpellCast(false))
             me->InterruptNonMeleeSpells(false);
     }
 
@@ -2079,7 +2079,7 @@ struct mob_oblivion_mageAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(!me->getVictim()->IsWithinDistInMap(me, 20) && !me->IsNonMeleeSpellCasted(false))
+        if(!me->getVictim()->IsWithinDistInMap(me, 20) && !me->IsNonMeleeSpellCast(false))
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0, 20.0, true))
                 AttackStart(target, false);

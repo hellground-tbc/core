@@ -843,12 +843,12 @@ struct mob_bonechewer_taskmasterAI : public ScriptedAI
     mob_bonechewer_taskmasterAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
     uint32 disgruntledTimer;
-    bool disgruntledCasted;
+    bool disgruntledCast;
 
     void Reset()
     {
         disgruntledTimer = 20000;
-        disgruntledCasted = false;
+        disgruntledCast = false;
     }
 
     void EnterCombat(Unit *who)
@@ -857,7 +857,7 @@ struct mob_bonechewer_taskmasterAI : public ScriptedAI
         if (urand(0, 100) < 25)
         {
             me->CastSpell(me, SPELL_BONECHEWER_DISGRUNTLED, false);
-            disgruntledCasted = true;
+            disgruntledCast = true;
         }
     }
 
@@ -871,12 +871,12 @@ struct mob_bonechewer_taskmasterAI : public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if (!disgruntledCasted)
+        if (!disgruntledCast)
         {
             if (disgruntledTimer < diff || me->GetHealth()*100/me->GetMaxHealth() < 75)
             {
                 me->CastSpell(me, SPELL_BONECHEWER_DISGRUNTLED, false);
-                disgruntledCasted = true;
+                disgruntledCast = true;
             }
             else
                 disgruntledTimer -= diff;
@@ -1024,7 +1024,7 @@ struct mob_dragonmaw_skystalkerAI : public ScriptedAI
                 {
                     me->SetLevitate(false);
 
-                    if (!me->IsNonMeleeSpellCasted(false))
+                    if (!me->IsNonMeleeSpellCast(false))
                     {
                         DoResetThreat();
                         victim = GetNewTarget();
@@ -1136,7 +1136,7 @@ struct mob_dragonmaw_windreaverAI : public ScriptedAI
                 if (me->IsWithinDistInMap(victim, 10))
                 {
                     me->SetLevitate(false);
-                    if (!me->IsNonMeleeSpellCasted(false))
+                    if (!me->IsNonMeleeSpellCast(false))
                     {
                         DoResetThreat();
                         victim = GetNewTarget();
@@ -4858,7 +4858,7 @@ struct mob_spellbound_attendentAI: public ScriptedAI
         if(!UpdateVictim())
             return;
 
-        if(me->getVictim() && me->getVictim()->IsNonMeleeSpellCasted(false) && !cooldown)
+        if(me->getVictim() && me->getVictim()->IsNonMeleeSpellCast(false) && !cooldown)
         {
             ForceSpellCast(me->getVictim(), SPELL_KICK, INTERRUPT_AND_CAST_INSTANTLY);
             cooldown = true;

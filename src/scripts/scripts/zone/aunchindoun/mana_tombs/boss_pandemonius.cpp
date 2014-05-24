@@ -116,7 +116,7 @@ struct boss_pandemoniusAI : public ScriptedAI
         {
             if( DarkShell_Timer < diff )
             {
-                if( m_creature->IsNonMeleeSpellCasted(false) )
+                if( m_creature->IsNonMeleeSpellCast(false) )
                     m_creature->InterruptNonMeleeSpells(true);
 
                 DoScriptText(EMOTE_DARK_SHELL, m_creature);

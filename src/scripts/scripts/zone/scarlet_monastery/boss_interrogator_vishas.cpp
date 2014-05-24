@@ -63,7 +63,7 @@ struct boss_interrogator_vishasAI : public ScriptedAI
             return;
 
         //If we are low on hp Do sayings
-        if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 60 && !m_creature->IsNonMeleeSpellCasted(false))
+        if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 60 && !m_creature->IsNonMeleeSpellCast(false))
         {
             //Yell_Timer
             if (Yell_Timer < diff)
@@ -77,7 +77,7 @@ struct boss_interrogator_vishasAI : public ScriptedAI
             }else Yell_Timer -= diff;
         }
 
-        if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 30 && !m_creature->IsNonMeleeSpellCasted(false))
+        if ( m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 30 && !m_creature->IsNonMeleeSpellCast(false))
         {
             //Yell_Timer
             if (Yell_Timer < diff)

@@ -20,7 +20,7 @@
 /* ScriptData
 SDName: Boss_Mother_Smolderweb
 SD%Complete: 100
-SDComment: Uncertain how often mother's milk is casted
+SDComment: Uncertain how often mother's milk is cast
 SDCategory: Blackrock Spire
 EndScriptData */
 

@@ -123,7 +123,7 @@ bool ItemUse_item_blackwhelp_net(Player *player, Item* _Item, SpellCastTargets c
 #####*/
 
 //This is just a hack and should be removed from here.
-//Creature/Item are in fact created before spell are sucessfully casted, without any checks at all to ensure proper/expected behavior.
+//Creature/Item are in fact created before spell are sucessfully cast, without any checks at all to ensure proper/expected behavior.
 bool ItemUse_item_draenei_fishing_net(Player *player, Item* _Item, SpellCastTargets const& targets)
 {
     if( player->GetQuestStatus(9452) == QUEST_STATUS_INCOMPLETE )

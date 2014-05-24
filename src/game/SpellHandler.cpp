@@ -329,7 +329,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    // not have spell or spell passive and not casted by client
+    // not have spell or spell passive and not cast by client
     if (!_player->HasSpell(spellId) || SpellMgr::IsPassiveSpell(spellId))
     {
         //cheater? kick? ban?
@@ -343,7 +343,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // auto-selection buff level base at target level (in spellInfo)
     if (Unit* target = targets.getUnitTarget())
     {
-        // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
+        // if rank not found then function return NULL but in explicit cast case original spell can be cast and later failed with appropriate error message
         if (SpellEntry const *actualSpellEntry = sSpellMgr.SelectAuraRankForPlayerLevel(spellInfo, target->getLevel()))
             spellInfo = actualSpellEntry;
     }
@@ -366,7 +366,7 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    if (!_player->isCharmed() && !_player->isPossessed() && _player->IsNonMeleeSpellCasted(false))
+    if (!_player->isCharmed() && !_player->isPossessed() && _player->IsNonMeleeSpellCast(false))
         _player->InterruptNonMeleeSpells(false,spellId,false);
 }
 
@@ -408,7 +408,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
             return;
     }
 
-    // channeled spell case (it currently casted then)
+    // channeled spell case (it currently cast then)
     if (SpellMgr::IsChanneledSpell(spellInfo))
     {
         if (_player->m_currentSpells[CURRENT_CHANNELED_SPELL] &&

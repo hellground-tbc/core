@@ -42,7 +42,7 @@ enum FaerlinaTexts
 enum FaerlinaSpells
 {
     SPELL_POISONBOLT_VOLLEY     = 28796,
-    SPELL_RAIN_OF_FIRE          = 28794,    //Not sure if targeted AoEs work if casted directly upon a player
+    SPELL_RAIN_OF_FIRE          = 28794,    //Not sure if targeted AoEs work if cast directly upon a player
     SPELL_ENRAGE                = 28798
 };
 

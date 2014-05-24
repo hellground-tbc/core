@@ -146,7 +146,7 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
         if (!Transformed)
         {
             //CrusadersHammer
-            if (CrusadersHammer_Timer < diff && !m_creature->IsNonMeleeSpellCasted(false))
+            if (CrusadersHammer_Timer < diff && !m_creature->IsNonMeleeSpellCast(false))
             {
                 //Cast
                 if (rand()%100 < 75) //50% chance to cast
@@ -158,7 +158,7 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
             }else CrusadersHammer_Timer -= diff;
 
             //CrusaderStrike
-            if (CrusaderStrike_Timer < diff && !m_creature->IsNonMeleeSpellCasted(false))
+            if (CrusaderStrike_Timer < diff && !m_creature->IsNonMeleeSpellCast(false))
             {
                 //Cast
                 if (rand()%100 < 60) //50% chance to cast
@@ -170,7 +170,7 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
             }else CrusaderStrike_Timer -= diff;
 
             //MindBlast
-            if (MindBlast_Timer < diff && !m_creature->IsNonMeleeSpellCasted(false))
+            if (MindBlast_Timer < diff && !m_creature->IsNonMeleeSpellCast(false))
             {
                 //Cast
                 if (rand()%100 < 70) //70% chance to cast
@@ -182,7 +182,7 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
             }else MindBlast_Timer -= diff;
 
             //HolyStrike
-            if (HolyStrike_Timer < diff && !m_creature->IsNonMeleeSpellCasted(false))
+            if (HolyStrike_Timer < diff && !m_creature->IsNonMeleeSpellCast(false))
             {
                 //Cast
                 if (rand()%100 < 50) //50% chance to cast
@@ -194,7 +194,7 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
             }else HolyStrike_Timer -= diff;
 
             //Dazed
-            if (Dazed_Timer < diff && !m_creature->IsNonMeleeSpellCasted(false))
+            if (Dazed_Timer < diff && !m_creature->IsNonMeleeSpellCast(false))
             {
                 //Cast
                 if (rand()%100 < 50) //50% chance to cast
@@ -220,7 +220,7 @@ struct boss_dathrohan_balnazzarAI : public ScriptedAI
 
 
             //MindBlast
-            if (MindBlast_Timer < diff && !m_creature->IsNonMeleeSpellCasted(false))
+            if (MindBlast_Timer < diff && !m_creature->IsNonMeleeSpellCast(false))
             {
                 //Cast
                 if (rand()%100 < 60) //70% chance to cast

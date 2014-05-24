@@ -1294,16 +1294,16 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         float GetNegStat(Stats stat) const { return GetFloatValue(UNIT_FIELD_NEGSTAT0+stat); }
         float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
 
-        void SetCurrentCastedSpell(Spell * pSpell);
+        void SetCurrentCastSpell(Spell * pSpell);
         virtual void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) { }
 
         void InterruptSpell(uint32 spellType, bool withDelayed = true, bool withInstant = true);
         void FinishSpell(CurrentSpellTypes spellType, bool ok = true);
 
-        // set withDelayed to true to account delayed spells as casted
-        // delayed+channeled spells are always accounted as casted
+        // set withDelayed to true to account delayed spells as cast
+        // delayed+channeled spells are always accounted as cast
         // we can skip channeled or delayed checks using flags
-        bool IsNonMeleeSpellCasted(bool withDelayed, bool skipChanneled = false, bool skipAutorepeat = false) const;
+        bool IsNonMeleeSpellCast(bool withDelayed, bool skipChanneled = false, bool skipAutorepeat = false) const;
 
         // set withDelayed to true to interrupt delayed spells too
         // delayed+channeled spells are always interrupted
@@ -1657,7 +1657,7 @@ class HELLGROUND_IMPORT_EXPORT Unit : public WorldObject
         AuraList m_removedAuras;
 
         AuraList *m_modAuras;
-        AuraList m_scAuras;                        // casted singlecast auras
+        AuraList m_scAuras;                        // cast singlecast auras
         AuraList m_interruptableAuras;
         AuraList m_ccAuras;
         uint32 m_interruptMask;

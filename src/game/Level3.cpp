@@ -5098,7 +5098,7 @@ bool ChatHandler::HandleQuestComplete(const char* args)
         }
     }
 
-    // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
+    // All creature/GO slain/cast (not required, but otherwise it will display "Creature slain 0/10")
     for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
         uint32 creature = pQuest->ReqCreatureOrGOId[i];
@@ -5107,7 +5107,7 @@ bool ChatHandler::HandleQuestComplete(const char* args)
         if (uint32 spell_id = pQuest->ReqSpell[i])
         {
             for (uint16 z = 0; z < creaturecount; ++z)
-                player->CastedCreatureOrGO(creature,0,spell_id);
+                player->CastCreatureOrGO(creature,0,spell_id);
         }
         else if (creature > 0)
         {
@@ -5117,7 +5117,7 @@ bool ChatHandler::HandleQuestComplete(const char* args)
         else if (creature < 0)
         {
             for (uint16 z = 0; z < creaturecount; ++z)
-                player->CastedCreatureOrGO(creature,0,0);
+                player->CastCreatureOrGO(creature,0,0);
         }
     }
 
@@ -6908,7 +6908,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         //stop combat + make player unattackable + duel stop + stop some spells
         player->setFaction(35);
         player->CombatStop();
-        if (player->IsNonMeleeSpellCasted(true))
+        if (player->IsNonMeleeSpellCast(true))
             player->InterruptNonMeleeSpells(true);
         player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         player->SetUInt32Value(PLAYER_DUEL_TEAM, 1);

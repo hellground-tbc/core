@@ -37,7 +37,7 @@ EndScriptData */
 
 //-- CoreRager Spells --
 #define SPELL_MANGLE                    19820
-#define SPELL_AEGIS                     20620               //This is self casted whenever we are below 50%
+#define SPELL_AEGIS                     20620               //This is self cast whenever we are below 50%
 
 struct boss_golemaggAI : public ScriptedAI
 {
