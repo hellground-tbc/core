@@ -653,6 +653,7 @@ void World::LoadConfigSettings(bool reload)
     loadConfig(CONFIG_INSTANT_LOGOUT, "InstantLogout", PERM_GMT_DEV);
     loadConfig(CONFIG_MIN_GM_TEXT_LVL, "MinGMTextLevel", PERM_GMT_HDEV);
     loadConfig(CONFIG_DISABLE_BREATHING, "DisableWaterBreath", PERM_CONSOLE);
+    loadConfig(CONFIG_HIDE_GAMEMASTER_ACCOUNTS, "HideGameMasterAccounts", true);
 
     // Server rates
     loadConfig(RATE_HEALTH, "Rate.Health", 1.0f);
