@@ -2011,7 +2011,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             email = "no permission";
             last_ip = "no permission";
 
-            if (m_session->HasPermissions(/*sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)*/PERM_HIGH_GMT))
+            if (m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
             {
                 email = fields[2].GetCppString();
                 last_ip = fields[3].GetCppString();
