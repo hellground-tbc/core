@@ -2008,18 +2008,17 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
         if (!m_session || m_session->GetPermissions() >= permissions)
         {
-            if (m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
-                email = fields[2].GetCppString();
+            email = "no permission";
+            last_ip = "no permission";
 
-            last_ip = fields[3].GetCppString();
+            if (m_session->HasPermissions(/*sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)*/PERM_HIGH_GMT))
+            {
+                email = fields[2].GetCppString();
+                last_ip = fields[3].GetCppString();
+            }
             last_login = fields[4].GetCppString();
         }
-        else
-        {
-            email = "-";
-            last_ip = "-";
-            last_login = "-";
-        }
+
     }
 
     PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetHellgroundString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), permissions, last_ip.c_str(), last_login.c_str(), latency);
