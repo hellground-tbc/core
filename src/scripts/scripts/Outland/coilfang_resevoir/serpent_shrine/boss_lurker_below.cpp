@@ -19,7 +19,7 @@
 
 #include "precompiled.h"
 #include "def_serpent_shrine.h"
-#include "../../../creature/simple_ai.h"
+#include "../../../special/simple_ai.h"
 #include "Spell.h"
 
 #define EMOTE_SPOUT "takes a deep breath."
