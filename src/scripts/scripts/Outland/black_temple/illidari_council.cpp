@@ -590,14 +590,22 @@ struct boss_high_nethermancer_zerevorAI : public illidari_council_baseAI
                 EnterEvadeMode();
                 return;
             }
-
-            if (me->GetDistance2d(me->getVictim()) <= 40.0f)
-                me->GetMotionMaster()->MoveIdle();
+                                                             
+            if (me->GetDistance(me->getVictim()) <= 40.0f)
+            {
+                me->SetFacingToObject(me->getVictim());  // he is getting stuck sometimes
+                me->StopMoving();
+                
+            }
+            
             else
-                me->GetMotionMaster()->MoveChase(me->getVictim(), 40);
+                DoStartMovement(me->getVictim());
+                //me->GetMotionMaster()->MoveChase(me->getVictim(), 40.0f);  // It's not working. Simply.
+            
+
 
             // On front stairs, do not let boss to go into textures;
-            //CheckStairsPos();
+            CheckStairsPos();
 
             uint32 damage = 0;
             SharedRule(damage);
