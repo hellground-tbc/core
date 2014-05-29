@@ -2004,18 +2004,19 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
         permissions = fields[1].GetUInt32();
+        if ((permissions & PERM_GMT) && !m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
+            return false;
 
         if (email.empty())
             email = "-";
-
-        if (!m_session || m_session->GetPermissions() >= permissions)
-        {
+        
+        last_ip = fields[3].GetCppString();
+        last_login = fields[4].GetCppString();
+        
+        if (!m_session || m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
+            email = fields[2].GetCppString();
+        else
             email = "NO_PERMISSION";
-            if (m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
-                email = fields[2].GetCppString();;
-            last_ip = fields[3].GetCppString();
-            last_login = fields[4].GetCppString();
-        }
 
     }
 
