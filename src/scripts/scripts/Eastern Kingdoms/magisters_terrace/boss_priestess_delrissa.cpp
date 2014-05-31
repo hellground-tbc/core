@@ -1219,7 +1219,7 @@ struct boss_yazzaiAI : public boss_priestess_guestAI
 #define SPELL_INTERCEPT              27577
 #define SPELL_DISARM                 27581
 #define SPELL_PIERCING_HOWL          23600
-#define SPELL_FRIGHTENING_SHOUT      19134
+#define SPELL_PSYCHIC_SCREAM         27610
 #define SPELL_HAMSTRING              27584
 #define SPELL_MORTAL_STRIKE          44268
 
@@ -1323,7 +1323,7 @@ struct boss_warlord_salarisAI : public boss_priestess_guestAI
 
         if(Frightening_Shout_Timer < diff)
         {
-            AddSpellToCast(SPELL_FRIGHTENING_SHOUT, CAST_NULL);
+            AddSpellToCast(SPELL_PSYCHIC_SCREAM, CAST_NULL); 
             Frightening_Shout_Timer = urand(15000, 40000);
         }
         else
