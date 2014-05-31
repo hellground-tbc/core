@@ -663,7 +663,10 @@ struct mob_sunblade_blood_knightAI : public ScriptedAI
         if(Holy_Light_Timer < diff)
         {
             Unit* healTarget = SelectLowestHpFriendly(40.0f, 10000);
-            AddSpellToCast(healTarget, SPELL_HOLY_LIGHT);
+            if (healTarget)
+                AddSpellToCast(healTarget, SPELL_HOLY_LIGHT);
+            else
+                AddSpellToCast(me, SPELL_HOLY_LIGHT);
             Holy_Light_Timer = urand(7000, 10000);
         }
         else
