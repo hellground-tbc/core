@@ -124,7 +124,7 @@ CreatureAI* GetAI_npc_forest_frog(Creature *_Creature)
 #define GO_ASHLI_VASE           186671
 
 #define SPELL_SMASH             18944   // most probably wrong spell, but has cool visual
-#define SPELL_EXPLOSION         43418   // also not sure about this
+#define SPELL_EXPLOSION         27745   // seems OK, but still not sure, original was 100% wrong  original:" 43418   // also not sure about this"
 #define SPELL_ASHLI_FIREBALL    43525
 
 #define YELL_ASHLI_KILL         -1800518
