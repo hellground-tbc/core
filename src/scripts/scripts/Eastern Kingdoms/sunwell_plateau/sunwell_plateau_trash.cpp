@@ -650,7 +650,6 @@ CreatureAI* GetAI_mob_sunblade_slayer(Creature *_Creature)
 
 enum SunbladeVindicator
 {
-    SPELL_BRUTAL_STRIKE                 = 58460,
     SPELL_CLEAVE                        = 46559,
     SPELL_MORTAL_STRIKE                 = 44268
 };
@@ -659,14 +658,12 @@ struct mob_sunblade_vindicatorAI : public ScriptedAI
 {
     mob_sunblade_vindicatorAI(Creature *c) : ScriptedAI(c) { me->SetAggroRange(AGGRO_RANGE); }
 
-    uint32 BrutalStrike;
     uint32 Cleave;
     uint32 MortalStrike;
 
     void Reset()
     {
         ClearCastQueue();
-        BrutalStrike = urand(1000, 5000);
         Cleave = urand(4000, 9000);
         MortalStrike = urand(5000, 15000);
     }
@@ -677,14 +674,6 @@ struct mob_sunblade_vindicatorAI : public ScriptedAI
     {
         if(!UpdateVictim())
             return;
-
-        if(BrutalStrike < diff)
-        {
-            AddSpellToCast(SPELL_BRUTAL_STRIKE, CAST_TANK);
-            BrutalStrike = urand(5000,11000);
-        }
-        else
-            BrutalStrike -= diff;
 
         if(Cleave < diff)
         {
