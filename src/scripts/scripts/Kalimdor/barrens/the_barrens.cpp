@@ -200,51 +200,41 @@ struct npc_taskmaster_fizzuleAI : public ScriptedAI
 {
     npc_taskmaster_fizzuleAI(Creature* c) : ScriptedAI(c) {}
 
-    bool IsFriend;
     uint32 Reset_Timer;
     uint32 FlareCount;
 
     void Reset()
     {
-        IsFriend = false;
         Reset_Timer = 120000;
         FlareCount = 0;
         m_creature->setFaction(FACTION_HOSTILE_F);
         m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
     }
 
-    //This is a hack. Spellcast will make creature aggro but that is not
-    //supposed to happen (Trinity not implemented/not found way to detect this spell kind)
-    void DoUglyHack()
-    {
-        m_creature->RemoveAllAuras();
-        m_creature->DeleteThreatList();
-        m_creature->CombatStop();
-    }
-
     void SpellHit(Unit *caster, const SpellEntry *spell)
     {
-        if( spell->Id == SPELL_FLARE || spell->Id == SPELL_FOLLY )
+        if (spell->Id == SPELL_FLARE || spell->Id == SPELL_FOLLY)
         {
-            DoUglyHack();
-            ++FlareCount;
-            if( FlareCount >= 2 )
-            {
+            m_creature->RemoveAllAuras();
+            m_creature->DeleteThreatList();
+            m_creature->CombatStop();
+
+            if (++FlareCount >= 2)
                 m_creature->setFaction(FACTION_FRIENDLY_F);
-                IsFriend = true;
-            }
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if( IsFriend )
+        if (me->getFaction() == FACTION_FRIENDLY_F)
         {
-            if( Reset_Timer < diff )
+            if (Reset_Timer < diff)
             {
                 EnterEvadeMode();
                 return;
-            } else Reset_Timer -= diff;
+            }
+            else
+                Reset_Timer -= diff;
         }
 
         if (!UpdateVictim())
