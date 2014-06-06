@@ -233,17 +233,23 @@ struct instance_zulgurub : public ScriptedInstance
                 break;
 
             case DATA_ARLOKKEVENT:
-                {
+            {
                 if (data == IN_PROGRESS && encounters[4] != IN_PROGRESS)
-                    if (GameObject * pGo = instance->GetGameObject(GongGUID))
+                    if (GameObject *pGo = instance->GetGameObject(GongGUID))
                     {
-                        pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_NOTSELECTABLE);
-                        pGo->SummonCreature(14515,-11540.7,-1627.71,41.27,0.1,TEMPSUMMON_CORPSE_TIMED_DESPAWN,600000);
+                        Creature *pArlokk = instance->GetCreatureById(14515);
+
+                        if (!pArlokk)
+                        {
+                            pGo->SetFlag(GAMEOBJECT_FLAGS,GO_FLAG_NOTSELECTABLE);
+                            pGo->SummonCreature(14515,-11540.7,-1627.71,41.27,0.1,TEMPSUMMON_CORPSE_TIMED_DESPAWN,600000);
+                        }
                     }
+
                 if (encounters[4] != DONE)
                     encounters[4] = data;
                 break;
-                }
+            }
 
             case DATA_HAKKAREVENT:
                 if (encounters[5] != DONE)
