@@ -117,6 +117,69 @@ bool QuestAccept_npc_windwatcher(Player* player, Creature* creature, Quest const
     return true;
 }
 
+/*######
+## npc_av_trinket_questgiver
+######*/
+
+uint32 av_insignia[12] = {17690, 17905, 17906, 17907, 17908, 17909, 17691, 17900, 17901, 17902, 17903, 17904};
+uint32 av_quests[12] = {7161, 7163, 7164, 7165, 7166, 7167, 7162, 7168, 7169, 7170, 7171, 7172};
+#define GOSSIP_AV_TRINKET "Restore Insignia."
+
+bool GossipHello_npc_av_trinket_questgiver(Player* player,Creature* creature)
+{
+    if( creature->isQuestGiver() )
+        player->PrepareQuestMenu( creature->GetGUID() );
+
+    bool hasTrinket = false;
+    for(uint8 i=0;i<12;i++)
+    {
+        if(player->HasItemCount(av_insignia[i],1,true))
+        {
+            hasTrinket = true;
+            break;
+        }
+    }
+
+    if(!hasTrinket && (player->GetQuestStatus(7161) == QUEST_STATUS_COMPLETE || player->GetQuestStatus(7162) == QUEST_STATUS_COMPLETE))
+        player->ADD_GOSSIP_ITEM(0, , GOSSIP_SENDER_MAIN, GOSSIP_SENDER_INFO);
+
+    player->SEND_GOSSIP_MENU(creature->GetNpcTextId(),creature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_av_trinket_questgiver(Player* player, Creature* creature, uint32 sender, uint32 action)
+{
+    if (action != GOSSIP_SENDER_INFO)
+        return true;
+
+    for(uint8 i=0;i<12;i++) // check again just in case
+    {
+        if(player->HasItemCount(av_insignia[i],1,true))
+            return true;
+    }
+
+    uint8 trinketType = 255;
+    for(uint8 i=0;i<12;i++)
+    {
+        if(player->GetQuestStatus(av_quests[i]) == QUEST_STATUS_COMPLETE)
+            trinketType = i;
+    }
+
+    if(trinketType == 255) //just in case
+        return true;
+
+    ItemPosCountVec dest;
+    uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, av_insignia[trinketType], 1);
+    if (msg == EQUIP_ERR_OK)
+    {
+        Item* item = player->StoreNewItem(dest, av_insignia[trinketType], true);
+        player->SendNewItem(item,1,true,false,true);
+    }
+    player->CLOSE_GOSSIP_MENU();
+
+    return true;
+}
+
 void AddSC_alterac_mountains()
 {
     Script *newscript;
@@ -130,6 +193,12 @@ void AddSC_alterac_mountains()
     newscript->Name="npc_windwatcher";
     newscript->GetAI = &GetAI_npc_windwatcher;
     newscript->pQuestAcceptNPC = &QuestAccept_npc_windwatcher;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name="npc_av_trinket_questgiver";
+    newscript->pGossipHello = &GossipHello_npc_av_trinket_questgiver;
+    newscript->pGossipSelect = &GossipSelect_npc_av_trinket_questgiver;
     newscript->RegisterSelf();
 }
 
