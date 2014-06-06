@@ -2935,6 +2935,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Healthstone
                 else if (spellInfo->SpellFamilyFlags & 0x10000LL)
                     spellInfo->AttributesCu |= SPELL_ATTR_CU_NO_SPELL_DMG_COEFF;
+                // Nether Protection
+                else if (spellInfo->SpellIconID == 1985)
+                    spellInfo->procFlags |= PROC_FLAG_ON_TAKE_PERIODIC;
 
                 break;
             }
