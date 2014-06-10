@@ -375,8 +375,7 @@ void Item::SaveToDB()
                 stmt.PExecute(GetGUIDLow());
             }
 
-            if (this)
-                delete this;
+            delete this;
             return;
         }
         case ITEM_UNCHANGED:

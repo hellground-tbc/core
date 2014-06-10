@@ -162,11 +162,11 @@ enum ProcFlags
    PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT     = 0x00000100,    // 08 Successful Ranged attack by Spell that use ranged weapon
    PROC_FLAG_TAKEN_RANGED_SPELL_HIT          = 0x00000200,    // 09 Taken damage by Spell that use ranged weapon
 
-   PROC_FLAG_SUCCESSFUL_POSITIVE_AOE_HIT     = 0x00000400,    // 10 Successful AoE (not 100% shure unused)
-   PROC_FLAG_TAKEN_POSITIVE_AOE              = 0x00000800,    // 11 Taken AoE      (not 100% shure unused)
+   PROC_FLAG_SUCCESSFUL_POSITIVE_AOE_HIT     = 0x00000400,    // 10 Successful AoE (unused)
+   PROC_FLAG_TAKEN_POSITIVE_AOE              = 0x00000800,    // 11 Taken AoE      (unused)
 
-   PROC_FLAG_SUCCESSFUL_AOE_SPELL_HIT        = 0x00001000,    // 12 Successful AoE damage spell hit (not 100% shure unused)
-   PROC_FLAG_TAKEN_AOE_SPELL_HIT             = 0x00002000,    // 13 Taken AoE damage spell hit      (not 100% shure unused)
+   PROC_FLAG_SUCCESSFUL_AOE_SPELL_HIT        = 0x00001000,    // 12 Successful AoE damage spell hit (unused)
+   PROC_FLAG_TAKEN_AOE_SPELL_HIT             = 0x00002000,    // 13 Taken AoE damage spell hit      (unused)
 
    PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL       = 0x00004000,    // 14 Successful cast positive spell (by default only on healing)
    PROC_FLAG_TAKEN_POSITIVE_SPELL            = 0x00008000,    // 15 Taken positive spell hit (by default only on healing)

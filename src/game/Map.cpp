@@ -443,6 +443,8 @@ bool Map::loaded(const GridPair &p) const
 
 void Map::Update(const uint32 &t_diff)
 {
+    volatile uint32 debug_map_id = GetId();
+    
     MAP_UPDATE_DIFF(DiffRecorder diff("", 0))
 
     /// update worldsessions for existing players

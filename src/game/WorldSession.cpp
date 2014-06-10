@@ -506,6 +506,8 @@ void WorldSession::LogoutPlayer(bool Save)
 
         ///- used by eluna
         sHookMgr->OnLogout(_player);
+        sLog.outLog(LOG_CHAR, "Account: %u Character:[%s] (guid:%u) Logged out.",
+            GetAccountId(),_player->GetName(),_player->GetGUIDLow());
 
         ///- If the player just died before logging out, make him appear as a ghost
         //FIXME: logout must be delayed in case lost connection with client in time of combat

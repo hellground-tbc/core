@@ -1138,6 +1138,11 @@ ChatFlood.MuteTime = 10
 #        Disable/enable waterbreathing for security level (0..4) or high
 #        Default: 8388608 (console - none)
 #
+#   HideGameMasterAccounts
+#        Enable/disable hiding gamemaster's accounts in .lookup player ip command results.
+#        Default: 1 (enable hiding)
+#                 0 (disable hiding)
+#
 ###################################################################################################################
 
 GM.LoginState     = 2
@@ -1156,6 +1161,7 @@ CommandLogPermission = 16130
 InstantLogout = 16130
 MinGMTextLevel = 16128
 DisableWaterBreath = 8388608
+HideGameMasterAccounts = 1
 
 ###################################################################################################################
 # SERVER RATES

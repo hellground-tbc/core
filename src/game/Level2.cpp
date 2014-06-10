@@ -1951,6 +1951,8 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint8 Class;
 
     // get additional information from Player object
+    if (target && target->GetSession()->HasPermissions(PERM_GMT) && !m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
+        return false;
     if (target)
     {
         targetGUID = target->GetGUID();
@@ -1990,36 +1992,32 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     uint32 permissions = 0;
     std::string last_login = GetHellgroundString(LANG_ERROR);
 
-
     QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT a.username,ap.permission_mask,a.email,a.last_ip,a.last_login "
-                                                       "FROM account a "
-                                                       "LEFT JOIN account_permissions ap "
-                                                       "ON (a.account_id = ap.account_id) "
-                                                       "WHERE a.account_id = '%u'",accId);
+                                                        "FROM account a "
+                                                        "LEFT JOIN account_permissions ap "
+                                                        "ON (a.account_id = ap.account_id) "
+                                                        "WHERE a.account_id = '%u'",accId);
+    
 
     if (result)
     {
         Field* fields = result->Fetch();
         username = fields[0].GetCppString();
         permissions = fields[1].GetUInt32();
+        if ((permissions & PERM_GMT) && !m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
+            return false;
 
         if (email.empty())
             email = "-";
-
-        if (!m_session || m_session->GetPermissions() >= permissions)
-        {
-            if (m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
-                email = fields[2].GetCppString();
-
-            last_ip = fields[3].GetCppString();
-            last_login = fields[4].GetCppString();
-        }
+        
+        last_ip = fields[3].GetCppString();
+        last_login = fields[4].GetCppString();
+        
+        if (!m_session || m_session->HasPermissions(sWorld.getConfig(CONFIG_GM_TRUSTED_LEVEL)))
+            email = fields[2].GetCppString();
         else
-        {
-            email = "-";
-            last_ip = "-";
-            last_login = "-";
-        }
+            email = "NO_PERMISSION";
+
     }
 
     PSendSysMessage(LANG_PINFO_ACCOUNT, (target ? "" : GetHellgroundString(LANG_OFFLINE)), GetNameLink(name).c_str(), GUID_LOPART(targetGUID), username.c_str(), accId, email.c_str(), permissions, last_ip.c_str(), last_login.c_str(), latency);
@@ -3650,9 +3648,17 @@ bool ChatHandler::HandleLookupPlayerIpCommand(const char* args)
     int32 limit = limit_str ? atoi(limit_str) : -1;
 
     AccountsDatabase.escape_string(ip);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id, username FROM account WHERE last_ip = '%s'", ip.c_str());
+    if (sWorld.getConfig(CONFIG_HIDE_GAMEMASTER_ACCOUNTS) && !m_session->HasPermissions(PERM_HIGH_GMT))
+    {
+        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id, username FROM account WHERE last_ip = '%s' AND account_id NOT IN (SELECT account_id FROM account_permissions WHERE account_id = account.account_id AND permission_mask >= '3' AND realm_id = '%i')", ip.c_str(), realmID);
+        return LookupPlayerSearchCommand(result, limit);
+    }
+    else
+    {
+        QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT account_id, username FROM account WHERE last_ip = '%s'", ip.c_str());
+        return LookupPlayerSearchCommand(result, limit);
+    }
 
-    return LookupPlayerSearchCommand(result, limit);
 }
 
 bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
