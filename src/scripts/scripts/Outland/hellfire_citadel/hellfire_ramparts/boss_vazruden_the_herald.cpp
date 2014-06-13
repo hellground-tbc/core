@@ -81,13 +81,10 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
     uint32 ConeOfFireTimer;
     uint32 BellowingRoarTimer;
     uint32 checktimer;
-    uint32 CastTimer;
     uint32 FlyTimer;
-    uint32 BlazeTimer;
     uint64 PlayerGUID;
     uint64 VazrudenGUID;
     uint64 VictimGUID;
-    uint64 SummonedGUID;
 
     void Reset()
     {
@@ -102,10 +99,7 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
         PlayerGUID = 0;
         VazrudenGUID = 0;
         VictimGUID = 0;
-        SummonedGUID = 0;
         checktimer = 0;
-        CastTimer = 0;
-        BlazeTimer = 0;
         FireballTimer = 0;
         ConeOfFireTimer = 1200+rand()%3000;
         BellowingRoarTimer = 1800+rand()%3000;
@@ -212,8 +206,7 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
 
     void SpellHitTarget(Unit* target, const SpellEntry* entry)
     {
-        if (target && entry->Id == SPELL_FIREBALL)
-            me->SummonCreature(ENTRY_LIQUID_FIRE,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),target->GetOrientation(),TEMPSUMMON_TIMED_DESPAWN,30000);
+
     }
 
     void JustSummoned(Creature* summoned)
@@ -229,8 +222,6 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
             case ENTRY_LIQUID_FIRE:
                 summoned->SetLevel(me->getLevel());
                 summoned->setFaction(me->getFaction());
-                SummonedGUID = summoned->GetGUID();
-                CastTimer = 1000;
                 break;
         }
     }
@@ -274,32 +265,7 @@ struct boss_vazruden_the_heraldAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (CastTimer)
-        {
-            if (CastTimer <= diff)
-            {
-                if (Creature* trigger = me->GetCreature(SummonedGUID))
-                {
-                    trigger->CastSpell(trigger,SPELL_FIRE_NOVA_VISUAL,true);
-                    trigger->CastSpell(trigger,SPELL_SUMMON_LIQUID_FIRE,true);
-                }
-
-                CastTimer = 0;
-                BlazeTimer = 1000;
-            }
-            else
-                CastTimer -= diff;
-        }
-        if (BlazeTimer <= diff)
-        {
-            if (Creature* trigger = me->GetCreature(SummonedGUID))
-            {
-                trigger->CastSpell(trigger,SPELL_BLAZE,true);
-            }
-            BlazeTimer = 1000;
-        }
-        else
-            BlazeTimer -= diff;
+       
 
         switch (phase)
         {
