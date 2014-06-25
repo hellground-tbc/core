@@ -1008,15 +1008,42 @@ CreatureAI* GetAI_npc_felblood_initiate(Creature *creature)
 
 #define GOSSIP_ICE_STONE        "Place your hands on stone"
 
-#define NPC_GLACIAL_TEMPLAR         26216
-
-bool GossipHello_go_ice_stone(Player *player, GameObject* go)
+enum
 {
-    if( player->GetQuestStatus(11954) == QUEST_STATUS_INCOMPLETE )
+    NPC_FROSTWAVE_LIEUTENANT    = 26116,
+    NPC_HAILSTONE_LIEUTENANT    = 26178,
+    NPC_CHILLWIND_LIEUTENANT    = 26204,
+    NPC_FRIGID_LIEUTENANT       = 26214,
+    NPC_GLACIAL_LIEUTENANT      = 26215,
+    NPC_GLACIAL_TEMPLAR         = 26216,
+};
+
+uint32 GetIceStoneQuestID(uint32 zone)
+{
+    switch (zone)
     {
-        player->ADD_GOSSIP_ITEM(0, GOSSIP_ICE_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        case 33:    return 11948;   // Stranglethorn Vale
+        case 51:    return 11952;   // Searing Gorge
+        case 331:   return 11917;   // Ashenvale
+        case 405:   return 11947;   // Desolace
+        case 1377:  return 11953;   // Silithus
+        case 3483:  return 11954;   // Hellfire Peninsula
+        default:    return 0;
     }
-    player->SEND_GOSSIP_MENU(go->GetGOInfo()->questgiver.gossipID, go->GetGUID());
+}
+
+bool GossipHello_go_ice_stone(Player *player, GameObject *go)
+{
+    if (uint32 quest = GetIceStoneQuestID(player->GetZoneId()))
+    {
+        player->PlayerTalkClass->ClearMenus();
+
+        if (player->GetQuestStatus(quest) == QUEST_STATUS_INCOMPLETE)
+            player->ADD_GOSSIP_ITEM(0, GOSSIP_ICE_STONE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+
+        player->SEND_GOSSIP_MENU(go->GetGOInfo()->questgiver.gossipID, go->GetGUID());
+    }
+
     return true;
 }
 
@@ -1026,23 +1053,35 @@ void SendActionMenu_go_ice_stone(Player *player, GameObject* go, uint32 action)
     go->SetRespawnTime(300);
     player->CLOSE_GOSSIP_MENU();
 
-    float x,y,z;
-    player->GetNearPoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
-
-    switch(action)
+    if (action == GOSSIP_ACTION_INFO_DEF)
     {
-    case GOSSIP_ACTION_INFO_DEF:
-        player->SummonCreature(NPC_GLACIAL_TEMPLAR, x,y,z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
-        break;
+        uint32 npcId;
+
+        switch (player->GetZoneId())
+        {
+            case 33:    npcId = NPC_CHILLWIND_LIEUTENANT;   break;  // Stranglethorn Vale
+            case 51:    npcId = NPC_FRIGID_LIEUTENANT;      break;  // Searing Gorge
+            case 331:   npcId = NPC_FROSTWAVE_LIEUTENANT;   break;  // Ashenvale
+            case 405:   npcId = NPC_HAILSTONE_LIEUTENANT;   break;  // Desolace
+            case 1377:  npcId = NPC_GLACIAL_LIEUTENANT;     break;  // Silithus
+            case 3483:  npcId = NPC_GLACIAL_TEMPLAR;        break;  // Hellfire Peninsula
+            default:    return;
+        }
+
+        if (GetClosestCreatureWithEntry(player, npcId, 20.0f))
+            return;
+
+        float x,y,z;
+        player->GetNearPoint(x,y,z, 0.0f, 2.0f, frand(0, M_PI));
+        player->SummonCreature(npcId, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 600000);
     }
 }
 
-bool GossipSelect_go_ice_stone(Player *player, GameObject* go, uint32 sender, uint32 action )
+bool GossipSelect_go_ice_stone(Player *player, GameObject *go, uint32 sender, uint32 action)
 {
-    switch(sender)
-    {
-        case GOSSIP_SENDER_MAIN:    SendActionMenu_go_ice_stone(player, go, action); break;
-    }
+    if (sender == GOSSIP_SENDER_MAIN)
+        SendActionMenu_go_ice_stone(player, go, action);
+
     return true;
 }
 
