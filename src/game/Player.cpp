@@ -21312,7 +21312,7 @@ void Player::ChangeRace(uint8 new_race)
             if (pItem && pItem->GetEntry() == MountsForRace[old_race][type])
             {
                 DestroyItem(INVENTORY_SLOT_BAG_0,i,true);
-                EquipNewItem((INVENTORY_SLOT_BAG_0 <<8) + i,MountsForRace[new_race][type],true);
+                StoreNewItem((INVENTORY_SLOT_BAG_0 <<8) + i,MountsForRace[new_race][type],true);
             }
         }
         for (uint16 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
@@ -21326,7 +21326,7 @@ void Player::ChangeRace(uint8 new_race)
                     if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
                     {
                         DestroyItem(i,j,true);
-                        EquipNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                        StoreNewItem((i <<8) + j,MountsForRace[new_race][type],true);
                     }
                 }
             }
@@ -21342,7 +21342,7 @@ void Player::ChangeRace(uint8 new_race)
                     if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
                     {
                         DestroyItem(i,j,true);
-                        EquipNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                        StoreNewItem((i <<8) + j,MountsForRace[new_race][type],true);
                     }
                 }
             }
