@@ -1098,7 +1098,6 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 pkt << float(i->second.populationLevel);
                 pkt << uint8(AmountOfCharacters);
                 pkt << uint8(i->second.timezone);           // realm category (Cfg_Categories.dbc)
-                pkt << uint8(0x2C);                         // unk, may be realm number/id?
 
                 if (realmFlags & REALM_FLAG_SPECIFYBUILD)
                 {
@@ -1107,6 +1106,8 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                     pkt << uint8(buildInfo->bugfix_version);
                     pkt << uint16(_build);
                 }
+
+                pkt << uint8(0x2C);                         // unk, may be realm number/id?
             }
 
             pkt << uint16(0x0010);                          // unused value (why 10?)
