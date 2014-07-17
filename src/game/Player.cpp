@@ -21312,7 +21312,9 @@ void Player::ChangeRace(uint8 new_race)
             if (pItem && pItem->GetEntry() == MountsForRace[old_race][type])
             {
                 DestroyItem(INVENTORY_SLOT_BAG_0,i,true);
-                StoreNewItem((INVENTORY_SLOT_BAG_0 <<8) + i,MountsForRace[new_race][type],true);
+                ItemPosCountVec vector;
+                vector.push_back(ItemPosCount((INVENTORY_SLOT_BAG_0 <<8) + i,1));
+                StoreNewItem(vector,MountsForRace[new_race][type],true);
             }
         }
         for (uint16 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
@@ -21326,7 +21328,9 @@ void Player::ChangeRace(uint8 new_race)
                     if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
                     {
                         DestroyItem(i,j,true);
-                        StoreNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                        ItemPosCountVec vector;
+                        vector.push_back(ItemPosCount((i <<8) + j,1));
+                        StoreNewItem(vector,MountsForRace[new_race][type],true);
                     }
                 }
             }
@@ -21342,7 +21346,9 @@ void Player::ChangeRace(uint8 new_race)
                     if (pItem &&  pItem->GetEntry() == MountsForRace[old_race][type])
                     {
                         DestroyItem(i,j,true);
-                        StoreNewItem((i <<8) + j,MountsForRace[new_race][type],true);
+                        ItemPosCountVec vector;
+                        vector.push_back(ItemPosCount((i <<8) + j,1));
+                        StoreNewItem(vector,MountsForRace[new_race][type],true);
                     }
                 }
             }
