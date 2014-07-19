@@ -262,7 +262,7 @@ extern int main(int argc, char **argv)
 
     // cleanup query
     // set expired bans to inactive
-    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unban_date <= UNIX_TIMESTAMP() AND unban_date <> ban_date");
+    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE expiration_date <= UNIX_TIMESTAMP() AND expiration_date <> punishment_date");
 
     ///- Launch the listening network socket
     ACE_Acceptor<AuthSocket, ACE_SOCK_Acceptor> acceptor;

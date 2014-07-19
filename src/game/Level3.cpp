@@ -5422,7 +5422,7 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     std::string IP = cIP;
 
     AccountsDatabase.escape_string(IP);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip, FROM_UNIXTIME(ban_date), FROM_UNIXTIME(unban_date), unban_date-UNIX_TIMESTAMP(), ban_reason, banned_by, unban_date-ban_date FROM ip_banned WHERE ip = '%s'", IP.c_str());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT ip, FROM_UNIXTIME(punishment_date), FROM_UNIXTIME(expiration_date), expiration_date-UNIX_TIMESTAMP(), ban_reason, punished_by, expiration_date-punishment_date FROM ip_banned WHERE ip = '%s'", IP.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANINFO_NOIP);
@@ -5449,7 +5449,7 @@ bool ChatHandler::HandleBanInfoEmailCommand(const char* args)
     std::string email = cEmail;
 
     AccountsDatabase.escape_string(email);
-    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT email, FROM_UNIXTIME(ban_date), ban_reason, banned_by FROM email_banned WHERE email = '%s'", email.c_str());
+    QueryResultAutoPtr result = AccountsDatabase.PQuery("SELECT email, FROM_UNIXTIME(punishment_date), ban_reason, punished_by FROM email_banned WHERE email = '%s'", email.c_str());
     if (!result)
     {
         PSendSysMessage(LANG_BANINFO_NOEMAIL);
@@ -5601,13 +5601,13 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
     QueryResultAutoPtr result;
 
     if (filter.empty())
-        result = AccountsDatabase.Query("SELECT ip, ban_date, unban_date, banned_by, ban_reason FROM ip_banned"
-            " WHERE (ban_date = unban_date OR unban_date > UNIX_TIMESTAMP())"
-            " ORDER BY unban_date");
+        result = AccountsDatabase.Query("SELECT ip, punishment_date, expiration_date, punished_by, ban_reason FROM ip_banned"
+            " WHERE (punishment_date = expiration_date OR expiration_date > UNIX_TIMESTAMP())"
+            " ORDER BY expiration_date");
     else
-        result = AccountsDatabase.PQuery("SELECT ip, ban_date, unban_date, banned_by, ban_reason FROM ip_banned"
-            " WHERE (ban_date = unban_date OR unban_date > UNIX_TIMESTAMP()) AND ip LIKE '%%%s%%'"
-            " ORDER BY unban_date", filter.c_str());
+        result = AccountsDatabase.PQuery("SELECT ip, punishment_date, expiration_date, punished_by, ban_reason FROM ip_banned"
+            " WHERE (punishment_date = expiration_date OR expiration_date > UNIX_TIMESTAMP()) AND ip LIKE '%%%s%%'"
+            " ORDER BY expiration_date", filter.c_str());
 
     if (!result)
     {
@@ -5671,12 +5671,12 @@ bool ChatHandler::HandleBanListEmailCommand(const char* args)
 
     if (filter.empty())
     {
-        result = AccountsDatabase.Query ("SELECT email, ban_date, banned_by, ban_reason FROM email_banned"
+        result = AccountsDatabase.Query ("SELECT email, punishment_date, punished_by, ban_reason FROM email_banned"
             " ORDER BY bandate ASC");
     }
     else
     {
-        result = AccountsDatabase.PQuery("SELECT email, ban_date, banned_by, ban_reason FROM email_banned"
+        result = AccountsDatabase.PQuery("SELECT email, punishment_date, punished_by, ban_reason FROM email_banned"
             " WHERE email LIKE CONCAT('%', '%s', '%')"
             " ORDER BY bandate ASC" , filter.c_str());
     }

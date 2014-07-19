@@ -1479,7 +1479,7 @@ void World::SetInitialWorldSettings()
     sOutdoorPvPMgr.InitOutdoorPvP();
 
     sLog.outString("Deleting expired IP bans...");
-    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE unban_date <= UNIX_TIMESTAMP() AND unban_date <> ban_date");
+    AccountsDatabase.Execute("DELETE FROM ip_banned WHERE expiration_date <= UNIX_TIMESTAMP() AND expiration_date <> punishment_date");
 
     sLog.outString("Starting objects Pooling system...");
     sPoolMgr.Initialize();
