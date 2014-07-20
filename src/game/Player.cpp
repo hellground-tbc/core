@@ -72,6 +72,8 @@
 #include <cmath>
 #include <cctype>
 #include "luaengine/HookMgr.h"
+#include <iomanip>      // std::setfill, std::setw
+#include <iostream>
 
 #define ZONE_UPDATE_INTERVAL 1000
 
@@ -21401,4 +21403,14 @@ void Player::CumulativeACReport(AnticheatChecks check)
         m_AC_cumulative_count[check] = 0;
     }
 
+}
+
+namespace Gladdy
+{
+	std::string GuidToHex(uint64 guid)
+	{
+			std::stringstream guids;
+				guids	<< "0x" << std::setfill ('0') << std::setw(16) << std::hex << std::uppercase << guid;
+			return guids.str();
+	}
 }

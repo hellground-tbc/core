@@ -2622,4 +2622,8 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
     basevalue = T((float)basevalue + diff);
     return T(diff);
 }
+namespace Gladdy
+{
+	std::string GuidToHex(uint64 guid);
+}
 #endif
