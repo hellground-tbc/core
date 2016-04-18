@@ -33,5 +33,7 @@ If you intend on compiling it in anything but 32 bit, you will need to use CMake
 You can find OpenSSL as an installer for Win32/64 [here](https://slproweb.com/products/Win32OpenSSL.html)
 You will also need to make your version of Visual Studio [compatible with the 2010 64 Bit Compiler](http://stackoverflow.com/questions/1865069/how-to-compile-a-64-bit-application-using-visual-c-2010-express)
 
-CMake expects ACE and TBB (if you want to use the latter) to be under dep/lib/*, if you aren't using external libraries. 
+CMake expects ACE, MySQL and TBB (if you want to use the latter) to be under dep/lib/*, if you aren't using external libraries. 
 There are already precompiled libraries you can find under dep/lib/precompiled/Release.
+
+Either edit CMakeLists to your liking or provide MySQL or put your MySQL libraries under dep/lib/[x64_release|win32_release]/*.
