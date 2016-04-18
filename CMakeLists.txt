@@ -44,7 +44,6 @@ if(WIN32 AND NOT MSVC)
 endif()
 
 find_package(Platform REQUIRED)
-find_package(Mercurial)
 
 # VS100 uses MSBuild.exe instead of devenv.com, so force it to use devenv.com
 if(WIN32 AND MSVC_VERSION MATCHES 1600)
@@ -60,7 +59,7 @@ endif()
 if(NOT WIN32)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
     if (GCC_VERSION VERSION_LESS 4.7)
-        message(FATAL_ERROR "Your GCC have to be >= 4.7")
+        message(FATAL_ERROR "Your GCC has to be >= 4.7")
     endif()
 endif()
 
@@ -242,16 +241,6 @@ add_custom_target(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 )
 
-# Find core revision
-if(MERCURIAL_FOUND)
-  MERCURIAL_HG_INFO(${PROJECT_SOURCE_DIR} HellGround)
-endif()
-
-message("")
-message("Revision              : ${HellGround_HG_ID}")
-message("Last Changed Author   : ${HellGround_HG_AUTHOR}")
-message("Last Changed Rev      : ${HellGround_HG_CHANGESET}")
-message("Last Changed Date     : ${HellGround_HG_DATE}")
 message("Install server to     : ${CMAKE_INSTALL_PREFIX}")
 message("")
 
