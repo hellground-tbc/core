@@ -30,6 +30,10 @@ It comes with some custom systems as well as improved debug handling/logging and
 
 #Compile in Windows
 If you intend on compiling it in anything but 32 bit, you will need to use CMake as suggested [here](http://wiki.hellground.net/index.php/Building_under_Windows).
+
+### Disclaimer:
+If you prefer compiling your own dependencies, they can be fund under dep/include/*. These have the correct versions, so that you don't have to worry about conflicts with precompiled binaries you may be using!
+
 You can find OpenSSL as an installer for Win32/64 [here](https://slproweb.com/products/Win32OpenSSL.html)
 You will also need to make your version of Visual Studio [compatible with the 2010 64 Bit Compiler](http://stackoverflow.com/questions/1865069/how-to-compile-a-64-bit-application-using-visual-c-2010-express)
 
